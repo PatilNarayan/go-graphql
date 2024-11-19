@@ -1,0 +1,57 @@
+# GraphQL Schema for User Management
+
+# User type definition
+type User {
+  key: ID!
+  email: String!
+  firstName: String!
+  lastName: String!
+  attributes: UserAttributes!
+  roleAssignments: [RoleAssignment!]!
+}
+
+# Attributes for the user
+type UserAttributes {
+  department: String
+  age: Int
+  subscription: Subscription
+}
+
+# Subscription type for user's subscription information
+type Subscription {
+  tier: String!
+  expired: Boolean!
+}
+
+# RoleAssignment type for the user's roles in different tenants
+type RoleAssignment {
+  role: String!
+  tenant: String!
+}
+
+# Input types for creating or updating users
+
+input UserInput {
+  email: String!
+  firstName: String!
+  lastName: String!
+  attributes: UserAttributesInput!
+  roleAssignments: [RoleAssignmentInput!]!
+}
+
+input UserAttributesInput {
+  department: String
+  age: Int
+  subscription: SubscriptionInput
+}
+
+input SubscriptionInput {
+  tier: String!
+  expired: Boolean!
+}
+
+input RoleAssignmentInput {
+  role: String!
+  tenant: String!
+}
+

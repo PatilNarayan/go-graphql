@@ -1,0 +1,7 @@
+type Query {
+  tenant(id: ID!): Tenant
+  tenants: [Tenant!]!
+
+  user(key: ID!): User
+  users: [User!]!
+}
