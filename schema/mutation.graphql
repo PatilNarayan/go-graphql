@@ -6,4 +6,8 @@ type Mutation {
   createUser(input: UserInput!): User!
   updateUser(key: ID!, input: UserInput!): User!
   deleteUser(key: ID!): Boolean!
+
+  createBinding(input: CreateBindingInput!): Binding!
+  updateBinding(input: UpdateBindingInput!): Binding!
+  deleteBinding(id: String!): Boolean!
 }

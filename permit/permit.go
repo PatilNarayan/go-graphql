@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/permitio/permit-golang/pkg/config"
 	"github.com/permitio/permit-golang/pkg/models"
 	"github.com/permitio/permit-golang/pkg/permit"
 	"github.com/rs/xid"
+	"go.uber.org/zap"
 )
 
 type PermitClient struct {
@@ -19,12 +21,17 @@ type PermitClient struct {
 // NewPermitClient initializes the PermitClient with API token
 func NewPermitClient() (*PermitClient, error) {
 	// Create config with provided API token
-	permitConfig := config.NewConfigBuilder(os.Getenv("PERMIT_TOKEN")).Build()
+	permitContext := config.NewPermitContext(config.EnvironmentAPIKeyLevel, os.Getenv("PROJECT"), os.Getenv("ENV"))
+	permitClient := permit.New(config.NewConfigBuilder(os.Getenv("TOKEN")).
+		WithPdpUrl(os.Getenv("PDP_URL")).
+		WithApiUrl(os.Getenv("API_URL")).
+		WithContext(permitContext).
+		WithLogger(zap.NewExample()).
+		WithProxyFactsViaPDP(true).
+		WithFactsSyncTimeout(10 * time.Second).
+		Build())
 
-	// Initialize the Permit client
-	client := permit.New(permitConfig)
-
-	return &PermitClient{client: client}, nil
+	return &PermitClient{client: permitClient}, nil
 }
 
 // CreateTenant creates a new tenant on Permit.io

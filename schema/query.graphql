@@ -4,4 +4,7 @@ type Query {
 
   user(key: ID!): User
   users: [User!]!
+
+  getBinding(id: String!): Binding
+  allBindings: [Binding!]!
 }
