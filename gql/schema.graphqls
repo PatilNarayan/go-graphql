@@ -1,0 +1,87 @@
+interface Resource {
+id: String!
+name: String!
+createdAt: String!
+updatedAt: String
+}
+
+interface Organization {
+id: String!
+name: String!
+description: String
+}
+
+type Tenant implements Resource & Organization {
+id: String!
+name: String!
+createdAt: String!
+updatedAt: String
+description: String
+parentOrg: Organization!
+contactInfo: ContactInfo
+}
+
+type ContactInfo {
+id: String!
+email: String
+phoneNumber: String
+address: Address
+}
+
+input TenantInput {
+name: String!
+description: String
+parentOrgId: String!
+contactInfoId: String!
+}
+
+
+type Address {
+id: String!
+street: String
+city: String
+state: String
+zipCode: String
+country: String
+}
+
+
+input AddressInput {
+street: String
+city: String
+state: String
+zipCode: String
+country: String
+}
+
+type Group {
+id: Int!
+name: String!
+tenant: Tenant!
+createdAt: String
+updatedAt: String
+}
+
+input GroupInput {
+name: String!
+tenantId: Int!
+}
+
+type Query {
+organizations: [Organization!]!
+getOrganization(id: Int): Organization
+tenants:[Tenant!]!
+getTenant(id: Int): Tenant
+groups:[Group!]!
+getGroup(id: Int): Group
+}
+
+type Mutation {
+createOrganization(name: String!): Organization!
+createTenant(input: TenantInput!): Tenant!
+updateTenant(id: ID!, input: TenantInput!): Tenant!
+deleteTenant(id: ID!): Boolean!
+createGroup(input: GroupInput!): Group!
+updateGroup(id: ID!, input: GroupInput!): Group!
+deleteGroup(id: ID!): Boolean!
+}
