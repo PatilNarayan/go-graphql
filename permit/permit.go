@@ -13,71 +13,53 @@ import (
 	"go.uber.org/zap"
 )
 
-type PermitClient struct {
-	client *permit.Client
-	ctx    context.Context
-}
-
-// NewPermitClient initializes a new Permit client
-func NewPermitClient() (*PermitClient, error) {
-	ctx := context.Background()
-
-	// Environment variables
-	pdpEndpoint := os.Getenv("PDP_ENDPOINT")
-	permitToken := os.Getenv("PERMIT_TOKEN")
-	project := os.Getenv("PROJECT")
-	env := os.Getenv("ENV")
-	DefaultFactsSyncTimeout := 10 * time.Second
-
-	// Config setup
+func NewPermitClient() permit.Client {
+	project := os.Getenv("PERMIT_PROJECT")
+	env := os.Getenv("PERMIT_ENV")
+	token := os.Getenv("PERMIT_TOKEN")
+	DefaultPDPUrl := os.Getenv("PERMIT_PDP_ENDPOINT")
 	permitContext := config.NewPermitContext(config.EnvironmentAPIKeyLevel, project, env)
-	client := permit.New(config.NewConfigBuilder(permitToken).
-		WithPdpUrl(pdpEndpoint).
-		WithApiUrl(pdpEndpoint).
+	permitClient := permit.New(config.NewConfigBuilder(token).
+		WithPdpUrl(DefaultPDPUrl).
+		WithApiUrl(DefaultPDPUrl).
 		WithContext(permitContext).
 		WithLogger(zap.NewExample()).
 		WithProxyFactsViaPDP(true).
-		WithFactsSyncTimeout(DefaultFactsSyncTimeout).
+		WithFactsSyncTimeout(10 * time.Second).
 		Build())
-
-	return &PermitClient{
-		client: client,
-		ctx:    ctx,
-	}, nil
+	return *permitClient
 }
 
-// CreateTenant creates a new tenant
-func (p *PermitClient) CreateTenant(tenantName, description string) (*models.TenantRead, error) {
-	tenantCreate := models.NewTenantCreate(xid.New().String(), tenantName)
-	tenantCreate.SetName(tenantName)
-	tenantCreate.SetDescription(description)
-
-	tenant, err := p.client.Api.Tenants.Create(p.ctx, *tenantCreate)
+func CreateTenant(tenantname string) (*models.TenantRead, error) {
+	ctx := context.Background()
+	permitClient := NewPermitClient()
+	tenantCreate := models.NewTenantCreate(xid.New().String(), tenantname)
+	tenantCreate.SetName(tenantname)
+	tenant, err := permitClient.Api.Tenants.Create(ctx, *tenantCreate)
 	if err != nil {
 		return nil, err.(PermitErrors.PermitError)
 	}
-
 	return tenant, nil
 }
 
-// DeleteTenant deletes an existing tenant by ID
-func (p *PermitClient) DeleteTenant(tenantID string) error {
-	err := p.client.Api.Tenants.Delete(p.ctx, tenantID)
-	if err != nil {
-		return err.(PermitErrors.PermitError)
-	}
-	return nil
-}
-
-// UpdateTenant updates an existing tenant's information
-func (p *PermitClient) UpdateTenant(tenantID string, tenantName string) (*models.TenantRead, error) {
+func UpdateTenant(tenantid string, tenantname string) (*models.TenantRead, error) {
+	ctx := context.Background()
+	permitClient := NewPermitClient()
 	tenantUpdate := models.NewTenantUpdate()
-	tenantUpdate.SetName(tenantName)
-
-	tenant, err := p.client.Api.Tenants.Update(p.ctx, tenantID, *tenantUpdate)
+	tenantUpdate.SetName(tenantname)
+	tenant, err := permitClient.Api.Tenants.Update(ctx, tenantid, *tenantUpdate)
 	if err != nil {
 		return nil, err.(PermitErrors.PermitError)
 	}
-
 	return tenant, nil
+}
+
+func DeleteTenant(tenantid string) (bool, error) {
+	ctx := context.Background()
+	permitClient := NewPermitClient()
+	err := permitClient.Api.Tenants.Delete(ctx, "tenantKey")
+	if err != nil {
+		return false, err.(PermitErrors.PermitError)
+	}
+	return true, nil
 }

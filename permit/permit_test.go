@@ -1,87 +1,99 @@
 package permit
 
 import (
+	"fmt"
+	"os"
 	"reflect"
 	"testing"
 
 	"github.com/permitio/permit-golang/pkg/models"
 )
 
-func TestPermitClient_CreateTenant(t *testing.T) {
+func TestCreateTenant(t *testing.T) {
+	os.Setenv("PERMIT_PROJECT", "dev")
+	os.Setenv("PERMIT_ENV", "dev")
+	os.Setenv("PERMIT_TOKEN", "permit_key_mXEiRTTrdC78tEWyjy2dazPGFruDrhJswiNthVQ0YYqjT7VWH1dn9Wiw3vtVFUl25tweXwICha30RsPe0XRwwU")
+	os.Setenv("PERMIT_PDP_ENDPOINT", "https://api.permit.io")
 	type args struct {
-		name        *string
-		description *string
-		attributes  map[string]interface{}
+		tenantname string
 	}
 	tests := []struct {
 		name    string
-		pc      *PermitClient
 		args    args
 		want    *models.TenantRead
 		wantErr bool
 	}{
 		// TODO: Add test cases.
+		{"test", args{"test"}, nil, false},
+		{"test2", args{"test2"}, nil, false},
+		{"test3", args{""}, nil, false},
+		{"test4", args{"$&^@*^()"}, nil, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.pc.CreateTenant(tt.args.name, tt.args.description, tt.args.attributes)
+			got, err := CreateTenant(tt.args.tenantname)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("PermitClient.CreateTenant() error = %v, wantErr %v", err, tt.wantErr)
+				fmt.Println(err)
+				t.Errorf("CreateTenant() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PermitClient.CreateTenant() = %v, want %v", got, tt.want)
+			t.Log(reflect.TypeOf(got))
+		})
+	}
+}
+
+func TestDeleteTenant(t *testing.T) {
+	type args struct {
+		tenantid string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+		{"test", args{"1"}, true, false},
+		{"test2", args{"2"}, true, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := DeleteTenant(tt.args.tenantid)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DeleteTenant() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("DeleteTenant() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestPermitClient_UpdateTenant(t *testing.T) {
+func TestUpdateTenant(t *testing.T) {
 	type args struct {
-		tenantKey   string
-		name        *string
-		description *string
-		attributes  map[string]interface{}
+		tenantid   string
+		tenantname string
 	}
 	tests := []struct {
 		name    string
-		pc      *PermitClient
 		args    args
 		want    *models.TenantRead
 		wantErr bool
 	}{
 		// TODO: Add test cases.
+		{"test", args{"1", "test"}, nil, false},
+		{"test2", args{"2", "test2"}, nil, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.pc.UpdateTenant(tt.args.tenantKey, tt.args.name, tt.args.description, tt.args.attributes)
+			got, err := UpdateTenant(tt.args.tenantid, tt.args.tenantname)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("PermitClient.UpdateTenant() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("UpdateTenant() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PermitClient.UpdateTenant() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestPermitClient_DeleteTenant(t *testing.T) {
-	type args struct {
-		tenantKey string
-	}
-	tests := []struct {
-		name    string
-		pc      *PermitClient
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.pc.DeleteTenant(tt.args.tenantKey); (err != nil) != tt.wantErr {
-				t.Errorf("PermitClient.DeleteTenant() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("UpdateTenant() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -1,87 +1,85 @@
 interface Resource {
-id: String!
-name: String!
-createdAt: String!
-updatedAt: String
+  id: String!
+  name: String!
+  createdAt: String!
+  updatedAt: String
 }
 
 interface Organization {
-id: String!
-name: String!
-description: String
+  id: String!
+  name: String!
+  description: String
 }
 
 type Tenant implements Resource & Organization {
-id: String!
-name: String!
-createdAt: String!
-updatedAt: String
-description: String
-parentOrg: Organization!
-contactInfo: ContactInfo
+  id: String!
+  name: String!
+  createdAt: String!
+  updatedAt: String
+  description: String
+  parentOrg: Organization!
+  contactInfo: ContactInfo
 }
 
 type ContactInfo {
-id: String!
-email: String
-phoneNumber: String
-address: Address
+  id: String!
+  email: String
+  phoneNumber: String
+  address: Address
 }
 
 input TenantInput {
-name: String!
-description: String
-parentOrgId: String!
-contactInfoId: String!
+  name: String!
+  description: String
+  parentOrgId: String!
+  contactInfoId: String!
 }
-
 
 type Address {
-id: String!
-street: String
-city: String
-state: String
-zipCode: String
-country: String
+  id: String!
+  street: String
+  city: String
+  state: String
+  zipCode: String
+  country: String
 }
 
-
 input AddressInput {
-street: String
-city: String
-state: String
-zipCode: String
-country: String
+  street: String
+  city: String
+  state: String
+  zipCode: String
+  country: String
 }
 
 type Group {
-id: Int!
-name: String!
-tenant: Tenant!
-createdAt: String
-updatedAt: String
+  id: Int!
+  name: String!
+  tenant: Tenant!
+  createdAt: String
+  updatedAt: String
 }
 
 input GroupInput {
-name: String!
-tenantId: Int!
+  name: String!
+  tenantId: Int!
 }
 
 type Query {
-organizations: [Organization!]!
-getOrganization(id: Int): Organization
-tenants:[Tenant!]!
-getTenant(id: Int): Tenant
-groups:[Group!]!
-getGroup(id: Int): Group
+  organizations: [Organization!]!
+  getOrganization(id: String): Organization
+  tenants: [Tenant!]!
+  getTenant(id: String): Tenant
+  groups: [Group!]!
+  getGroup(id: String): Group
 }
 
 type Mutation {
-createOrganization(name: String!): Organization!
-createTenant(input: TenantInput!): Tenant!
-updateTenant(id: ID!, input: TenantInput!): Tenant!
-deleteTenant(id: ID!): Boolean!
-createGroup(input: GroupInput!): Group!
-updateGroup(id: ID!, input: GroupInput!): Group!
-deleteGroup(id: ID!): Boolean!
+  createOrganization(name: String!): Organization!
+  createTenant(input: TenantInput!): Tenant!
+  updateTenant(id: String!, input: TenantInput!): Tenant!
+  deleteTenant(id: String!): Boolean!
+  createGroup(input: GroupInput!): Group!
+  updateGroup(id: String!, input: GroupInput!): Group!
+  deleteGroup(id: String!): Boolean!
 }

@@ -77,16 +77,16 @@ type ComplexityRoot struct {
 		CreateGroup        func(childComplexity int, input models.GroupInput) int
 		CreateOrganization func(childComplexity int, name string) int
 		CreateTenant       func(childComplexity int, input models.TenantInput) int
-		DeleteGroup        func(childComplexity int, id int) int
-		DeleteTenant       func(childComplexity int, id int) int
-		UpdateGroup        func(childComplexity int, id int, input models.GroupInput) int
-		UpdateTenant       func(childComplexity int, id int, input models.TenantInput) int
+		DeleteGroup        func(childComplexity int, id string) int
+		DeleteTenant       func(childComplexity int, id string) int
+		UpdateGroup        func(childComplexity int, id string, input models.GroupInput) int
+		UpdateTenant       func(childComplexity int, id string, input models.TenantInput) int
 	}
 
 	Query struct {
-		GetGroup        func(childComplexity int, id *int) int
-		GetOrganization func(childComplexity int, id *int) int
-		GetTenant       func(childComplexity int, id *int) int
+		GetGroup        func(childComplexity int, id *string) int
+		GetOrganization func(childComplexity int, id *string) int
+		GetTenant       func(childComplexity int, id *string) int
 		Groups          func(childComplexity int) int
 		Organizations   func(childComplexity int) int
 		Tenants         func(childComplexity int) int
@@ -111,23 +111,21 @@ type GroupResolver interface {
 type MutationResolver interface {
 	CreateOrganization(ctx context.Context, name string) (dto.Organization, error)
 	CreateTenant(ctx context.Context, input models.TenantInput) (*dto.Tenant, error)
-	UpdateTenant(ctx context.Context, id int, input models.TenantInput) (*dto.Tenant, error)
-	DeleteTenant(ctx context.Context, id int) (bool, error)
+	UpdateTenant(ctx context.Context, id string, input models.TenantInput) (*dto.Tenant, error)
+	DeleteTenant(ctx context.Context, id string) (bool, error)
 	CreateGroup(ctx context.Context, input models.GroupInput) (*dto.GroupEntity, error)
-	UpdateGroup(ctx context.Context, id int, input models.GroupInput) (*dto.GroupEntity, error)
-	DeleteGroup(ctx context.Context, id int) (bool, error)
+	UpdateGroup(ctx context.Context, id string, input models.GroupInput) (*dto.GroupEntity, error)
+	DeleteGroup(ctx context.Context, id string) (bool, error)
 }
 type QueryResolver interface {
 	Organizations(ctx context.Context) ([]dto.Organization, error)
-	GetOrganization(ctx context.Context, id *int) (dto.Organization, error)
+	GetOrganization(ctx context.Context, id *string) (dto.Organization, error)
 	Tenants(ctx context.Context) ([]*dto.Tenant, error)
-	GetTenant(ctx context.Context, id *int) (*dto.Tenant, error)
+	GetTenant(ctx context.Context, id *string) (*dto.Tenant, error)
 	Groups(ctx context.Context) ([]*dto.GroupEntity, error)
-	GetGroup(ctx context.Context, id *int) (*dto.GroupEntity, error)
+	GetGroup(ctx context.Context, id *string) (*dto.GroupEntity, error)
 }
 type TenantResolver interface {
-	ID(ctx context.Context, obj *dto.Tenant) (string, error)
-
 	CreatedAt(ctx context.Context, obj *dto.Tenant) (string, error)
 	UpdatedAt(ctx context.Context, obj *dto.Tenant) (*string, error)
 
@@ -305,7 +303,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteGroup(childComplexity, args["id"].(int)), true
+		return e.complexity.Mutation.DeleteGroup(childComplexity, args["id"].(string)), true
 
 	case "Mutation.deleteTenant":
 		if e.complexity.Mutation.DeleteTenant == nil {
@@ -317,7 +315,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteTenant(childComplexity, args["id"].(int)), true
+		return e.complexity.Mutation.DeleteTenant(childComplexity, args["id"].(string)), true
 
 	case "Mutation.updateGroup":
 		if e.complexity.Mutation.UpdateGroup == nil {
@@ -329,7 +327,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateGroup(childComplexity, args["id"].(int), args["input"].(models.GroupInput)), true
+		return e.complexity.Mutation.UpdateGroup(childComplexity, args["id"].(string), args["input"].(models.GroupInput)), true
 
 	case "Mutation.updateTenant":
 		if e.complexity.Mutation.UpdateTenant == nil {
@@ -341,7 +339,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateTenant(childComplexity, args["id"].(int), args["input"].(models.TenantInput)), true
+		return e.complexity.Mutation.UpdateTenant(childComplexity, args["id"].(string), args["input"].(models.TenantInput)), true
 
 	case "Query.getGroup":
 		if e.complexity.Query.GetGroup == nil {
@@ -353,7 +351,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetGroup(childComplexity, args["id"].(*int)), true
+		return e.complexity.Query.GetGroup(childComplexity, args["id"].(*string)), true
 
 	case "Query.getOrganization":
 		if e.complexity.Query.GetOrganization == nil {
@@ -365,7 +363,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetOrganization(childComplexity, args["id"].(*int)), true
+		return e.complexity.Query.GetOrganization(childComplexity, args["id"].(*string)), true
 
 	case "Query.getTenant":
 		if e.complexity.Query.GetTenant == nil {
@@ -377,7 +375,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetTenant(childComplexity, args["id"].(*int)), true
+		return e.complexity.Query.GetTenant(childComplexity, args["id"].(*string)), true
 
 	case "Query.groups":
 		if e.complexity.Query.Groups == nil {
@@ -558,92 +556,91 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var sources = []*ast.Source{
 	{Name: "../schema.graphqls", Input: `interface Resource {
-id: String!
-name: String!
-createdAt: String!
-updatedAt: String
+  id: String!
+  name: String!
+  createdAt: String!
+  updatedAt: String
 }
 
 interface Organization {
-id: String!
-name: String!
-description: String
+  id: String!
+  name: String!
+  description: String
 }
 
 type Tenant implements Resource & Organization {
-id: String!
-name: String!
-createdAt: String!
-updatedAt: String
-description: String
-parentOrg: Organization!
-contactInfo: ContactInfo
+  id: String!
+  name: String!
+  createdAt: String!
+  updatedAt: String
+  description: String
+  parentOrg: Organization!
+  contactInfo: ContactInfo
 }
 
 type ContactInfo {
-id: String!
-email: String
-phoneNumber: String
-address: Address
+  id: String!
+  email: String
+  phoneNumber: String
+  address: Address
 }
 
 input TenantInput {
-name: String!
-description: String
-parentOrgId: String!
-contactInfoId: String!
+  name: String!
+  description: String
+  parentOrgId: String!
+  contactInfoId: String!
 }
-
 
 type Address {
-id: String!
-street: String
-city: String
-state: String
-zipCode: String
-country: String
+  id: String!
+  street: String
+  city: String
+  state: String
+  zipCode: String
+  country: String
 }
 
-
 input AddressInput {
-street: String
-city: String
-state: String
-zipCode: String
-country: String
+  street: String
+  city: String
+  state: String
+  zipCode: String
+  country: String
 }
 
 type Group {
-id: Int!
-name: String!
-tenant: Tenant!
-createdAt: String
-updatedAt: String
+  id: Int!
+  name: String!
+  tenant: Tenant!
+  createdAt: String
+  updatedAt: String
 }
 
 input GroupInput {
-name: String!
-tenantId: Int!
+  name: String!
+  tenantId: Int!
 }
 
 type Query {
-organizations: [Organization!]!
-getOrganization(id: Int): Organization
-tenants:[Tenant!]!
-getTenant(id: Int): Tenant
-groups:[Group!]!
-getGroup(id: Int): Group
+  organizations: [Organization!]!
+  getOrganization(id: String): Organization
+  tenants: [Tenant!]!
+  getTenant(id: String): Tenant
+  groups: [Group!]!
+  getGroup(id: String): Group
 }
 
 type Mutation {
-createOrganization(name: String!): Organization!
-createTenant(input: TenantInput!): Tenant!
-updateTenant(id: ID!, input: TenantInput!): Tenant!
-deleteTenant(id: ID!): Boolean!
-createGroup(input: GroupInput!): Group!
-updateGroup(id: ID!, input: GroupInput!): Group!
-deleteGroup(id: ID!): Boolean!
-}`, BuiltIn: false},
+  createOrganization(name: String!): Organization!
+  createTenant(input: TenantInput!): Tenant!
+  updateTenant(id: String!, input: TenantInput!): Tenant!
+  deleteTenant(id: String!): Boolean!
+  createGroup(input: GroupInput!): Group!
+  updateGroup(id: String!, input: GroupInput!): Group!
+  deleteGroup(id: String!): Boolean!
+}
+`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -760,22 +757,22 @@ func (ec *executionContext) field_Mutation_deleteGroup_args(ctx context.Context,
 func (ec *executionContext) field_Mutation_deleteGroup_argsID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
-) (int, error) {
+) (string, error) {
 	// We won't call the directive if the argument is null.
 	// Set call_argument_directives_with_null to true to call directives
 	// even if the argument is null.
 	_, ok := rawArgs["id"]
 	if !ok {
-		var zeroVal int
+		var zeroVal string
 		return zeroVal, nil
 	}
 
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalNID2int(ctx, tmp)
+		return ec.unmarshalNString2string(ctx, tmp)
 	}
 
-	var zeroVal int
+	var zeroVal string
 	return zeroVal, nil
 }
 
@@ -792,22 +789,22 @@ func (ec *executionContext) field_Mutation_deleteTenant_args(ctx context.Context
 func (ec *executionContext) field_Mutation_deleteTenant_argsID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
-) (int, error) {
+) (string, error) {
 	// We won't call the directive if the argument is null.
 	// Set call_argument_directives_with_null to true to call directives
 	// even if the argument is null.
 	_, ok := rawArgs["id"]
 	if !ok {
-		var zeroVal int
+		var zeroVal string
 		return zeroVal, nil
 	}
 
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalNID2int(ctx, tmp)
+		return ec.unmarshalNString2string(ctx, tmp)
 	}
 
-	var zeroVal int
+	var zeroVal string
 	return zeroVal, nil
 }
 
@@ -829,22 +826,22 @@ func (ec *executionContext) field_Mutation_updateGroup_args(ctx context.Context,
 func (ec *executionContext) field_Mutation_updateGroup_argsID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
-) (int, error) {
+) (string, error) {
 	// We won't call the directive if the argument is null.
 	// Set call_argument_directives_with_null to true to call directives
 	// even if the argument is null.
 	_, ok := rawArgs["id"]
 	if !ok {
-		var zeroVal int
+		var zeroVal string
 		return zeroVal, nil
 	}
 
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalNID2int(ctx, tmp)
+		return ec.unmarshalNString2string(ctx, tmp)
 	}
 
-	var zeroVal int
+	var zeroVal string
 	return zeroVal, nil
 }
 
@@ -888,22 +885,22 @@ func (ec *executionContext) field_Mutation_updateTenant_args(ctx context.Context
 func (ec *executionContext) field_Mutation_updateTenant_argsID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
-) (int, error) {
+) (string, error) {
 	// We won't call the directive if the argument is null.
 	// Set call_argument_directives_with_null to true to call directives
 	// even if the argument is null.
 	_, ok := rawArgs["id"]
 	if !ok {
-		var zeroVal int
+		var zeroVal string
 		return zeroVal, nil
 	}
 
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalNID2int(ctx, tmp)
+		return ec.unmarshalNString2string(ctx, tmp)
 	}
 
-	var zeroVal int
+	var zeroVal string
 	return zeroVal, nil
 }
 
@@ -974,22 +971,22 @@ func (ec *executionContext) field_Query_getGroup_args(ctx context.Context, rawAr
 func (ec *executionContext) field_Query_getGroup_argsID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
-) (*int, error) {
+) (*string, error) {
 	// We won't call the directive if the argument is null.
 	// Set call_argument_directives_with_null to true to call directives
 	// even if the argument is null.
 	_, ok := rawArgs["id"]
 	if !ok {
-		var zeroVal *int
+		var zeroVal *string
 		return zeroVal, nil
 	}
 
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+		return ec.unmarshalOString2ᚖstring(ctx, tmp)
 	}
 
-	var zeroVal *int
+	var zeroVal *string
 	return zeroVal, nil
 }
 
@@ -1006,22 +1003,22 @@ func (ec *executionContext) field_Query_getOrganization_args(ctx context.Context
 func (ec *executionContext) field_Query_getOrganization_argsID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
-) (*int, error) {
+) (*string, error) {
 	// We won't call the directive if the argument is null.
 	// Set call_argument_directives_with_null to true to call directives
 	// even if the argument is null.
 	_, ok := rawArgs["id"]
 	if !ok {
-		var zeroVal *int
+		var zeroVal *string
 		return zeroVal, nil
 	}
 
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+		return ec.unmarshalOString2ᚖstring(ctx, tmp)
 	}
 
-	var zeroVal *int
+	var zeroVal *string
 	return zeroVal, nil
 }
 
@@ -1038,22 +1035,22 @@ func (ec *executionContext) field_Query_getTenant_args(ctx context.Context, rawA
 func (ec *executionContext) field_Query_getTenant_argsID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
-) (*int, error) {
+) (*string, error) {
 	// We won't call the directive if the argument is null.
 	// Set call_argument_directives_with_null to true to call directives
 	// even if the argument is null.
 	_, ok := rawArgs["id"]
 	if !ok {
-		var zeroVal *int
+		var zeroVal *string
 		return zeroVal, nil
 	}
 
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+		return ec.unmarshalOString2ᚖstring(ctx, tmp)
 	}
 
-	var zeroVal *int
+	var zeroVal *string
 	return zeroVal, nil
 }
 
@@ -1929,7 +1926,7 @@ func (ec *executionContext) _Mutation_updateTenant(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateTenant(rctx, fc.Args["id"].(int), fc.Args["input"].(models.TenantInput))
+		return ec.resolvers.Mutation().UpdateTenant(rctx, fc.Args["id"].(string), fc.Args["input"].(models.TenantInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2000,7 +1997,7 @@ func (ec *executionContext) _Mutation_deleteTenant(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteTenant(rctx, fc.Args["id"].(int))
+		return ec.resolvers.Mutation().DeleteTenant(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2122,7 +2119,7 @@ func (ec *executionContext) _Mutation_updateGroup(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateGroup(rctx, fc.Args["id"].(int), fc.Args["input"].(models.GroupInput))
+		return ec.resolvers.Mutation().UpdateGroup(rctx, fc.Args["id"].(string), fc.Args["input"].(models.GroupInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2189,7 +2186,7 @@ func (ec *executionContext) _Mutation_deleteGroup(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteGroup(rctx, fc.Args["id"].(int))
+		return ec.resolvers.Mutation().DeleteGroup(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2288,7 +2285,7 @@ func (ec *executionContext) _Query_getOrganization(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetOrganization(rctx, fc.Args["id"].(*int))
+		return ec.resolvers.Query().GetOrganization(rctx, fc.Args["id"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2400,7 +2397,7 @@ func (ec *executionContext) _Query_getTenant(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetTenant(rctx, fc.Args["id"].(*int))
+		return ec.resolvers.Query().GetTenant(rctx, fc.Args["id"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2524,7 +2521,7 @@ func (ec *executionContext) _Query_getGroup(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetGroup(rctx, fc.Args["id"].(*int))
+		return ec.resolvers.Query().GetGroup(rctx, fc.Args["id"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2717,7 +2714,7 @@ func (ec *executionContext) _Tenant_id(ctx context.Context, field graphql.Collec
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Tenant().ID(rctx, obj)
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2738,8 +2735,8 @@ func (ec *executionContext) fieldContext_Tenant_id(_ context.Context, field grap
 	fc = &graphql.FieldContext{
 		Object:     "Tenant",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -5478,41 +5475,10 @@ func (ec *executionContext) _Tenant(ctx context.Context, sel ast.SelectionSet, o
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Tenant")
 		case "id":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Tenant_id(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._Tenant_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "name":
 			out.Values[i] = ec._Tenant_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -6085,21 +6051,6 @@ func (ec *executionContext) unmarshalNGroupInput2go_graphqlᚋgqlᚋmodelsᚐGro
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNID2int(ctx context.Context, v interface{}) (int, error) {
-	res, err := graphql.UnmarshalIntID(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNID2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalIntID(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -6545,22 +6496,6 @@ func (ec *executionContext) marshalOGroup2ᚖgo_graphqlᚋinternalᚋdtoᚐGroup
 		return graphql.Null
 	}
 	return ec._Group(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalInt(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalInt(*v)
-	return res
 }
 
 func (ec *executionContext) marshalOOrganization2go_graphqlᚋinternalᚋdtoᚐOrganization(ctx context.Context, sel ast.SelectionSet, v dto.Organization) graphql.Marshaler {

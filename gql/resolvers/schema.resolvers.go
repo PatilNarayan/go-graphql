@@ -38,12 +38,12 @@ func (r *mutationResolver) CreateTenant(ctx context.Context, input models.Tenant
 }
 
 // UpdateTenant is the resolver for the updateTenant field.
-func (r *mutationResolver) UpdateTenant(ctx context.Context, id int, input models.TenantInput) (*dto.Tenant, error) {
+func (r *mutationResolver) UpdateTenant(ctx context.Context, id string, input models.TenantInput) (*dto.Tenant, error) {
 	panic(fmt.Errorf("not implemented: UpdateTenant - updateTenant"))
 }
 
 // DeleteTenant is the resolver for the deleteTenant field.
-func (r *mutationResolver) DeleteTenant(ctx context.Context, id int) (bool, error) {
+func (r *mutationResolver) DeleteTenant(ctx context.Context, id string) (bool, error) {
 	panic(fmt.Errorf("not implemented: DeleteTenant - deleteTenant"))
 }
 
@@ -53,12 +53,12 @@ func (r *mutationResolver) CreateGroup(ctx context.Context, input models.GroupIn
 }
 
 // UpdateGroup is the resolver for the updateGroup field.
-func (r *mutationResolver) UpdateGroup(ctx context.Context, id int, input models.GroupInput) (*dto.GroupEntity, error) {
+func (r *mutationResolver) UpdateGroup(ctx context.Context, id string, input models.GroupInput) (*dto.GroupEntity, error) {
 	panic(fmt.Errorf("not implemented: UpdateGroup - updateGroup"))
 }
 
 // DeleteGroup is the resolver for the deleteGroup field.
-func (r *mutationResolver) DeleteGroup(ctx context.Context, id int) (bool, error) {
+func (r *mutationResolver) DeleteGroup(ctx context.Context, id string) (bool, error) {
 	panic(fmt.Errorf("not implemented: DeleteGroup - deleteGroup"))
 }
 
@@ -68,7 +68,7 @@ func (r *queryResolver) Organizations(ctx context.Context) ([]dto.Organization, 
 }
 
 // GetOrganization is the resolver for the getOrganization field.
-func (r *queryResolver) GetOrganization(ctx context.Context, id *int) (dto.Organization, error) {
+func (r *queryResolver) GetOrganization(ctx context.Context, id *string) (dto.Organization, error) {
 	panic(fmt.Errorf("not implemented: GetOrganization - getOrganization"))
 }
 
@@ -78,7 +78,7 @@ func (r *queryResolver) Tenants(ctx context.Context) ([]*dto.Tenant, error) {
 }
 
 // GetTenant is the resolver for the getTenant field.
-func (r *queryResolver) GetTenant(ctx context.Context, id *int) (*dto.Tenant, error) {
+func (r *queryResolver) GetTenant(ctx context.Context, id *string) (*dto.Tenant, error) {
 	panic(fmt.Errorf("not implemented: GetTenant - getTenant"))
 }
 
@@ -88,13 +88,8 @@ func (r *queryResolver) Groups(ctx context.Context) ([]*dto.GroupEntity, error) 
 }
 
 // GetGroup is the resolver for the getGroup field.
-func (r *queryResolver) GetGroup(ctx context.Context, id *int) (*dto.GroupEntity, error) {
+func (r *queryResolver) GetGroup(ctx context.Context, id *string) (*dto.GroupEntity, error) {
 	panic(fmt.Errorf("not implemented: GetGroup - getGroup"))
-}
-
-// ID is the resolver for the id field.
-func (r *tenantResolver) ID(ctx context.Context, obj *dto.Tenant) (string, error) {
-	panic(fmt.Errorf("not implemented: ID - id"))
 }
 
 // CreatedAt is the resolver for the createdAt field.
