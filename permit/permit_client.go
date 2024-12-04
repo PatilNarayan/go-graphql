@@ -128,3 +128,7 @@ func (pc *PermitClient) DeleteTenant(ctx context.Context, tenantID string) error
 func (pc *PermitClient) CreateResourceInstance(ctx context.Context, instanceData map[string]interface{}) (map[string]interface{}, error) {
 	return pc.sendRequest(ctx, "POST", "resource_instances", instanceData)
 }
+
+func (pc *PermitClient) UpdateTenant(ctx context.Context, tenantID string, tenantName string) (map[string]interface{}, error) {
+	return pc.sendRequest(ctx, "PATCH", fmt.Sprintf("tenants/%s", tenantID), map[string]interface{}{"name": tenantName})
+}
