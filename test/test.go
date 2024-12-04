@@ -1,29 +1,32 @@
 package main
 
 import (
+	"context"
+	"go_graphql/permit"
 	"log"
-	"os"
 
-	"github.com/permitio/permit-golang/pkg/config"
-	"github.com/permitio/permit-golang/pkg/permit"
+	"github.com/joho/godotenv"
 )
-
-func NewPermitClient() (*permit.Client, error) {
-	// Create config with provided API token
-	permitConfig := config.NewConfigBuilder(os.Getenv("PERMIT_TOKEN")).Build()
-
-	// Initialize the Permit client
-	client := permit.New(permitConfig)
-
-	return client, nil
-}
 
 func main() {
 	// Initialize the client
-	pc, err := NewPermitClient()
+	err := godotenv.Load()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error loading .env file: %v", err)
 	}
+	pc := permit.NewPermitClient()
+
+	tenantData := map[string]interface{}{
+		"key":  "example-tenant",
+		"name": "Example Tenant",
+	}
+
+	tenant, err := pc.CreateTenant(context.Background(), tenantData)
+	if err != nil {
+		log.Fatalf("Failed to create tenant: %v", err)
+	}
+
+	log.Printf("Tenant created successfully: %+v", tenant)
 
 	log.Printf("Tenant created successfully: %+v", pc)
 }

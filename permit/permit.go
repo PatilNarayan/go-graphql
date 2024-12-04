@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewPermitClient() permit.Client {
+func NewPermitClientPDP() permit.Client {
 	project := os.Getenv("PERMIT_PROJECT")
 	env := os.Getenv("PERMIT_ENV")
 	token := os.Getenv("PERMIT_TOKEN")
@@ -32,7 +32,7 @@ func NewPermitClient() permit.Client {
 
 func CreateTenant(tenantname string) (*models.TenantRead, error) {
 	ctx := context.Background()
-	permitClient := NewPermitClient()
+	permitClient := NewPermitClientPDP()
 	tenantCreate := models.NewTenantCreate(xid.New().String(), tenantname)
 	tenantCreate.SetName(tenantname)
 	tenant, err := permitClient.Api.Tenants.Create(ctx, *tenantCreate)
@@ -44,7 +44,7 @@ func CreateTenant(tenantname string) (*models.TenantRead, error) {
 
 func UpdateTenant(tenantid string, tenantname string) (*models.TenantRead, error) {
 	ctx := context.Background()
-	permitClient := NewPermitClient()
+	permitClient := NewPermitClientPDP()
 	tenantUpdate := models.NewTenantUpdate()
 	tenantUpdate.SetName(tenantname)
 	tenant, err := permitClient.Api.Tenants.Update(ctx, tenantid, *tenantUpdate)
@@ -56,10 +56,25 @@ func UpdateTenant(tenantid string, tenantname string) (*models.TenantRead, error
 
 func DeleteTenant(tenantid string) (bool, error) {
 	ctx := context.Background()
-	permitClient := NewPermitClient()
+	permitClient := NewPermitClientPDP()
 	err := permitClient.Api.Tenants.Delete(ctx, "tenantKey")
 	if err != nil {
 		return false, err.(PermitErrors.PermitError)
 	}
 	return true, nil
+}
+
+func ResourceInstance(tenantKey string, resourceName string) (*models.ResourceInstanceRead, error) {
+	ctx := context.Background()
+	permitClient := NewPermitClientPDP()
+	resourceInstanceCreate := models.ResourceInstanceCreate{
+		Key:      xid.New().String(),
+		Tenant:   &tenantKey,
+		Resource: resourceName,
+	}
+	resourceInstance, err := permitClient.Api.ResourceInstances.Create(ctx, resourceInstanceCreate)
+	if err != nil {
+		return nil, err.(PermitErrors.PermitError)
+	}
+	return resourceInstance, nil
 }
