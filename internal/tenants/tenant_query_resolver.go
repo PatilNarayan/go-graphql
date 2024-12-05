@@ -3,7 +3,6 @@ package tenants
 import (
 	"context"
 	"errors"
-	"fmt"
 	"go_graphql/internal/dto"
 
 	"gorm.io/gorm"
@@ -16,7 +15,6 @@ type TenantQueryResolver struct {
 // Tenants resolver for fetching all Tenants
 func (r *TenantQueryResolver) Tenants(ctx context.Context) ([]*dto.Tenant, error) {
 	var Tenants []*dto.Tenant
-	fmt.Println("tenantes")
 	if err := r.DB.Find(&Tenants).Error; err != nil {
 		return nil, err
 	}

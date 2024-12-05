@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/joho/godotenv"
+	"github.com/rs/xid"
 )
 
 func main() {
@@ -17,8 +18,8 @@ func main() {
 	pc := permit.NewPermitClient()
 
 	tenantData := map[string]interface{}{
-		"key":  "example-tenant",
-		"name": "Example Tenant",
+		"key":  "example-tenant1",
+		"name": "Example Tenant1",
 	}
 
 	tenant, err := pc.CreateTenant(context.Background(), tenantData)
@@ -26,6 +27,15 @@ func main() {
 		log.Fatalf("Failed to create tenant: %v", err)
 	}
 
+	CreateResourceInstance := map[string]interface{}{
+		"key":    xid.New().String(),
+		"tenant": tenant["key"],
+	}
+
+	_, err = pc.CreateResourceInstance(context.Background(), CreateResourceInstance)
+	if err != nil {
+		log.Fatalf("Failed to create resource instance: %v", err)
+	}
 	log.Printf("Tenant created successfully: %+v", tenant)
 
 	log.Printf("Tenant created successfully: %+v", pc)

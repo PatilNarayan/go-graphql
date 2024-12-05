@@ -108,27 +108,31 @@ func (pc *PermitClient) sendRequest(ctx context.Context, method, endpoint string
 	return result, nil
 }
 
-// CreateResource creates a resource with the given data.
-func (pc *PermitClient) CreateResource(ctx context.Context, resourceData map[string]interface{}) (map[string]interface{}, error) {
-	return pc.sendRequest(ctx, "POST", "resources", resourceData)
-}
+// // CreateResource creates a resource with the given data.
+// func (pc *PermitClient) CreateResource(ctx context.Context, resourceData map[string]interface{}) (map[string]interface{}, error) {
+// 	return pc.sendRequest(ctx, "POST", "resources", resourceData)
+// }
 
-// CreateTenant creates a tenant with the given data.
-func (pc *PermitClient) CreateTenant(ctx context.Context, tenantData map[string]interface{}) (map[string]interface{}, error) {
-	return pc.sendRequest(ctx, "POST", "tenants", tenantData)
-}
+// // CreateTenant creates a tenant with the given data.
+// func (pc *PermitClient) CreateTenant(ctx context.Context, tenantData map[string]interface{}) (map[string]interface{}, error) {
+// 	return pc.sendRequest(ctx, "POST", "tenants", tenantData)
+// }
 
-// DeleteTenant deletes a tenant by ID.
-func (pc *PermitClient) DeleteTenant(ctx context.Context, tenantID string) error {
-	_, err := pc.sendRequest(ctx, "DELETE", fmt.Sprintf("tenants/%s", tenantID), nil)
-	return err
-}
+// // DeleteTenant deletes a tenant by ID.
+// func (pc *PermitClient) DeleteTenant(ctx context.Context, tenantID string) error {
+// 	_, err := pc.sendRequest(ctx, "DELETE", fmt.Sprintf("tenants/%s", tenantID), nil)
+// 	return err
+// }
 
-// CreateResourceInstance creates a resource instance with the given data.
-func (pc *PermitClient) CreateResourceInstance(ctx context.Context, instanceData map[string]interface{}) (map[string]interface{}, error) {
-	return pc.sendRequest(ctx, "POST", "resource_instances", instanceData)
-}
+// // CreateResourceInstance creates a resource instance with the given data.
+// func (pc *PermitClient) CreateResourceInstance(ctx context.Context, instanceData map[string]interface{}) (map[string]interface{}, error) {
+// 	return pc.sendRequest(ctx, "POST", "resource_instances", instanceData)
+// }
 
-func (pc *PermitClient) UpdateTenant(ctx context.Context, tenantID string, tenantName string) (map[string]interface{}, error) {
-	return pc.sendRequest(ctx, "PATCH", fmt.Sprintf("tenants/%s", tenantID), map[string]interface{}{"name": tenantName})
+// func (pc *PermitClient) UpdateTenant(ctx context.Context, tenantID string, tenantName string) (map[string]interface{}, error) {
+// 	return pc.sendRequest(ctx, "PATCH", fmt.Sprintf("tenants/%s", tenantID), map[string]interface{}{"name": tenantName})
+// }
+
+func (pc *PermitClient) APIExecute(ctx context.Context, method, endpoint string, payload interface{}) (map[string]interface{}, error) {
+	return pc.sendRequest(ctx, method, endpoint, payload)
 }
