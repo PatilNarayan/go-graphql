@@ -88,6 +88,11 @@ func (pc *PermitClient) sendRequest(ctx context.Context, method, endpoint string
 			return backoff.Permanent(err)
 		}
 
+		if len(respBody) == 0 {
+			log.Printf("Empty response body")
+			return nil
+		}
+
 		if err := json.Unmarshal(respBody, &result); err != nil {
 			log.Printf("Failed to unmarshal response: %v", err)
 			return backoff.Permanent(err)

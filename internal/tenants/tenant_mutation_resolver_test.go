@@ -2,168 +2,116 @@ package tenants
 
 import (
 	"context"
-	"go_graphql/config"
 	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
-	"os"
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"go.uber.org/thriftrw/ptr"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
-func TestTenantMutationResolver_UpdateTenant(t *testing.T) {
-	os.Setenv("PERMIT_PROJECT", "dev")
-	os.Setenv("PERMIT_ENV", "dev")
-	os.Setenv("PERMIT_TOKEN", "permit_key_UeJJBnL50MovEqo4GZKbiQL0x4wKZY72hMO8nQmpR1z4gX9TOHk5STep5da7KdjJaa0utnczeLeNBqABvU02I9")
-	os.Setenv("PERMIT_PDP_ENDPOINT", "https://api.permit.io")
-	os.Setenv("DB_HOST", "127.0.0.1")
-	os.Setenv("DB_USERNAME", "root")
-	os.Setenv("DB_PASSWORD", "Harani@8500")
-	os.Setenv("DB_PORT", "3306")
-	os.Setenv("DB_NAME", "iam_services")
-
-	db := config.InitDB()
-	type args struct {
-		ctx   context.Context
-		id    string
-		input models.TenantInput
-	}
-	tests := []struct {
-		name    string
-		r       *TenantMutationResolver
-		args    args
-		want    *dto.Tenant
-		wantErr bool
-	}{
-		{"test", &TenantMutationResolver{DB: db}, args{context.TODO(), "1", models.TenantInput{Name: "test"}}, nil, false},
-		{"test2", &TenantMutationResolver{DB: db}, args{context.TODO(), "2", models.TenantInput{Name: "test2"}}, nil, false},
-		{"test3", &TenantMutationResolver{DB: db}, args{context.TODO(), "3", models.TenantInput{Name: "test3"}}, nil, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.r.UpdateTenant(tt.args.ctx, tt.args.id, tt.args.input)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("TenantMutationResolver.UpdateTenant() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			t.Log(reflect.TypeOf(got))
-		})
-	}
+type MockPermitClient struct {
+	mock.Mock
 }
 
-func TestTenantMutationResolver_CreateTenant(t *testing.T) {
-	// os.Setenv("PERMIT_PROJECT", "test_project")
-	// os.Setenv("PERMIT_ENV", "test_env")
-	// os.Setenv("PERMIT_TOKEN", "test_token")
-	// os.Setenv("PERMIT_PDP_ENDPOINT", "http://test.endpoint")
-	//db := config.InitDB()
-	os.Setenv("PERMIT_PROJECT", "dev")
-	os.Setenv("PERMIT_ENV", "dev")
-	os.Setenv("PERMIT_TOKEN", "permit_key_UeJJBnL50MovEqo4GZKbiQL0x4wKZY72hMO8nQmpR1z4gX9TOHk5STep5da7KdjJaa0utnczeLeNBqABvU02I9")
-	os.Setenv("PERMIT_PDP_ENDPOINT", "https://api.permit.io")
-	os.Setenv("DB_HOST", "127.0.0.1")
-	os.Setenv("DB_USERNAME", "root")
-	os.Setenv("DB_PASSWORD", "Harani@8500")
-	os.Setenv("DB_PORT", "3306")
-	os.Setenv("DB_NAME", "iam_services")
-
-	db := config.InitDB()
-
-	type args struct {
-		ctx   context.Context
-		input models.TenantInput
-	}
-	tests := []struct {
-		name    string
-		r       *TenantMutationResolver
-		args    args
-		want    *dto.Tenant
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-		{
-			name: "test",
-			r: &TenantMutationResolver{
-				DB: db,
-			},
-			args: args{
-				ctx: context.Background(),
-				input: models.TenantInput{
-					Name: "test",
-				},
-			},
-			want: &dto.Tenant{
-				Name: "test",
-			},
-			wantErr: false,
-		},
-		{
-			name: "test1",
-			r:    &TenantMutationResolver{},
-			args: args{
-				ctx: context.Background(),
-				input: models.TenantInput{
-					Name: "test1",
-				},
-			},
-			want: &dto.Tenant{
-				Name: "test1",
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.r.CreateTenant(tt.args.ctx, tt.args.input)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("TenantMutationResolver.CreateTenant() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("TenantMutationResolver.CreateTenant() = %v, want %v", got, tt.want)
-			}
-
-		})
-	}
+func (m *MockPermitClient) APIExecute(ctx context.Context, method, endpoint string, body interface{}) (map[string]interface{}, error) {
+	args := m.Called(ctx, method, endpoint, body)
+	return args.Get(0).(map[string]interface{}), args.Error(1)
 }
 
-func TestTenantMutationResolver_DeleteTenant(t *testing.T) {
-	os.Setenv("PERMIT_PROJECT", "dev")
-	os.Setenv("PERMIT_ENV", "dev")
-	os.Setenv("PERMIT_TOKEN", "permit_key_UeJJBnL50MovEqo4GZKbiQL0x4wKZY72hMO8nQmpR1z4gX9TOHk5STep5da7KdjJaa0utnczeLeNBqABvU02I9")
-	os.Setenv("PERMIT_PDP_ENDPOINT", "https://api.permit.io")
-	os.Setenv("DB_HOST", "127.0.0.1")
-	os.Setenv("DB_USERNAME", "root")
-	os.Setenv("DB_PASSWORD", "Harani@8500")
-	os.Setenv("DB_PORT", "3306")
-	os.Setenv("DB_NAME", "iam_services")
+func setupTestDB() *gorm.DB {
+	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db.AutoMigrate(&dto.Tenant{})
+	return db
+}
 
-	db := config.InitDB()
+func TestCreateTenant(t *testing.T) {
+	db := setupTestDB()
+	ctx := context.Background()
 
-	type args struct {
-		ctx context.Context
-		id  string
+	mockPermit := new(MockPermitClient)
+	resolver := &TenantMutationResolver{DB: db}
+
+	input := models.TenantInput{
+		Name:        "Test Tenant",
+		Description: ptr.String("Test Tenant Description"),
+		ParentOrgID: "org_123",
 	}
-	tests := []struct {
-		name    string
-		r       *TenantMutationResolver
-		args    args
-		want    bool
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-		{"test", &TenantMutationResolver{DB: db}, args{context.TODO(), "1"}, true, false},
-		{"test1", &TenantMutationResolver{DB: db}, args{context.TODO(), "2"}, true, false},
+
+	mockPermit.On("APIExecute", ctx, "POST", "tenants", mock.Anything).Return(map[string]interface{}{
+		"key": "tenant_123",
+	}, nil)
+
+	tenant, err := resolver.CreateTenant(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, tenant)
+	assert.Equal(t, "Test Tenant", tenant.Name)
+	assert.Equal(t, "org_123", tenant.ParentOrgID)
+}
+
+func TestCreateTenant_MissingName(t *testing.T) {
+	db := setupTestDB()
+	ctx := context.Background()
+
+	// mockPermit := new(MockPermitClient)
+	resolver := &TenantMutationResolver{DB: db}
+
+	input := models.TenantInput{
+		Name: "",
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.r.DeleteTenant(tt.args.ctx, tt.args.id)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("TenantMutationResolver.DeleteTenant() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("TenantMutationResolver.DeleteTenant() = %v, want %v", got, tt.want)
-			}
-		})
+
+	tenant, err := resolver.CreateTenant(ctx, input)
+	assert.Error(t, err)
+	assert.Nil(t, tenant)
+	assert.Equal(t, "name is required", err.Error())
+}
+
+func TestUpdateTenant(t *testing.T) {
+	db := setupTestDB()
+	ctx := context.Background()
+
+	mockPermit := new(MockPermitClient)
+	resolver := &TenantMutationResolver{DB: db}
+
+	// Seed the database with a tenant
+	tenant := &dto.Tenant{ID: "tenant_123", Name: "Old Name", ParentOrgID: "org_123"}
+	db.Create(tenant)
+
+	input := models.TenantInput{
+		Name:        "Updated Name",
+		ParentOrgID: "org_456",
 	}
+
+	mockPermit.On("APIExecute", ctx, "PATCH", "tenants/"+tenant.ID, mock.Anything).Return(nil, nil)
+
+	updatedTenant, err := resolver.UpdateTenant(ctx, "tenant_123", input)
+	assert.NoError(t, err)
+	assert.NotNil(t, updatedTenant)
+	assert.Equal(t, "Updated Name", updatedTenant.Name)
+	assert.Equal(t, "org_456", updatedTenant.ParentOrgID)
+}
+
+func TestDeleteTenant(t *testing.T) {
+	db := setupTestDB()
+	ctx := context.Background()
+
+	mockPermit := new(MockPermitClient)
+	resolver := &TenantMutationResolver{DB: db}
+
+	// Seed the database with a tenant
+	tenant := &dto.Tenant{ID: "tenant_123", Name: "Tenant to Delete", RowStatus: 1}
+	db.Create(tenant)
+
+	mockPermit.On("APIExecute", ctx, "DELETE", "tenants/"+tenant.ID, nil).Return(nil, nil)
+
+	deleted, err := resolver.DeleteTenant(ctx, "tenant_123")
+	assert.NoError(t, err)
+	assert.True(t, deleted)
+
+	var deletedTenant dto.Tenant
+	result := db.First(&deletedTenant, "tenant_123")
+	assert.Error(t, result.Error)
 }

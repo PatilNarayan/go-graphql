@@ -107,6 +107,12 @@ func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id string) (b
 	if err != nil {
 		return false, err
 	}
+
+	tenant.RowStatus = 0
+	if err := r.DB.Save(&tenant).Error; err != nil {
+		return false, err
+	}
+
 	if err := r.DB.Delete(&tenant).Error; err != nil {
 		return false, err
 	}
