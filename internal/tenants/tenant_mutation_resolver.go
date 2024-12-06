@@ -67,7 +67,7 @@ func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 // UpdateTenant resolver for updating a Tenant
 func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, id string, input models.TenantInput) (*dto.Tenant, error) {
 	var Tenant *dto.Tenant
-	if err := r.DB.First(&Tenant, id).Error; err != nil {
+	if err := r.DB.Where(&dto.Tenant{ID: id}).First(&Tenant).Error; err != nil {
 		return nil, err
 	}
 
@@ -86,7 +86,7 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, id string, in
 	Tenant.Name = input.Name
 	Tenant.ParentOrgID = input.ParentOrgID
 
-	if err := r.DB.Save(&Tenant).Error; err != nil {
+	if err := r.DB.Where(&dto.Tenant{ID: id}).Save(&Tenant).Error; err != nil {
 		return nil, err
 	}
 
@@ -96,7 +96,7 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, id string, in
 // DeleteTenant resolver for deleting a Tenant
 func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id string) (bool, error) {
 	var tenant *dto.Tenant
-	if err := r.DB.First(&tenant, id).Error; err != nil {
+	if err := r.DB.Where(&dto.Tenant{ID: id}).First(&tenant).Error; err != nil {
 		return false, err
 	}
 	if tenant == nil {
@@ -109,12 +109,13 @@ func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id string) (b
 	}
 
 	tenant.RowStatus = 0
-	if err := r.DB.Save(&tenant).Error; err != nil {
+	if err := r.DB.Where(&dto.Tenant{ID: id}).Save(&tenant).Error; err != nil {
 		return false, err
 	}
 
 	if err := r.DB.Delete(&tenant).Error; err != nil {
 		return false, err
 	}
+
 	return true, nil
 }
