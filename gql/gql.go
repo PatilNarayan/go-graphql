@@ -21,6 +21,7 @@ func (r *Resolver) Query() generated.QueryResolver {
 		OrganizationQueryResolver: &organizations.OrganizationQueryResolver{DB: r.DB},
 		TenantQueryResolver:       &tenants.TenantQueryResolver{DB: r.DB},
 		GroupQueryResolver:        &groups.GroupQueryResolver{DB: r.DB},
+		RoleQueryResolver:         &role.RoleQueryResolver{DB: r.DB},
 	}
 }
 
@@ -30,6 +31,7 @@ func (r *Resolver) Mutation() generated.MutationResolver {
 		OrganizationMutationResolver: &organizations.OrganizationMutationResolver{DB: r.DB},
 		TenantMutationResolver:       &tenants.TenantMutationResolver{DB: r.DB},
 		GroupMutationResolver:        &groups.GroupMutationResolver{DB: r.DB},
+		RoleMutationResolver:         &role.RoleMutationResolver{DB: r.DB},
 	}
 }
 
