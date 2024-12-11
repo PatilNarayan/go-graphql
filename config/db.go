@@ -14,11 +14,10 @@ func InitDB() *gorm.DB {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	if GetEnv("DB_USERNAME") == "development" {
-		err := db.AutoMigrate(&dto.Tenant{}, &dto.GroupEntity{})
-		if err != nil {
-			panic(err)
-		}
+
+	err = db.AutoMigrate(&dto.Tenant{}, &dto.GroupEntity{}, &dto.Role{}, &dto.RolePermission{}, &dto.RoleScope{})
+	if err != nil {
+		panic(err)
 	}
 
 	return db

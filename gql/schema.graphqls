@@ -1,18 +1,25 @@
+scalar UUID
+
+enum RoleTypeEnum {
+  DEFAULT
+  CUSTOM
+}
+
 interface Resource {
-  id: String!
+  id: UUID!
   name: String!
   createdAt: String!
   updatedAt: String
 }
 
 interface Organization {
-  id: String!
+  id: UUID!
   name: String!
   description: String
 }
 
 type Tenant implements Resource & Organization {
-  id: String!
+  id: UUID!
   name: String!
   createdAt: String!
   updatedAt: String
@@ -22,7 +29,7 @@ type Tenant implements Resource & Organization {
 }
 
 type ContactInfo {
-  id: String!
+  id: UUID!
   email: String
   phoneNumber: String
   address: Address
@@ -31,12 +38,12 @@ type ContactInfo {
 input TenantInput {
   name: String!
   description: String
-  parentOrgId: String!
-  contactInfoId: String!
+  parentOrgId: UUID!
+  contactInfoId: UUID!
 }
 
 type Address {
-  id: String!
+  id: UUID!
   street: String
   city: String
   state: String
@@ -52,8 +59,29 @@ input AddressInput {
   country: String
 }
 
+type Role implements Resource {
+  id: UUID!
+  name: String!
+  createdAt: String!
+  updatedAt: String
+  version: String!
+  description: String
+  permissions: [String!]!
+  roleType: RoleTypeEnum!
+  assignableScope: Resource!
+}
+
+input RoleInput {
+  name: String!
+  version: String!
+  description: String
+  permissions: [String!]!
+  roleType: RoleTypeEnum!
+  assignableScopeRef: UUID!
+}
+
 type Group {
-  id: Int!
+  id: UUID!
   name: String!
   tenant: Tenant!
   createdAt: String
@@ -62,24 +90,29 @@ type Group {
 
 input GroupInput {
   name: String!
-  tenantId: Int!
+  tenantId: UUID!
 }
 
 type Query {
   organizations: [Organization!]!
-  getOrganization(id: String): Organization
+  getOrganization(id: UUID!): Organization
   tenants: [Tenant!]!
-  getTenant(id: String): Tenant
+  getTenant(id: UUID!): Tenant
   groups: [Group!]!
-  getGroup(id: String): Group
+  getGroup(id: UUID!): Group
+  roles: [Role!]!
+  getRole(id: UUID!): Role
 }
 
 type Mutation {
   createOrganization(name: String!): Organization!
   createTenant(input: TenantInput!): Tenant!
-  updateTenant(id: String!, input: TenantInput!): Tenant!
-  deleteTenant(id: String!): Boolean!
+  updateTenant(id: UUID!, input: TenantInput!): Tenant!
+  deleteTenant(id: UUID!): Boolean!
   createGroup(input: GroupInput!): Group!
-  updateGroup(id: String!, input: GroupInput!): Group!
-  deleteGroup(id: String!): Boolean!
+  updateGroup(id: UUID!, input: GroupInput!): Group!
+  deleteGroup(id: UUID!): Boolean!
+  createRole(input: RoleInput!): Role!
+  updateRole(id: UUID!, input: RoleInput!): Role!
+  deleteRole(id: UUID!): Boolean!
 }

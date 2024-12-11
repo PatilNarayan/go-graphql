@@ -24,7 +24,7 @@ func (q *OrganizationQueryResolver) Organizations(ctx context.Context) ([]dto.Or
 	panic("unimplemented")
 }
 
-func (q *OrganizationQueryResolver) GetOrganization(ctx context.Context, id *string) (dto.Organization, error) {
+func (q *OrganizationQueryResolver) GetOrganization(ctx context.Context, id string) (dto.Organization, error) {
 	panic("unimplemented")
 }
 

@@ -22,13 +22,13 @@ func (r *TenantQueryResolver) Tenants(ctx context.Context) ([]*dto.Tenant, error
 }
 
 // GetTenant resolver for fetching a single Tenant by ID
-func (r *TenantQueryResolver) GetTenant(ctx context.Context, id *string) (*dto.Tenant, error) {
-	if id == nil {
+func (r *TenantQueryResolver) GetTenant(ctx context.Context, id string) (*dto.Tenant, error) {
+	if id == "" {
 		return nil, errors.New("id cannot be nil")
 	}
 
 	var Tenant dto.Tenant
-	if err := r.DB.Where(&dto.Tenant{ID: *id}).First(&Tenant).Error; err != nil {
+	if err := r.DB.Where(&dto.Tenant{ID: id}).First(&Tenant).Error; err != nil {
 		return nil, err
 	}
 	return &Tenant, nil

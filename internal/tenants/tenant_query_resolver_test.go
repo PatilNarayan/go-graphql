@@ -61,7 +61,7 @@ func TestGetTenant(t *testing.T) {
 	resolver := TenantQueryResolver{DB: db}
 
 	tenantID := "1"
-	result, err := resolver.GetTenant(ctx, &tenantID)
+	result, err := resolver.GetTenant(ctx, tenantID)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, "Tenant 1", result.Name)
@@ -74,7 +74,7 @@ func TestGetTenant_NotFound(t *testing.T) {
 	resolver := TenantQueryResolver{DB: db}
 
 	tenantID := "999" // ID not present in the database.
-	result, err := resolver.GetTenant(ctx, &tenantID)
+	result, err := resolver.GetTenant(ctx, tenantID)
 	assert.Error(t, err)
 	assert.Nil(t, result)
 }
@@ -85,7 +85,7 @@ func TestGetTenant_NilID(t *testing.T) {
 
 	resolver := TenantQueryResolver{DB: db}
 
-	var tenantID *string = nil
+	var tenantID string = ""
 	result, err := resolver.GetTenant(ctx, tenantID)
 	assert.Error(t, err)
 	assert.Nil(t, result)

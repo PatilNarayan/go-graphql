@@ -2,6 +2,13 @@
 
 package models
 
+import (
+	"fmt"
+	"go_graphql/internal/dto"
+	"io"
+	"strconv"
+)
+
 type Address struct {
 	ID      string  `json:"id"`
 	Street  *string `json:"street,omitempty"`
@@ -28,7 +35,30 @@ type ContactInfo struct {
 
 type GroupInput struct {
 	Name     string `json:"name"`
-	TenantID int    `json:"tenantId"`
+	TenantID string `json:"tenantId"`
+}
+
+type Role struct {
+	ID              string       `json:"id"`
+	Name            string       `json:"name"`
+	CreatedAt       string       `json:"createdAt"`
+	UpdatedAt       *string      `json:"updatedAt,omitempty"`
+	Version         string       `json:"version"`
+	Description     *string      `json:"description,omitempty"`
+	Permissions     []string     `json:"permissions"`
+	RoleType        RoleTypeEnum `json:"roleType"`
+	AssignableScope dto.Resource `json:"assignableScope"`
+}
+
+func (Role) IsResource() {}
+
+type RoleInput struct {
+	Name               string       `json:"name"`
+	Version            string       `json:"version"`
+	Description        *string      `json:"description,omitempty"`
+	Permissions        []string     `json:"permissions"`
+	RoleType           RoleTypeEnum `json:"roleType"`
+	AssignableScopeRef string       `json:"assignableScopeRef"`
 }
 
 type TenantInput struct {
@@ -36,4 +66,45 @@ type TenantInput struct {
 	Description   *string `json:"description,omitempty"`
 	ParentOrgID   string  `json:"parentOrgId"`
 	ContactInfoID string  `json:"contactInfoId"`
+}
+
+type RoleTypeEnum string
+
+const (
+	RoleTypeEnumDefault RoleTypeEnum = "DEFAULT"
+	RoleTypeEnumCustom  RoleTypeEnum = "CUSTOM"
+)
+
+var AllRoleTypeEnum = []RoleTypeEnum{
+	RoleTypeEnumDefault,
+	RoleTypeEnumCustom,
+}
+
+func (e RoleTypeEnum) IsValid() bool {
+	switch e {
+	case RoleTypeEnumDefault, RoleTypeEnumCustom:
+		return true
+	}
+	return false
+}
+
+func (e RoleTypeEnum) String() string {
+	return string(e)
+}
+
+func (e *RoleTypeEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = RoleTypeEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid RoleTypeEnum", str)
+	}
+	return nil
+}
+
+func (e RoleTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

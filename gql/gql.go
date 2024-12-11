@@ -4,6 +4,7 @@ import (
 	"go_graphql/gql/generated"
 	"go_graphql/internal/groups"
 	"go_graphql/internal/organizations"
+	"go_graphql/internal/role"
 	"go_graphql/internal/tenants"
 
 	"gorm.io/gorm"
@@ -52,10 +53,12 @@ type queryResolver struct {
 	*organizations.OrganizationQueryResolver
 	*tenants.TenantQueryResolver
 	*groups.GroupQueryResolver
+	*role.RoleQueryResolver
 }
 
 type mutationResolver struct {
 	*organizations.OrganizationMutationResolver
 	*tenants.TenantMutationResolver
 	*groups.GroupMutationResolver
+	*role.RoleMutationResolver
 }

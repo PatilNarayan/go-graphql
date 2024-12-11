@@ -12,6 +12,11 @@ import (
 	"go_graphql/internal/dto"
 )
 
+// ID is the resolver for the id field.
+func (r *groupResolver) ID(ctx context.Context, obj *dto.GroupEntity) (string, error) {
+	panic(fmt.Errorf("not implemented: ID - id"))
+}
+
 // Tenant is the resolver for the tenant field.
 func (r *groupResolver) Tenant(ctx context.Context, obj *dto.GroupEntity) (*dto.Tenant, error) {
 	panic(fmt.Errorf("not implemented: Tenant - tenant"))
@@ -62,13 +67,28 @@ func (r *mutationResolver) DeleteGroup(ctx context.Context, id string) (bool, er
 	panic(fmt.Errorf("not implemented: DeleteGroup - deleteGroup"))
 }
 
+// CreateRole is the resolver for the createRole field.
+func (r *mutationResolver) CreateRole(ctx context.Context, input models.RoleInput) (*models.Role, error) {
+	panic(fmt.Errorf("not implemented: CreateRole - createRole"))
+}
+
+// UpdateRole is the resolver for the updateRole field.
+func (r *mutationResolver) UpdateRole(ctx context.Context, id string, input models.RoleInput) (*models.Role, error) {
+	panic(fmt.Errorf("not implemented: UpdateRole - updateRole"))
+}
+
+// DeleteRole is the resolver for the deleteRole field.
+func (r *mutationResolver) DeleteRole(ctx context.Context, id string) (bool, error) {
+	panic(fmt.Errorf("not implemented: DeleteRole - deleteRole"))
+}
+
 // Organizations is the resolver for the organizations field.
 func (r *queryResolver) Organizations(ctx context.Context) ([]dto.Organization, error) {
 	panic(fmt.Errorf("not implemented: Organizations - organizations"))
 }
 
 // GetOrganization is the resolver for the getOrganization field.
-func (r *queryResolver) GetOrganization(ctx context.Context, id *string) (dto.Organization, error) {
+func (r *queryResolver) GetOrganization(ctx context.Context, id string) (dto.Organization, error) {
 	panic(fmt.Errorf("not implemented: GetOrganization - getOrganization"))
 }
 
@@ -78,7 +98,7 @@ func (r *queryResolver) Tenants(ctx context.Context) ([]*dto.Tenant, error) {
 }
 
 // GetTenant is the resolver for the getTenant field.
-func (r *queryResolver) GetTenant(ctx context.Context, id *string) (*dto.Tenant, error) {
+func (r *queryResolver) GetTenant(ctx context.Context, id string) (*dto.Tenant, error) {
 	panic(fmt.Errorf("not implemented: GetTenant - getTenant"))
 }
 
@@ -88,8 +108,18 @@ func (r *queryResolver) Groups(ctx context.Context) ([]*dto.GroupEntity, error) 
 }
 
 // GetGroup is the resolver for the getGroup field.
-func (r *queryResolver) GetGroup(ctx context.Context, id *string) (*dto.GroupEntity, error) {
+func (r *queryResolver) GetGroup(ctx context.Context, id string) (*dto.GroupEntity, error) {
 	panic(fmt.Errorf("not implemented: GetGroup - getGroup"))
+}
+
+// Roles is the resolver for the roles field.
+func (r *queryResolver) Roles(ctx context.Context) ([]*models.Role, error) {
+	panic(fmt.Errorf("not implemented: Roles - roles"))
+}
+
+// GetRole is the resolver for the getRole field.
+func (r *queryResolver) GetRole(ctx context.Context, id string) (*models.Role, error) {
+	panic(fmt.Errorf("not implemented: GetRole - getRole"))
 }
 
 // CreatedAt is the resolver for the createdAt field.
