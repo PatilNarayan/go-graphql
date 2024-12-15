@@ -30,7 +30,7 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Role
 		Name:        input.Name,
 		Description: *input.Description,
 		RoleType:    string(input.RoleType),
-		Version:     input.Version,
+		Version:     *input.Version,
 		CreatedAt:   time.Now(),
 	}
 
@@ -59,7 +59,7 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id string, input 
 		role.Description = *input.Description
 	}
 	role.RoleType = string(input.RoleType)
-	role.Version = input.Version
+	role.Version = *input.Version
 	role.UpdatedAt = time.Now()
 
 	// Save changes to the database

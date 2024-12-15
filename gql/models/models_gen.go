@@ -38,34 +38,62 @@ type GroupInput struct {
 	TenantID string `json:"tenantId"`
 }
 
+type Permission struct {
+	ID        int     `json:"id"`
+	Name      string  `json:"name"`
+	ServiceID *string `json:"service_id,omitempty"`
+	Action    *string `json:"action,omitempty"`
+	CreatedAt string  `json:"created_at"`
+	CreatedBy *string `json:"created_by,omitempty"`
+	UpdatedAt *string `json:"updated_at,omitempty"`
+	UpdatedBy *string `json:"updated_by,omitempty"`
+}
+
+type PermissionInput struct {
+	Name      string  `json:"name"`
+	ServiceID *string `json:"service_id,omitempty"`
+	Action    *string `json:"action,omitempty"`
+	CreatedBy *string `json:"created_by,omitempty"`
+	UpdatedBy *string `json:"updated_by,omitempty"`
+}
+
 type Role struct {
-	ID              string       `json:"id"`
-	Name            string       `json:"name"`
-	CreatedAt       string       `json:"createdAt"`
-	UpdatedAt       *string      `json:"updatedAt,omitempty"`
-	Version         string       `json:"version"`
-	Description     *string      `json:"description,omitempty"`
-	Permissions     []string     `json:"permissions"`
-	RoleType        RoleTypeEnum `json:"roleType"`
-	AssignableScope dto.Resource `json:"assignableScope"`
+	ID              string        `json:"id"`
+	Name            string        `json:"name"`
+	Permissions     []*Permission `json:"permissions"`
+	Description     *string       `json:"description,omitempty"`
+	Version         *string       `json:"version,omitempty"`
+	RoleType        RoleTypeEnum  `json:"roleType"`
+	AssignableScope dto.Resource  `json:"assignableScope"`
+	CreatedAt       string        `json:"created_at"`
+	CreatedBy       *string       `json:"created_by,omitempty"`
+	UpdatedAt       *string       `json:"updated_at,omitempty"`
+	UpdatedBy       *string       `json:"updated_by,omitempty"`
 }
 
 func (Role) IsResource() {}
 
 type RoleInput struct {
 	Name               string       `json:"name"`
-	Version            string       `json:"version"`
 	Description        *string      `json:"description,omitempty"`
+	Version            *string      `json:"version,omitempty"`
+	CreatedBy          string       `json:"created_by"`
+	UpdatedBy          *string      `json:"updated_by,omitempty"`
 	Permissions        []string     `json:"permissions"`
 	RoleType           RoleTypeEnum `json:"roleType"`
 	AssignableScopeRef string       `json:"assignableScopeRef"`
 }
 
 type TenantInput struct {
-	Name          string  `json:"name"`
-	Description   *string `json:"description,omitempty"`
-	ParentOrgID   string  `json:"parentOrgId"`
-	ContactInfoID string  `json:"contactInfoId"`
+	Name           string  `json:"name"`
+	Description    *string `json:"description,omitempty"`
+	ParentOrgID    string  `json:"parentOrgId"`
+	Metadata       *string `json:"metadata,omitempty"`
+	ParentTenantID *string `json:"parentTenantId,omitempty"`
+	ResourceID     *string `json:"resourceId,omitempty"`
+	ContactInfoID  string  `json:"contactInfoId"`
+	CreatedBy      *string `json:"created_by,omitempty"`
+	UpdatedBy      *string `json:"updated_by,omitempty"`
 }
 
 type RoleTypeEnum string

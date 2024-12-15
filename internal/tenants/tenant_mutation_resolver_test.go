@@ -133,7 +133,7 @@ func TestUpdateTenant(t *testing.T) {
 	resolver := &TenantMutationResolver{DB: db}
 
 	// Seed the database with a tenant
-	tenant := &dto.Tenant{ID: "tenant_123", Name: "Old Name", ParentOrgID: "org_123"}
+	tenant := &dto.Tenant{TenantID: "tenant_123", Name: "Old Name", ParentOrgID: "org_123"}
 	db.Create(tenant)
 
 	// Activate httpmock
@@ -141,7 +141,7 @@ func TestUpdateTenant(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 
 	// Register the mock responder for the API endpoint
-	httpmock.RegisterResponder("PATCH", fmt.Sprintf("http://localhost:8080/v2/facts/test/test/tenants/%s", tenant.ID),
+	httpmock.RegisterResponder("PATCH", fmt.Sprintf("http://localhost:8080/v2/facts/test/test/tenants/%s", tenant.TenantID),
 		func(req *http.Request) (*http.Response, error) {
 			resp := httpmock.NewStringResponse(200, `
 					{
@@ -160,7 +160,7 @@ func TestUpdateTenant(t *testing.T) {
 		ParentOrgID: "org_456",
 	}
 
-	updatedTenant, err := resolver.UpdateTenant(ctx, tenant.ID, input)
+	updatedTenant, err := resolver.UpdateTenant(ctx, tenant.TenantID, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, updatedTenant)
 	assert.Equal(t, "Updated Name", updatedTenant.Name)
@@ -180,7 +180,7 @@ func TestDeleteTenant(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 
 	// Register the mock responder for the API endpoint
-	httpmock.RegisterResponder("DELETE", fmt.Sprintf("http://localhost:8080/v2/facts/test/test/tenants/%s", tenant.ID),
+	httpmock.RegisterResponder("DELETE", fmt.Sprintf("http://localhost:8080/v2/facts/test/test/tenants/%s", tenant.TenantID),
 		func(req *http.Request) (*http.Response, error) {
 			resp := httpmock.NewStringResponse(200, `
 					{
@@ -193,7 +193,7 @@ func TestDeleteTenant(t *testing.T) {
 		},
 	)
 
-	deleted, err := resolver.DeleteTenant(ctx, tenant.ID)
+	deleted, err := resolver.DeleteTenant(ctx, tenant.TenantID)
 	assert.NoError(t, err)
 	assert.True(t, deleted)
 

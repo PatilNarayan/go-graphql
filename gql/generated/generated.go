@@ -86,6 +86,17 @@ type ComplexityRoot struct {
 		UpdateTenant       func(childComplexity int, id string, input models.TenantInput) int
 	}
 
+	Permission struct {
+		Action    func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		CreatedBy func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Name      func(childComplexity int) int
+		ServiceID func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
+		UpdatedBy func(childComplexity int) int
+	}
+
 	Query struct {
 		GetGroup        func(childComplexity int, id string) int
 		GetOrganization func(childComplexity int, id string) int
@@ -100,23 +111,30 @@ type ComplexityRoot struct {
 	Role struct {
 		AssignableScope func(childComplexity int) int
 		CreatedAt       func(childComplexity int) int
+		CreatedBy       func(childComplexity int) int
 		Description     func(childComplexity int) int
 		ID              func(childComplexity int) int
 		Name            func(childComplexity int) int
 		Permissions     func(childComplexity int) int
 		RoleType        func(childComplexity int) int
 		UpdatedAt       func(childComplexity int) int
+		UpdatedBy       func(childComplexity int) int
 		Version         func(childComplexity int) int
 	}
 
 	Tenant struct {
-		ContactInfo func(childComplexity int) int
-		CreatedAt   func(childComplexity int) int
-		Description func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Name        func(childComplexity int) int
-		ParentOrg   func(childComplexity int) int
-		UpdatedAt   func(childComplexity int) int
+		ContactInfo    func(childComplexity int) int
+		CreatedAt      func(childComplexity int) int
+		CreatedBy      func(childComplexity int) int
+		Description    func(childComplexity int) int
+		ID             func(childComplexity int) int
+		Metadata       func(childComplexity int) int
+		Name           func(childComplexity int) int
+		ParentOrgID    func(childComplexity int) int
+		ParentTenantID func(childComplexity int) int
+		ResourceID     func(childComplexity int) int
+		UpdatedAt      func(childComplexity int) int
+		UpdatedBy      func(childComplexity int) int
 	}
 }
 
@@ -150,10 +168,11 @@ type QueryResolver interface {
 	GetRole(ctx context.Context, id string) (*models.Role, error)
 }
 type TenantResolver interface {
+	ID(ctx context.Context, obj *dto.Tenant) (string, error)
+
 	CreatedAt(ctx context.Context, obj *dto.Tenant) (string, error)
 	UpdatedAt(ctx context.Context, obj *dto.Tenant) (*string, error)
 
-	ParentOrg(ctx context.Context, obj *dto.Tenant) (dto.Organization, error)
 	ContactInfo(ctx context.Context, obj *dto.Tenant) (*models.ContactInfo, error)
 }
 
@@ -246,7 +265,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ContactInfo.PhoneNumber(childComplexity), true
 
-	case "Group.createdAt":
+	case "Group.created_at":
 		if e.complexity.Group.CreatedAt == nil {
 			break
 		}
@@ -274,7 +293,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Group.Tenant(childComplexity), true
 
-	case "Group.updatedAt":
+	case "Group.updated_at":
 		if e.complexity.Group.UpdatedAt == nil {
 			break
 		}
@@ -401,6 +420,62 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateTenant(childComplexity, args["id"].(string), args["input"].(models.TenantInput)), true
 
+	case "Permission.action":
+		if e.complexity.Permission.Action == nil {
+			break
+		}
+
+		return e.complexity.Permission.Action(childComplexity), true
+
+	case "Permission.created_at":
+		if e.complexity.Permission.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Permission.CreatedAt(childComplexity), true
+
+	case "Permission.created_by":
+		if e.complexity.Permission.CreatedBy == nil {
+			break
+		}
+
+		return e.complexity.Permission.CreatedBy(childComplexity), true
+
+	case "Permission.id":
+		if e.complexity.Permission.ID == nil {
+			break
+		}
+
+		return e.complexity.Permission.ID(childComplexity), true
+
+	case "Permission.name":
+		if e.complexity.Permission.Name == nil {
+			break
+		}
+
+		return e.complexity.Permission.Name(childComplexity), true
+
+	case "Permission.service_id":
+		if e.complexity.Permission.ServiceID == nil {
+			break
+		}
+
+		return e.complexity.Permission.ServiceID(childComplexity), true
+
+	case "Permission.updated_at":
+		if e.complexity.Permission.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Permission.UpdatedAt(childComplexity), true
+
+	case "Permission.updated_by":
+		if e.complexity.Permission.UpdatedBy == nil {
+			break
+		}
+
+		return e.complexity.Permission.UpdatedBy(childComplexity), true
+
 	case "Query.getGroup":
 		if e.complexity.Query.GetGroup == nil {
 			break
@@ -484,12 +559,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Role.AssignableScope(childComplexity), true
 
-	case "Role.createdAt":
+	case "Role.created_at":
 		if e.complexity.Role.CreatedAt == nil {
 			break
 		}
 
 		return e.complexity.Role.CreatedAt(childComplexity), true
+
+	case "Role.created_by":
+		if e.complexity.Role.CreatedBy == nil {
+			break
+		}
+
+		return e.complexity.Role.CreatedBy(childComplexity), true
 
 	case "Role.description":
 		if e.complexity.Role.Description == nil {
@@ -526,12 +608,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Role.RoleType(childComplexity), true
 
-	case "Role.updatedAt":
+	case "Role.updated_at":
 		if e.complexity.Role.UpdatedAt == nil {
 			break
 		}
 
 		return e.complexity.Role.UpdatedAt(childComplexity), true
+
+	case "Role.updated_by":
+		if e.complexity.Role.UpdatedBy == nil {
+			break
+		}
+
+		return e.complexity.Role.UpdatedBy(childComplexity), true
 
 	case "Role.version":
 		if e.complexity.Role.Version == nil {
@@ -547,12 +636,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tenant.ContactInfo(childComplexity), true
 
-	case "Tenant.createdAt":
+	case "Tenant.created_at":
 		if e.complexity.Tenant.CreatedAt == nil {
 			break
 		}
 
 		return e.complexity.Tenant.CreatedAt(childComplexity), true
+
+	case "Tenant.created_by":
+		if e.complexity.Tenant.CreatedBy == nil {
+			break
+		}
+
+		return e.complexity.Tenant.CreatedBy(childComplexity), true
 
 	case "Tenant.description":
 		if e.complexity.Tenant.Description == nil {
@@ -568,6 +664,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tenant.ID(childComplexity), true
 
+	case "Tenant.metadata":
+		if e.complexity.Tenant.Metadata == nil {
+			break
+		}
+
+		return e.complexity.Tenant.Metadata(childComplexity), true
+
 	case "Tenant.name":
 		if e.complexity.Tenant.Name == nil {
 			break
@@ -575,19 +678,40 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tenant.Name(childComplexity), true
 
-	case "Tenant.parentOrg":
-		if e.complexity.Tenant.ParentOrg == nil {
+	case "Tenant.parentOrgId":
+		if e.complexity.Tenant.ParentOrgID == nil {
 			break
 		}
 
-		return e.complexity.Tenant.ParentOrg(childComplexity), true
+		return e.complexity.Tenant.ParentOrgID(childComplexity), true
 
-	case "Tenant.updatedAt":
+	case "Tenant.parentTenantId":
+		if e.complexity.Tenant.ParentTenantID == nil {
+			break
+		}
+
+		return e.complexity.Tenant.ParentTenantID(childComplexity), true
+
+	case "Tenant.resourceId":
+		if e.complexity.Tenant.ResourceID == nil {
+			break
+		}
+
+		return e.complexity.Tenant.ResourceID(childComplexity), true
+
+	case "Tenant.updated_at":
 		if e.complexity.Tenant.UpdatedAt == nil {
 			break
 		}
 
 		return e.complexity.Tenant.UpdatedAt(childComplexity), true
+
+	case "Tenant.updated_by":
+		if e.complexity.Tenant.UpdatedBy == nil {
+			break
+		}
+
+		return e.complexity.Tenant.UpdatedBy(childComplexity), true
 
 	}
 	return 0, false
@@ -599,6 +723,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAddressInput,
 		ec.unmarshalInputGroupInput,
+		ec.unmarshalInputPermissionInput,
 		ec.unmarshalInputRoleInput,
 		ec.unmarshalInputTenantInput,
 	)
@@ -708,8 +833,8 @@ enum RoleTypeEnum {
 interface Resource {
   id: UUID!
   name: String!
-  createdAt: String!
-  updatedAt: String
+  created_at: String!
+  updated_at: String
 }
 
 interface Organization {
@@ -721,11 +846,16 @@ interface Organization {
 type Tenant implements Resource & Organization {
   id: UUID!
   name: String!
-  createdAt: String!
-  updatedAt: String
+  parentOrgId: UUID!
+  metadata: String
+  parentTenantId: String
   description: String
-  parentOrg: Organization!
+  resourceId: String
+  created_at: String!
+  updated_at: String
+  updated_by: String
   contactInfo: ContactInfo
+  created_by: String
 }
 
 type ContactInfo {
@@ -739,7 +869,12 @@ input TenantInput {
   name: String!
   description: String
   parentOrgId: UUID!
+  metadata: String
+  parentTenantId: String
+  resourceId: String
   contactInfoId: UUID!
+  created_by: String
+  updated_by: String
 }
 
 type Address {
@@ -762,30 +897,53 @@ input AddressInput {
 type Role implements Resource {
   id: UUID!
   name: String!
-  createdAt: String!
-  updatedAt: String
-  version: String!
+  permissions: [Permission!]!
   description: String
-  permissions: [String!]!
+  version: String
   roleType: RoleTypeEnum!
   assignableScope: Resource!
+  created_at: String!
+  created_by: String
+  updated_at: String
+  updated_by: String
 }
 
 input RoleInput {
   name: String!
-  version: String!
   description: String
+  version: String
+  created_by: String!
+  updated_by: String
   permissions: [String!]!
   roleType: RoleTypeEnum!
   assignableScopeRef: UUID!
+}
+
+type Permission {
+  id: ID!
+  name: String!
+  service_id: String
+  action: String
+  created_at: String!
+  created_by: String
+  updated_at: String
+  updated_by: String
+}
+
+input PermissionInput {
+  name: String!
+  service_id: String
+  action: String
+  created_by: String
+  updated_by: String
 }
 
 type Group {
   id: UUID!
   name: String!
   tenant: Tenant!
-  createdAt: String
-  updatedAt: String
+  created_at: String
+  updated_at: String
 }
 
 input GroupInput {
@@ -802,6 +960,8 @@ type Query {
   getGroup(id: UUID!): Group
   roles: [Role!]!
   getRole(id: UUID!): Role
+  
+  # getPermission()
 }
 
 type Mutation {
@@ -815,6 +975,20 @@ type Mutation {
   createRole(input: RoleInput!): Role!
   updateRole(id: UUID!, input: RoleInput!): Role!
   deleteRole(id: UUID!): Boolean!
+
+  
+  # createPermission() 
+  # deletePermission() 
+  # updatePermission()
+
+  # createPrincipal()
+  # deletePrincipal()
+  # updatePrincipal()
+
+  # createRoleAssignment()
+  # deleteRoleAssignment()
+  # updateRoleAssignment() 
+
 }
 `, BuiltIn: false},
 }
@@ -2018,16 +2192,26 @@ func (ec *executionContext) fieldContext_Group_tenant(_ context.Context, field g
 				return ec.fieldContext_Tenant_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Tenant_name(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Tenant_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Tenant_updatedAt(ctx, field)
+			case "parentOrgId":
+				return ec.fieldContext_Tenant_parentOrgId(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Tenant_metadata(ctx, field)
+			case "parentTenantId":
+				return ec.fieldContext_Tenant_parentTenantId(ctx, field)
 			case "description":
 				return ec.fieldContext_Tenant_description(ctx, field)
-			case "parentOrg":
-				return ec.fieldContext_Tenant_parentOrg(ctx, field)
+			case "resourceId":
+				return ec.fieldContext_Tenant_resourceId(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Tenant_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Tenant_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_Tenant_updated_by(ctx, field)
 			case "contactInfo":
 				return ec.fieldContext_Tenant_contactInfo(ctx, field)
+			case "created_by":
+				return ec.fieldContext_Tenant_created_by(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tenant", field.Name)
 		},
@@ -2035,8 +2219,8 @@ func (ec *executionContext) fieldContext_Group_tenant(_ context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _Group_createdAt(ctx context.Context, field graphql.CollectedField, obj *dto.GroupEntity) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Group_createdAt(ctx, field)
+func (ec *executionContext) _Group_created_at(ctx context.Context, field graphql.CollectedField, obj *dto.GroupEntity) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Group_created_at(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2063,7 +2247,7 @@ func (ec *executionContext) _Group_createdAt(ctx context.Context, field graphql.
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Group_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Group_created_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Group",
 		Field:      field,
@@ -2076,8 +2260,8 @@ func (ec *executionContext) fieldContext_Group_createdAt(_ context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Group_updatedAt(ctx context.Context, field graphql.CollectedField, obj *dto.GroupEntity) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Group_updatedAt(ctx, field)
+func (ec *executionContext) _Group_updated_at(ctx context.Context, field graphql.CollectedField, obj *dto.GroupEntity) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Group_updated_at(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2104,7 +2288,7 @@ func (ec *executionContext) _Group_updatedAt(ctx context.Context, field graphql.
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Group_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Group_updated_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Group",
 		Field:      field,
@@ -2215,16 +2399,26 @@ func (ec *executionContext) fieldContext_Mutation_createTenant(ctx context.Conte
 				return ec.fieldContext_Tenant_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Tenant_name(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Tenant_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Tenant_updatedAt(ctx, field)
+			case "parentOrgId":
+				return ec.fieldContext_Tenant_parentOrgId(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Tenant_metadata(ctx, field)
+			case "parentTenantId":
+				return ec.fieldContext_Tenant_parentTenantId(ctx, field)
 			case "description":
 				return ec.fieldContext_Tenant_description(ctx, field)
-			case "parentOrg":
-				return ec.fieldContext_Tenant_parentOrg(ctx, field)
+			case "resourceId":
+				return ec.fieldContext_Tenant_resourceId(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Tenant_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Tenant_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_Tenant_updated_by(ctx, field)
 			case "contactInfo":
 				return ec.fieldContext_Tenant_contactInfo(ctx, field)
+			case "created_by":
+				return ec.fieldContext_Tenant_created_by(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tenant", field.Name)
 		},
@@ -2286,16 +2480,26 @@ func (ec *executionContext) fieldContext_Mutation_updateTenant(ctx context.Conte
 				return ec.fieldContext_Tenant_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Tenant_name(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Tenant_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Tenant_updatedAt(ctx, field)
+			case "parentOrgId":
+				return ec.fieldContext_Tenant_parentOrgId(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Tenant_metadata(ctx, field)
+			case "parentTenantId":
+				return ec.fieldContext_Tenant_parentTenantId(ctx, field)
 			case "description":
 				return ec.fieldContext_Tenant_description(ctx, field)
-			case "parentOrg":
-				return ec.fieldContext_Tenant_parentOrg(ctx, field)
+			case "resourceId":
+				return ec.fieldContext_Tenant_resourceId(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Tenant_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Tenant_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_Tenant_updated_by(ctx, field)
 			case "contactInfo":
 				return ec.fieldContext_Tenant_contactInfo(ctx, field)
+			case "created_by":
+				return ec.fieldContext_Tenant_created_by(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tenant", field.Name)
 		},
@@ -2414,10 +2618,10 @@ func (ec *executionContext) fieldContext_Mutation_createGroup(ctx context.Contex
 				return ec.fieldContext_Group_name(ctx, field)
 			case "tenant":
 				return ec.fieldContext_Group_tenant(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Group_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Group_updatedAt(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Group_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Group_updated_at(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Group", field.Name)
 		},
@@ -2481,10 +2685,10 @@ func (ec *executionContext) fieldContext_Mutation_updateGroup(ctx context.Contex
 				return ec.fieldContext_Group_name(ctx, field)
 			case "tenant":
 				return ec.fieldContext_Group_tenant(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Group_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Group_updatedAt(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Group_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Group_updated_at(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Group", field.Name)
 		},
@@ -2601,20 +2805,24 @@ func (ec *executionContext) fieldContext_Mutation_createRole(ctx context.Context
 				return ec.fieldContext_Role_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Role_name(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Role_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Role_updatedAt(ctx, field)
-			case "version":
-				return ec.fieldContext_Role_version(ctx, field)
-			case "description":
-				return ec.fieldContext_Role_description(ctx, field)
 			case "permissions":
 				return ec.fieldContext_Role_permissions(ctx, field)
+			case "description":
+				return ec.fieldContext_Role_description(ctx, field)
+			case "version":
+				return ec.fieldContext_Role_version(ctx, field)
 			case "roleType":
 				return ec.fieldContext_Role_roleType(ctx, field)
 			case "assignableScope":
 				return ec.fieldContext_Role_assignableScope(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Role_created_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_Role_created_by(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Role_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_Role_updated_by(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Role", field.Name)
 		},
@@ -2676,20 +2884,24 @@ func (ec *executionContext) fieldContext_Mutation_updateRole(ctx context.Context
 				return ec.fieldContext_Role_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Role_name(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Role_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Role_updatedAt(ctx, field)
-			case "version":
-				return ec.fieldContext_Role_version(ctx, field)
-			case "description":
-				return ec.fieldContext_Role_description(ctx, field)
 			case "permissions":
 				return ec.fieldContext_Role_permissions(ctx, field)
+			case "description":
+				return ec.fieldContext_Role_description(ctx, field)
+			case "version":
+				return ec.fieldContext_Role_version(ctx, field)
 			case "roleType":
 				return ec.fieldContext_Role_roleType(ctx, field)
 			case "assignableScope":
 				return ec.fieldContext_Role_assignableScope(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Role_created_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_Role_created_by(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Role_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_Role_updated_by(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Role", field.Name)
 		},
@@ -2759,6 +2971,343 @@ func (ec *executionContext) fieldContext_Mutation_deleteRole(ctx context.Context
 	if fc.Args, err = ec.field_Mutation_deleteRole_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Permission_id(ctx context.Context, field graphql.CollectedField, obj *models.Permission) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Permission_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Permission_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Permission",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Permission_name(ctx context.Context, field graphql.CollectedField, obj *models.Permission) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Permission_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Permission_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Permission",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Permission_service_id(ctx context.Context, field graphql.CollectedField, obj *models.Permission) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Permission_service_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ServiceID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Permission_service_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Permission",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Permission_action(ctx context.Context, field graphql.CollectedField, obj *models.Permission) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Permission_action(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Action, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Permission_action(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Permission",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Permission_created_at(ctx context.Context, field graphql.CollectedField, obj *models.Permission) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Permission_created_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Permission_created_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Permission",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Permission_created_by(ctx context.Context, field graphql.CollectedField, obj *models.Permission) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Permission_created_by(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedBy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Permission_created_by(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Permission",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Permission_updated_at(ctx context.Context, field graphql.CollectedField, obj *models.Permission) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Permission_updated_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Permission_updated_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Permission",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Permission_updated_by(ctx context.Context, field graphql.CollectedField, obj *models.Permission) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Permission_updated_by(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedBy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Permission_updated_by(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Permission",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -2902,16 +3451,26 @@ func (ec *executionContext) fieldContext_Query_tenants(_ context.Context, field 
 				return ec.fieldContext_Tenant_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Tenant_name(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Tenant_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Tenant_updatedAt(ctx, field)
+			case "parentOrgId":
+				return ec.fieldContext_Tenant_parentOrgId(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Tenant_metadata(ctx, field)
+			case "parentTenantId":
+				return ec.fieldContext_Tenant_parentTenantId(ctx, field)
 			case "description":
 				return ec.fieldContext_Tenant_description(ctx, field)
-			case "parentOrg":
-				return ec.fieldContext_Tenant_parentOrg(ctx, field)
+			case "resourceId":
+				return ec.fieldContext_Tenant_resourceId(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Tenant_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Tenant_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_Tenant_updated_by(ctx, field)
 			case "contactInfo":
 				return ec.fieldContext_Tenant_contactInfo(ctx, field)
+			case "created_by":
+				return ec.fieldContext_Tenant_created_by(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tenant", field.Name)
 		},
@@ -2959,16 +3518,26 @@ func (ec *executionContext) fieldContext_Query_getTenant(ctx context.Context, fi
 				return ec.fieldContext_Tenant_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Tenant_name(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Tenant_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Tenant_updatedAt(ctx, field)
+			case "parentOrgId":
+				return ec.fieldContext_Tenant_parentOrgId(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Tenant_metadata(ctx, field)
+			case "parentTenantId":
+				return ec.fieldContext_Tenant_parentTenantId(ctx, field)
 			case "description":
 				return ec.fieldContext_Tenant_description(ctx, field)
-			case "parentOrg":
-				return ec.fieldContext_Tenant_parentOrg(ctx, field)
+			case "resourceId":
+				return ec.fieldContext_Tenant_resourceId(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Tenant_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Tenant_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_Tenant_updated_by(ctx, field)
 			case "contactInfo":
 				return ec.fieldContext_Tenant_contactInfo(ctx, field)
+			case "created_by":
+				return ec.fieldContext_Tenant_created_by(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tenant", field.Name)
 		},
@@ -3032,10 +3601,10 @@ func (ec *executionContext) fieldContext_Query_groups(_ context.Context, field g
 				return ec.fieldContext_Group_name(ctx, field)
 			case "tenant":
 				return ec.fieldContext_Group_tenant(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Group_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Group_updatedAt(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Group_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Group_updated_at(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Group", field.Name)
 		},
@@ -3085,10 +3654,10 @@ func (ec *executionContext) fieldContext_Query_getGroup(ctx context.Context, fie
 				return ec.fieldContext_Group_name(ctx, field)
 			case "tenant":
 				return ec.fieldContext_Group_tenant(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Group_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Group_updatedAt(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Group_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Group_updated_at(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Group", field.Name)
 		},
@@ -3150,20 +3719,24 @@ func (ec *executionContext) fieldContext_Query_roles(_ context.Context, field gr
 				return ec.fieldContext_Role_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Role_name(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Role_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Role_updatedAt(ctx, field)
-			case "version":
-				return ec.fieldContext_Role_version(ctx, field)
-			case "description":
-				return ec.fieldContext_Role_description(ctx, field)
 			case "permissions":
 				return ec.fieldContext_Role_permissions(ctx, field)
+			case "description":
+				return ec.fieldContext_Role_description(ctx, field)
+			case "version":
+				return ec.fieldContext_Role_version(ctx, field)
 			case "roleType":
 				return ec.fieldContext_Role_roleType(ctx, field)
 			case "assignableScope":
 				return ec.fieldContext_Role_assignableScope(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Role_created_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_Role_created_by(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Role_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_Role_updated_by(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Role", field.Name)
 		},
@@ -3211,20 +3784,24 @@ func (ec *executionContext) fieldContext_Query_getRole(ctx context.Context, fiel
 				return ec.fieldContext_Role_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Role_name(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Role_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Role_updatedAt(ctx, field)
-			case "version":
-				return ec.fieldContext_Role_version(ctx, field)
-			case "description":
-				return ec.fieldContext_Role_description(ctx, field)
 			case "permissions":
 				return ec.fieldContext_Role_permissions(ctx, field)
+			case "description":
+				return ec.fieldContext_Role_description(ctx, field)
+			case "version":
+				return ec.fieldContext_Role_version(ctx, field)
 			case "roleType":
 				return ec.fieldContext_Role_roleType(ctx, field)
 			case "assignableScope":
 				return ec.fieldContext_Role_assignableScope(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Role_created_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_Role_created_by(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Role_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_Role_updated_by(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Role", field.Name)
 		},
@@ -3460,8 +4037,8 @@ func (ec *executionContext) fieldContext_Role_name(_ context.Context, field grap
 	return fc, nil
 }
 
-func (ec *executionContext) _Role_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.Role) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Role_createdAt(ctx, field)
+func (ec *executionContext) _Role_permissions(ctx context.Context, field graphql.CollectedField, obj *models.Role) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Role_permissions(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3474,7 +4051,7 @@ func (ec *executionContext) _Role_createdAt(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.CreatedAt, nil
+		return obj.Permissions, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3486,104 +4063,37 @@ func (ec *executionContext) _Role_createdAt(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.([]*models.Permission)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNPermission2ᚕᚖgo_graphqlᚋgqlᚋmodelsᚐPermissionᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Role_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Role_permissions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Role",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Role_updatedAt(ctx context.Context, field graphql.CollectedField, obj *models.Role) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Role_updatedAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UpdatedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Role_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Role",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Role_version(ctx context.Context, field graphql.CollectedField, obj *models.Role) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Role_version(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Version, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Role_version(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Role",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Permission_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Permission_name(ctx, field)
+			case "service_id":
+				return ec.fieldContext_Permission_service_id(ctx, field)
+			case "action":
+				return ec.fieldContext_Permission_action(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Permission_created_at(ctx, field)
+			case "created_by":
+				return ec.fieldContext_Permission_created_by(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Permission_updated_at(ctx, field)
+			case "updated_by":
+				return ec.fieldContext_Permission_updated_by(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Permission", field.Name)
 		},
 	}
 	return fc, nil
@@ -3630,8 +4140,8 @@ func (ec *executionContext) fieldContext_Role_description(_ context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Role_permissions(ctx context.Context, field graphql.CollectedField, obj *models.Role) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Role_permissions(ctx, field)
+func (ec *executionContext) _Role_version(ctx context.Context, field graphql.CollectedField, obj *models.Role) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Role_version(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3644,24 +4154,21 @@ func (ec *executionContext) _Role_permissions(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Permissions, nil
+		return obj.Version, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.([]string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Role_permissions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Role_version(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Role",
 		Field:      field,
@@ -3762,6 +4269,173 @@ func (ec *executionContext) fieldContext_Role_assignableScope(_ context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Role_created_at(ctx context.Context, field graphql.CollectedField, obj *models.Role) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Role_created_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Role_created_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Role",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Role_created_by(ctx context.Context, field graphql.CollectedField, obj *models.Role) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Role_created_by(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedBy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Role_created_by(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Role",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Role_updated_at(ctx context.Context, field graphql.CollectedField, obj *models.Role) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Role_updated_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Role_updated_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Role",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Role_updated_by(ctx context.Context, field graphql.CollectedField, obj *models.Role) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Role_updated_by(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedBy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Role_updated_by(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Role",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Tenant_id(ctx context.Context, field graphql.CollectedField, obj *dto.Tenant) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Tenant_id(ctx, field)
 	if err != nil {
@@ -3776,7 +4450,7 @@ func (ec *executionContext) _Tenant_id(ctx context.Context, field graphql.Collec
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return ec.resolvers.Tenant().ID(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3797,8 +4471,8 @@ func (ec *executionContext) fieldContext_Tenant_id(_ context.Context, field grap
 	fc = &graphql.FieldContext{
 		Object:     "Tenant",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type UUID does not have child fields")
 		},
@@ -3850,8 +4524,8 @@ func (ec *executionContext) fieldContext_Tenant_name(_ context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Tenant_createdAt(ctx context.Context, field graphql.CollectedField, obj *dto.Tenant) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tenant_createdAt(ctx, field)
+func (ec *executionContext) _Tenant_parentOrgId(ctx context.Context, field graphql.CollectedField, obj *dto.Tenant) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tenant_parentOrgId(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3864,7 +4538,7 @@ func (ec *executionContext) _Tenant_createdAt(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Tenant().CreatedAt(rctx, obj)
+		return obj.ParentOrgID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3878,24 +4552,24 @@ func (ec *executionContext) _Tenant_createdAt(ctx context.Context, field graphql
 	}
 	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNUUID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Tenant_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Tenant_parentOrgId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Tenant",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type UUID does not have child fields")
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Tenant_updatedAt(ctx context.Context, field graphql.CollectedField, obj *dto.Tenant) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tenant_updatedAt(ctx, field)
+func (ec *executionContext) _Tenant_metadata(ctx context.Context, field graphql.CollectedField, obj *dto.Tenant) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tenant_metadata(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3908,7 +4582,7 @@ func (ec *executionContext) _Tenant_updatedAt(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Tenant().UpdatedAt(rctx, obj)
+		return obj.Metadata, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3917,17 +4591,58 @@ func (ec *executionContext) _Tenant_updatedAt(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Tenant_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Tenant_metadata(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Tenant",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tenant_parentTenantId(ctx context.Context, field graphql.CollectedField, obj *dto.Tenant) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tenant_parentTenantId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ParentTenantID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tenant_parentTenantId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tenant",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -3976,8 +4691,8 @@ func (ec *executionContext) fieldContext_Tenant_description(_ context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Tenant_parentOrg(ctx context.Context, field graphql.CollectedField, obj *dto.Tenant) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tenant_parentOrg(ctx, field)
+func (ec *executionContext) _Tenant_resourceId(ctx context.Context, field graphql.CollectedField, obj *dto.Tenant) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tenant_resourceId(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3990,7 +4705,48 @@ func (ec *executionContext) _Tenant_parentOrg(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Tenant().ParentOrg(rctx, obj)
+		return obj.ResourceID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tenant_resourceId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tenant",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tenant_created_at(ctx context.Context, field graphql.CollectedField, obj *dto.Tenant) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tenant_created_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tenant().CreatedAt(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4002,19 +4758,101 @@ func (ec *executionContext) _Tenant_parentOrg(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(dto.Organization)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNOrganization2go_graphqlᚋinternalᚋdtoᚐOrganization(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Tenant_parentOrg(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Tenant_created_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Tenant",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("FieldContext.Child cannot be called on type INTERFACE")
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tenant_updated_at(ctx context.Context, field graphql.CollectedField, obj *dto.Tenant) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tenant_updated_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tenant().UpdatedAt(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tenant_updated_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tenant",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tenant_updated_by(ctx context.Context, field graphql.CollectedField, obj *dto.Tenant) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tenant_updated_by(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedBy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tenant_updated_by(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tenant",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4066,6 +4904,47 @@ func (ec *executionContext) fieldContext_Tenant_contactInfo(_ context.Context, f
 				return ec.fieldContext_ContactInfo_address(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ContactInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tenant_created_by(ctx context.Context, field graphql.CollectedField, obj *dto.Tenant) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tenant_created_by(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedBy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tenant_created_by(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tenant",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5933,14 +6812,14 @@ func (ec *executionContext) unmarshalInputGroupInput(ctx context.Context, obj in
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputRoleInput(ctx context.Context, obj interface{}) (models.RoleInput, error) {
-	var it models.RoleInput
+func (ec *executionContext) unmarshalInputPermissionInput(ctx context.Context, obj interface{}) (models.PermissionInput, error) {
+	var it models.PermissionInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "version", "description", "permissions", "roleType", "assignableScopeRef"}
+	fieldsInOrder := [...]string{"name", "service_id", "action", "created_by", "updated_by"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5954,13 +6833,61 @@ func (ec *executionContext) unmarshalInputRoleInput(ctx context.Context, obj int
 				return it, err
 			}
 			it.Name = data
-		case "version":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("version"))
+		case "service_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("service_id"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ServiceID = data
+		case "action":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("action"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Action = data
+		case "created_by":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("created_by"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreatedBy = data
+		case "updated_by":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updated_by"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdatedBy = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputRoleInput(ctx context.Context, obj interface{}) (models.RoleInput, error) {
+	var it models.RoleInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "description", "version", "created_by", "updated_by", "permissions", "roleType", "assignableScopeRef"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Version = data
+			it.Name = data
 		case "description":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -5968,6 +6895,27 @@ func (ec *executionContext) unmarshalInputRoleInput(ctx context.Context, obj int
 				return it, err
 			}
 			it.Description = data
+		case "version":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("version"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Version = data
+		case "created_by":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("created_by"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreatedBy = data
+		case "updated_by":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updated_by"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdatedBy = data
 		case "permissions":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("permissions"))
 			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
@@ -6002,7 +6950,7 @@ func (ec *executionContext) unmarshalInputTenantInput(ctx context.Context, obj i
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "description", "parentOrgId", "contactInfoId"}
+	fieldsInOrder := [...]string{"name", "description", "parentOrgId", "metadata", "parentTenantId", "resourceId", "contactInfoId", "created_by", "updated_by"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6030,6 +6978,27 @@ func (ec *executionContext) unmarshalInputTenantInput(ctx context.Context, obj i
 				return it, err
 			}
 			it.ParentOrgID = data
+		case "metadata":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metadata"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Metadata = data
+		case "parentTenantId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentTenantId"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ParentTenantID = data
+		case "resourceId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("resourceId"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ResourceID = data
 		case "contactInfoId":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contactInfoId"))
 			data, err := ec.unmarshalNUUID2string(ctx, v)
@@ -6037,6 +7006,20 @@ func (ec *executionContext) unmarshalInputTenantInput(ctx context.Context, obj i
 				return it, err
 			}
 			it.ContactInfoID = data
+		case "created_by":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("created_by"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreatedBy = data
+		case "updated_by":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updated_by"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdatedBy = data
 		}
 	}
 
@@ -6272,7 +7255,7 @@ func (ec *executionContext) _Group(ctx context.Context, sel ast.SelectionSet, ob
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "createdAt":
+		case "created_at":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
@@ -6281,7 +7264,7 @@ func (ec *executionContext) _Group(ctx context.Context, sel ast.SelectionSet, ob
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Group_createdAt(ctx, field, obj)
+				res = ec._Group_created_at(ctx, field, obj)
 				return res
 			}
 
@@ -6305,7 +7288,7 @@ func (ec *executionContext) _Group(ctx context.Context, sel ast.SelectionSet, ob
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "updatedAt":
+		case "updated_at":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
@@ -6314,7 +7297,7 @@ func (ec *executionContext) _Group(ctx context.Context, sel ast.SelectionSet, ob
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Group_updatedAt(ctx, field, obj)
+				res = ec._Group_updated_at(ctx, field, obj)
 				return res
 			}
 
@@ -6450,6 +7433,65 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var permissionImplementors = []string{"Permission"}
+
+func (ec *executionContext) _Permission(ctx context.Context, sel ast.SelectionSet, obj *models.Permission) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, permissionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Permission")
+		case "id":
+			out.Values[i] = ec._Permission_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Permission_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "service_id":
+			out.Values[i] = ec._Permission_service_id(ctx, field, obj)
+		case "action":
+			out.Values[i] = ec._Permission_action(ctx, field, obj)
+		case "created_at":
+			out.Values[i] = ec._Permission_created_at(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "created_by":
+			out.Values[i] = ec._Permission_created_by(ctx, field, obj)
+		case "updated_at":
+			out.Values[i] = ec._Permission_updated_at(ctx, field, obj)
+		case "updated_by":
+			out.Values[i] = ec._Permission_updated_by(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6708,25 +7750,15 @@ func (ec *executionContext) _Role(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "createdAt":
-			out.Values[i] = ec._Role_createdAt(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "updatedAt":
-			out.Values[i] = ec._Role_updatedAt(ctx, field, obj)
-		case "version":
-			out.Values[i] = ec._Role_version(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "description":
-			out.Values[i] = ec._Role_description(ctx, field, obj)
 		case "permissions":
 			out.Values[i] = ec._Role_permissions(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "description":
+			out.Values[i] = ec._Role_description(ctx, field, obj)
+		case "version":
+			out.Values[i] = ec._Role_version(ctx, field, obj)
 		case "roleType":
 			out.Values[i] = ec._Role_roleType(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -6737,6 +7769,17 @@ func (ec *executionContext) _Role(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "created_at":
+			out.Values[i] = ec._Role_created_at(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "created_by":
+			out.Values[i] = ec._Role_created_by(ctx, field, obj)
+		case "updated_at":
+			out.Values[i] = ec._Role_updated_at(ctx, field, obj)
+		case "updated_by":
+			out.Values[i] = ec._Role_updated_by(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6772,16 +7815,6 @@ func (ec *executionContext) _Tenant(ctx context.Context, sel ast.SelectionSet, o
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Tenant")
 		case "id":
-			out.Values[i] = ec._Tenant_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "name":
-			out.Values[i] = ec._Tenant_name(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "createdAt":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -6790,7 +7823,7 @@ func (ec *executionContext) _Tenant(ctx context.Context, sel ast.SelectionSet, o
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Tenant_createdAt(ctx, field, obj)
+				res = ec._Tenant_id(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -6817,7 +7850,61 @@ func (ec *executionContext) _Tenant(ctx context.Context, sel ast.SelectionSet, o
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "updatedAt":
+		case "name":
+			out.Values[i] = ec._Tenant_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "parentOrgId":
+			out.Values[i] = ec._Tenant_parentOrgId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "metadata":
+			out.Values[i] = ec._Tenant_metadata(ctx, field, obj)
+		case "parentTenantId":
+			out.Values[i] = ec._Tenant_parentTenantId(ctx, field, obj)
+		case "description":
+			out.Values[i] = ec._Tenant_description(ctx, field, obj)
+		case "resourceId":
+			out.Values[i] = ec._Tenant_resourceId(ctx, field, obj)
+		case "created_at":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tenant_created_at(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "updated_at":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
@@ -6826,7 +7913,7 @@ func (ec *executionContext) _Tenant(ctx context.Context, sel ast.SelectionSet, o
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Tenant_updatedAt(ctx, field, obj)
+				res = ec._Tenant_updated_at(ctx, field, obj)
 				return res
 			}
 
@@ -6850,44 +7937,8 @@ func (ec *executionContext) _Tenant(ctx context.Context, sel ast.SelectionSet, o
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "description":
-			out.Values[i] = ec._Tenant_description(ctx, field, obj)
-		case "parentOrg":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Tenant_parentOrg(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "updated_by":
+			out.Values[i] = ec._Tenant_updated_by(ctx, field, obj)
 		case "contactInfo":
 			field := field
 
@@ -6921,6 +7972,8 @@ func (ec *executionContext) _Tenant(ctx context.Context, sel ast.SelectionSet, o
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "created_by":
+			out.Values[i] = ec._Tenant_created_by(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7348,6 +8401,21 @@ func (ec *executionContext) unmarshalNGroupInput2go_graphqlᚋgqlᚋmodelsᚐGro
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNID2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalIntID(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNID2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalIntID(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) marshalNOrganization2go_graphqlᚋinternalᚋdtoᚐOrganization(ctx context.Context, sel ast.SelectionSet, v dto.Organization) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -7400,6 +8468,60 @@ func (ec *executionContext) marshalNOrganization2ᚕgo_graphqlᚋinternalᚋdto�
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNPermission2ᚕᚖgo_graphqlᚋgqlᚋmodelsᚐPermissionᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Permission) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPermission2ᚖgo_graphqlᚋgqlᚋmodelsᚐPermission(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNPermission2ᚖgo_graphqlᚋgqlᚋmodelsᚐPermission(ctx context.Context, sel ast.SelectionSet, v *models.Permission) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Permission(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNResource2go_graphqlᚋinternalᚋdtoᚐResource(ctx context.Context, sel ast.SelectionSet, v dto.Resource) graphql.Marshaler {

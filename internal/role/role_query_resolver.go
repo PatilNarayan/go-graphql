@@ -34,7 +34,7 @@ func (r *RoleQueryResolver) Roles(ctx context.Context) ([]*models.Role, error) {
 // GetRole resolves a single role by ID.
 func (r *RoleQueryResolver) GetRole(ctx context.Context, id string) (*models.Role, error) {
 	var role dto.Role
-	if err := r.DB.First(&role, "id = ?", id).Error; err != nil {
+	if err := r.DB.First(&role, "role_id = ?", id).Error; err != nil {
 		return nil, errors.New("role not found")
 	}
 	return convertRoleToGraphQL(&role), nil
@@ -45,13 +45,11 @@ func convertRoleToGraphQL(role *dto.Role) *models.Role {
 	return &models.Role{
 		ID:          role.RoleID,
 		Name:        role.Name,
-		Description: &role.Description,
+		Description: ptr.String(role.Description),
 		RoleType:    models.RoleTypeEnum(role.RoleType),
-		Version:     role.Version,
+		Version:     &role.Version,
 		CreatedAt:   role.CreatedAt.String(),
 		UpdatedAt:   ptr.String(role.UpdatedAt.String()),
-		// Add other fields as needed
-		//permissions: convertPermissionsToGraphQL(role.Permissions),
 	}
 }
 

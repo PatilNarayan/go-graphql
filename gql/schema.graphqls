@@ -8,8 +8,8 @@ enum RoleTypeEnum {
 interface Resource {
   id: UUID!
   name: String!
-  createdAt: String!
-  updatedAt: String
+  created_at: String!
+  updated_at: String
 }
 
 interface Organization {
@@ -21,11 +21,16 @@ interface Organization {
 type Tenant implements Resource & Organization {
   id: UUID!
   name: String!
-  createdAt: String!
-  updatedAt: String
+  parentOrgId: UUID!
+  metadata: String
+  parentTenantId: String
   description: String
-  parentOrg: Organization!
+  resourceId: String
+  created_at: String!
+  updated_at: String
+  updated_by: String
   contactInfo: ContactInfo
+  created_by: String
 }
 
 type ContactInfo {
@@ -39,7 +44,12 @@ input TenantInput {
   name: String!
   description: String
   parentOrgId: UUID!
+  metadata: String
+  parentTenantId: String
+  resourceId: String
   contactInfoId: UUID!
+  created_by: String
+  updated_by: String
 }
 
 type Address {
@@ -62,30 +72,53 @@ input AddressInput {
 type Role implements Resource {
   id: UUID!
   name: String!
-  createdAt: String!
-  updatedAt: String
-  version: String!
+  permissions: [Permission!]!
   description: String
-  permissions: [String!]!
+  version: String
   roleType: RoleTypeEnum!
   assignableScope: Resource!
+  created_at: String!
+  created_by: String
+  updated_at: String
+  updated_by: String
 }
 
 input RoleInput {
   name: String!
-  version: String!
   description: String
+  version: String
+  created_by: String!
+  updated_by: String
   permissions: [String!]!
   roleType: RoleTypeEnum!
   assignableScopeRef: UUID!
+}
+
+type Permission {
+  id: ID!
+  name: String!
+  service_id: String
+  action: String
+  created_at: String!
+  created_by: String
+  updated_at: String
+  updated_by: String
+}
+
+input PermissionInput {
+  name: String!
+  service_id: String
+  action: String
+  created_by: String
+  updated_by: String
 }
 
 type Group {
   id: UUID!
   name: String!
   tenant: Tenant!
-  createdAt: String
-  updatedAt: String
+  created_at: String
+  updated_at: String
 }
 
 input GroupInput {
@@ -102,6 +135,8 @@ type Query {
   getGroup(id: UUID!): Group
   roles: [Role!]!
   getRole(id: UUID!): Role
+  
+  # getPermission()
 }
 
 type Mutation {
@@ -115,4 +150,18 @@ type Mutation {
   createRole(input: RoleInput!): Role!
   updateRole(id: UUID!, input: RoleInput!): Role!
   deleteRole(id: UUID!): Boolean!
+
+  
+  # createPermission() 
+  # deletePermission() 
+  # updatePermission()
+
+  # createPrincipal()
+  # deletePrincipal()
+  # updatePrincipal()
+
+  # createRoleAssignment()
+  # deleteRoleAssignment()
+  # updateRoleAssignment() 
+
 }

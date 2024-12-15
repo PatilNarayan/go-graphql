@@ -122,6 +122,11 @@ func (r *queryResolver) GetRole(ctx context.Context, id string) (*models.Role, e
 	panic(fmt.Errorf("not implemented: GetRole - getRole"))
 }
 
+// ID is the resolver for the id field.
+func (r *tenantResolver) ID(ctx context.Context, obj *dto.Tenant) (string, error) {
+	panic(fmt.Errorf("not implemented: ID - id"))
+}
+
 // CreatedAt is the resolver for the createdAt field.
 func (r *tenantResolver) CreatedAt(ctx context.Context, obj *dto.Tenant) (string, error) {
 	panic(fmt.Errorf("not implemented: CreatedAt - createdAt"))
@@ -130,11 +135,6 @@ func (r *tenantResolver) CreatedAt(ctx context.Context, obj *dto.Tenant) (string
 // UpdatedAt is the resolver for the updatedAt field.
 func (r *tenantResolver) UpdatedAt(ctx context.Context, obj *dto.Tenant) (*string, error) {
 	panic(fmt.Errorf("not implemented: UpdatedAt - updatedAt"))
-}
-
-// ParentOrg is the resolver for the parentOrg field.
-func (r *tenantResolver) ParentOrg(ctx context.Context, obj *dto.Tenant) (dto.Organization, error) {
-	panic(fmt.Errorf("not implemented: ParentOrg - parentOrg"))
 }
 
 // ContactInfo is the resolver for the contactInfo field.
