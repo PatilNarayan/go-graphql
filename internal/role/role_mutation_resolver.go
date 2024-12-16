@@ -25,22 +25,24 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Role
 	}
 
 	// Create a new role entity
-	role := &dto.Role{
+	role := dto.Role{
 		RoleID:      uuid.New().String(),
 		Name:        input.Name,
 		Description: *input.Description,
 		RoleType:    string(input.RoleType),
 		Version:     *input.Version,
 		CreatedAt:   time.Now(),
+		CreatedBy:   input.CreatedBy,
+		UpdatedBy:   *input.UpdatedBy,
 	}
 
 	// Save to the database
-	err := r.DB.Create(role).Error
+	err := r.DB.Create(&role).Error
 	if err != nil {
 		return nil, err
 	}
 
-	return convertRoleToGraphQL(role), nil
+	return convertRoleToGraphQL(&role), nil
 }
 
 // UpdateRole handles updating an existing role.
@@ -51,23 +53,47 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id string, input 
 		return nil, errors.New("role not found")
 	}
 
-	// Update fields
+	// Validate and update fields
 	if input.Name != "" {
 		role.Name = input.Name
 	}
 	if input.Description != nil {
 		role.Description = *input.Description
 	}
-	role.RoleType = string(input.RoleType)
-	role.Version = *input.Version
+	if input.RoleType != "" {
+		role.RoleType = string(input.RoleType)
+	}
+	if input.Version != nil {
+		role.Version = *input.Version
+	}
+	if input.UpdatedBy != nil {
+		role.UpdatedBy = *input.UpdatedBy
+	} else {
+		return nil, errors.New("updatedBy is required")
+	}
+
 	role.UpdatedAt = time.Now()
 
-	// Save changes to the database
-	if err := r.DB.Save(&role).Error; err != nil {
+	// Save changes explicitly using UpdateColumns
+	updateData := map[string]interface{}{
+		"name":        role.Name,
+		"description": role.Description,
+		"role_type":   role.RoleType,
+		"version":     role.Version,
+		"updated_by":  role.UpdatedBy,
+		"updated_at":  role.UpdatedAt,
+	}
+
+	if err := r.DB.Model(&dto.Role{}).Where("role_id = ?", id).Updates(updateData).Error; err != nil {
 		return nil, err
 	}
 
-	return convertRoleToGraphQL(&role), nil
+	var updatedData dto.Role
+	if err := r.DB.First(&updatedData, "role_id = ?", id).Error; err != nil {
+		return nil, errors.New("role not found")
+	}
+
+	return convertRoleToGraphQL(&updatedData), nil
 }
 
 // DeleteRole handles deleting a role by ID.
