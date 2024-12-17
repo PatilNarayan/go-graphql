@@ -2,6 +2,7 @@ package role
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 
 	"go_graphql/gql/models"
@@ -42,16 +43,24 @@ func (r *RoleQueryResolver) GetRole(ctx context.Context, id string) (*models.Rol
 
 // Helper function to convert database Role to GraphQL Role models.
 func convertRoleToGraphQL(role *dto.Role) *models.Role {
+	var permissions []*string
+
+	permissionsJSON := []byte(role.PermissionsIDs)
+	if err := json.Unmarshal(permissionsJSON, &permissions); err != nil {
+		return nil
+	}
+
 	return &models.Role{
-		ID:          role.RoleID,
-		Name:        role.Name,
-		Description: ptr.String(role.Description),
-		RoleType:    models.RoleTypeEnum(role.RoleType),
-		Version:     &role.Version,
-		CreatedAt:   role.CreatedAt.String(),
-		UpdatedAt:   ptr.String(role.UpdatedAt.String()),
-		UpdatedBy:   &role.UpdatedBy,
-		CreatedBy:   &role.CreatedBy,
+		ID:             role.RoleID,
+		Name:           role.Name,
+		Description:    ptr.String(role.Description),
+		RoleType:       models.RoleTypeEnum(role.RoleType),
+		Version:        &role.Version,
+		CreatedAt:      role.CreatedAt.String(),
+		UpdatedAt:      ptr.String(role.UpdatedAt.String()),
+		UpdatedBy:      &role.UpdatedBy,
+		CreatedBy:      &role.CreatedBy,
+		PermissionsIds: permissions,
 	}
 }
 
