@@ -2,27 +2,12 @@ package role
 
 import (
 	"context"
-	"log"
 	"testing"
 
 	"go_graphql/internal/dto"
 
-	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 )
-
-func setupTestDB() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
-	if err != nil {
-		log.Fatalf("failed to connect database: %v", err)
-	}
-	err = db.AutoMigrate(&dto.Role{}, &dto.Permission{}, &dto.RoleAssignment{})
-	if err != nil {
-		panic(err)
-	}
-	return db
-}
 
 func TestRoles(t *testing.T) {
 	db := setupTestDB()

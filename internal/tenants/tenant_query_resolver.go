@@ -28,7 +28,7 @@ func (r *TenantQueryResolver) GetTenant(ctx context.Context, id string) (*dto.Te
 	}
 
 	var Tenant dto.Tenant
-	if err := r.DB.Where(&dto.Tenant{TenantID: id}).First(&Tenant).Error; err != nil {
+	if err := r.DB.Where(&dto.Tenant{ID: id}).First(&Tenant).Error; err != nil {
 		return nil, err
 	}
 	return &Tenant, nil

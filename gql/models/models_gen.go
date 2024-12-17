@@ -68,6 +68,7 @@ func (Role) IsResource() {}
 type RoleInput struct {
 	Name               string       `json:"name"`
 	Description        *string      `json:"description,omitempty"`
+	ResourceID         *string      `json:"resourceId,omitempty"`
 	Version            *string      `json:"version,omitempty"`
 	CreatedBy          string       `json:"created_by"`
 	UpdatedBy          *string      `json:"updated_by,omitempty"`

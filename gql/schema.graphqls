@@ -86,6 +86,7 @@ type Role implements Resource {
 input RoleInput {
   name: String!
   description: String
+  resourceId: String
   version: String
   created_by: String!
   updated_by: String

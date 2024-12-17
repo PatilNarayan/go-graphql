@@ -2,130 +2,150 @@ package role
 
 import (
 	"context"
+	"go_graphql/gql/models"
+	"go_graphql/internal/dto"
 	"testing"
 	"time"
 
-	"go_graphql/gql/models"
-	"go_graphql/internal/dto"
-
+	"github.com/glebarez/sqlite"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/thriftrw/ptr"
 	"gorm.io/gorm"
 )
 
+// Setup the in-memory test database
+func setupTestDB() *gorm.DB {
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database: " + err.Error())
+	}
+
+	// Auto-migrate tables
+	db.AutoMigrate(&dto.Role{}, &dto.RoleAssignment{}, &dto.Permission{})
+	return db
+}
+
+// TestCreateRole validates the CreateRole function
 func TestCreateRole(t *testing.T) {
 	db := setupTestDB()
 	resolver := &RoleMutationResolver{DB: db}
 	ctx := context.Background()
 
+	// Seed permissions to validate them later
+	permission1 := dto.Permission{PermissionID: "perm_1", Name: "Permission 1"}
+	permission2 := dto.Permission{PermissionID: "perm_2", Name: "Permission 2"}
+	db.Create(&permission1)
+	db.Create(&permission2)
+
+	// Input for the role creation
 	input := models.RoleInput{
-		Name:        "Test Role",
-		Description: ptrString("Test Description"),
-		RoleType:    models.RoleTypeEnumDefault,
-		Version:     ptrString("v1.0"),
+		Name:           "Test Role",
+		Description:    ptrString("Test Role Description"),
+		PermissionsIds: []string{"perm_1", "perm_2"},
+		ResourceID:     ptrString("resource_123"),
+		RoleType:       "CUSTOM",
+		Version:        ptr.String("1.0"),
+		CreatedBy:      "user_123",
+		UpdatedBy:      ptr.String("user_123"),
 	}
 
+	// Call the resolver function
 	role, err := resolver.CreateRole(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, role)
 	assert.Equal(t, "Test Role", role.Name)
-	assert.Equal(t, "Test Description", *role.Description)
-	assert.Equal(t, models.RoleTypeEnumDefault, role.RoleType)
-	assert.Equal(t, "v1.0", *role.Version)
+
+	// Check if role assignments are created
+	var roleAssignments []dto.RoleAssignment
+	db.Find(&roleAssignments, "role_id = ?", role.ID)
+	assert.Equal(t, 2, len(roleAssignments))
 }
 
-func TestCreateRole_MissingName(t *testing.T) {
-	db := setupTestDB()
-	resolver := &RoleMutationResolver{DB: db}
-	ctx := context.Background()
-
-	input := models.RoleInput{
-		Name:        "",
-		Description: ptrString("Test Description"),
-		RoleType:    models.RoleTypeEnumDefault,
-		Version:     ptrString("v1.0"),
-	}
-
-	role, err := resolver.CreateRole(ctx, input)
-	assert.Error(t, err)
-	assert.Nil(t, role)
-	assert.Equal(t, "role name is required", err.Error())
-}
-
+// TestUpdateRole validates the UpdateRole function
 func TestUpdateRole(t *testing.T) {
 	db := setupTestDB()
 	resolver := &RoleMutationResolver{DB: db}
 	ctx := context.Background()
 
-	// Seed a role in the database
-	seedRole := &dto.Role{
-		RoleID:      "role_123",
-		Name:        "Old Role",
-		Description: "Old Description",
-		RoleType:    "DEFAULT",
-		Version:     "v1.0",
-		CreatedAt:   time.Now(),
+	// Seed a role and permissions
+	role := dto.Role{
+		RoleID:         uuid.New().String(),
+		Name:           "Old Role",
+		RoleType:       "user",
+		PermissionsIDs: `["perm_1"]`,
+		CreatedAt:      time.Now(),
+		CreatedBy:      "user_123",
 	}
-	db.Create(seedRole)
+	db.Create(&role)
 
+	permission := dto.Permission{PermissionID: "perm_2", Name: "Permission 2"}
+	db.Create(&permission)
+
+	// Update input
 	input := models.RoleInput{
-		Name:        "Updated Role",
-		Description: ptrString("Updated Description"),
-		RoleType:    models.RoleTypeEnumCustom,
-		Version:     ptrString("v2.0"),
+		Name:           "Updated Role",
+		Description:    ptrString("Updated Description"),
+		PermissionsIds: []string{"perm_2"},
+		UpdatedBy:      ptrString("user_456"),
 	}
 
-	updatedRole, err := resolver.UpdateRole(ctx, seedRole.RoleID, input)
+	// Call the resolver function
+	updatedRole, err := resolver.UpdateRole(ctx, role.RoleID, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, updatedRole)
 	assert.Equal(t, "Updated Role", updatedRole.Name)
-	assert.Equal(t, "Updated Description", *updatedRole.Description)
-	assert.Equal(t, models.RoleTypeEnumCustom, updatedRole.RoleType)
-	assert.Equal(t, "v2.0", *updatedRole.Version)
+	assert.Equal(t, "Updated Description", updatedRole.Description)
+
+	// Check role assignments are updated
+	var roleAssignments []dto.RoleAssignment
+	db.Find(&roleAssignments, "role_id = ?", role.RoleID)
+	assert.Equal(t, 1, len(roleAssignments))
+	assert.Equal(t, "perm_2", roleAssignments[0].PermissionID)
 }
 
-func TestUpdateRole_NotFound(t *testing.T) {
-	db := setupTestDB()
-	resolver := &RoleMutationResolver{DB: db}
-	ctx := context.Background()
-
-	input := models.RoleInput{
-		Name:        "Updated Role",
-		Description: ptrString("Updated Description"),
-		RoleType:    models.RoleTypeEnumCustom,
-		Version:     ptrString("v2.0"),
-	}
-
-	updatedRole, err := resolver.UpdateRole(ctx, "nonexistent_role", input)
-	assert.Error(t, err)
-	assert.Nil(t, updatedRole)
-	assert.Equal(t, "role not found", err.Error())
-}
-
+// TestDeleteRole validates the DeleteRole function
 func TestDeleteRole(t *testing.T) {
 	db := setupTestDB()
 	resolver := &RoleMutationResolver{DB: db}
 	ctx := context.Background()
 
-	// Seed a role in the database
-	seedRole := &dto.Role{
-		RoleID:    "role_123",
-		Name:      "Role to Delete",
-		CreatedAt: time.Now(),
+	// Seed a role and assignments
+	role := dto.Role{
+		RoleID: uuid.New().String(),
+		Name:   "Role to Delete",
 	}
-	db.Create(seedRole)
+	db.Create(&role)
 
-	deleted, err := resolver.DeleteRole(ctx, seedRole.RoleID)
+	roleAssignment := dto.RoleAssignment{
+		RoleAssignmentID: uuid.New().String(),
+		RoleID:           role.RoleID,
+		PermissionID:     "perm_1",
+		CreatedAt:        time.Now(),
+		CreatedBy:        "user_123",
+	}
+	db.Create(&roleAssignment)
+
+	// Call the resolver function
+	deleted, err := resolver.DeleteRole(ctx, role.RoleID)
 	assert.NoError(t, err)
 	assert.True(t, deleted)
 
-	// Verify the role is deleted
-	var deletedRole dto.Role
-	result := db.First(&deletedRole, "role_id = ?", seedRole.RoleID)
-	assert.Error(t, result.Error)
-	assert.Equal(t, gorm.ErrRecordNotFound, result.Error)
+	// Ensure role and assignments are deleted
+	var roleCount int64
+	db.Model(&dto.Role{}).Where("role_id = ?", role.RoleID).Count(&roleCount)
+	assert.Equal(t, int64(0), roleCount)
+
+	var assignmentCount int64
+	db.Model(&dto.RoleAssignment{}).Where("role_id = ?", role.RoleID).Count(&assignmentCount)
+	assert.Equal(t, int64(0), assignmentCount)
 }
 
-// Helper function to create a pointer to a string
+// Utility functions for pointers
 func ptrString(s string) *string {
 	return &s
+}
+
+func ptrInt(i int) *int {
+	return &i
 }

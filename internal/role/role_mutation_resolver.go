@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"go_graphql/gql/models"
@@ -34,8 +33,6 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Role
 		}
 	}
 
-	log.Println("permissions are valid")
-
 	// Convert PermissionsIDs to JSON
 	permissionsJSON, err := json.Marshal(input.PermissionsIds)
 	if err != nil {
@@ -44,16 +41,29 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Role
 
 	// Create a new role entity
 	role := dto.Role{
-		RoleID:         uuid.New().String(),
-		Name:           input.Name,
-		Description:    *input.Description,
-		RoleType:       string(input.RoleType),
-		PermissionsIDs: string(permissionsJSON),
-		Version:        *input.Version,
-		CreatedAt:      time.Now(),
-		CreatedBy:      input.CreatedBy,
-		UpdatedBy:      input.CreatedBy,
+		RoleID: uuid.New().String(),
 	}
+	if input.Name != "" {
+		role.Name = input.Name
+	}
+	if input.Description != nil {
+		role.Description = *input.Description
+	}
+	if input.ResourceID != nil {
+		role.ResourceID = *input.ResourceID
+	}
+	if input.RoleType != "" {
+		role.RoleType = string(input.RoleType)
+	}
+	if input.PermissionsIds != nil {
+		role.PermissionsIDs = string(permissionsJSON)
+	}
+	if input.Version != nil {
+		role.Version = *input.Version
+	}
+	role.CreatedAt = time.Now()
+	role.CreatedBy = input.CreatedBy
+	role.UpdatedBy = input.CreatedBy
 
 	// Save to the database
 	err = r.DB.Create(&role).Error

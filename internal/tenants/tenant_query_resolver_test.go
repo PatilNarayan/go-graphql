@@ -21,8 +21,8 @@ func TestTenants(t *testing.T) {
 
 	// Seed the database with tenants.
 	tenantsList := []dto.Tenant{
-		{TenantID: "1", Name: "Tenant 1", RowStatus: 1},
-		{TenantID: "2", Name: "Tenant 2", RowStatus: 1},
+		{ID: "1", Name: "Tenant 1", RowStatus: 1},
+		{ID: "2", Name: "Tenant 2", RowStatus: 1},
 	}
 	for _, tenant := range tenantsList {
 		db.Create(&tenant)
@@ -55,7 +55,7 @@ func TestGetTenant(t *testing.T) {
 	ctx := context.Background()
 
 	// Seed the database with a tenant.
-	tenant := dto.Tenant{TenantID: "1", Name: "Tenant 1", RowStatus: 1}
+	tenant := dto.Tenant{ID: "1", Name: "Tenant 1", RowStatus: 1}
 	db.Create(&tenant)
 
 	resolver := TenantQueryResolver{DB: db}
