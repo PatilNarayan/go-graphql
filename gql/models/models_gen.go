@@ -39,36 +39,28 @@ type GroupInput struct {
 }
 
 type Permission struct {
-	ID        int     `json:"id"`
+	ID        string  `json:"id"`
 	Name      string  `json:"name"`
 	ServiceID *string `json:"service_id,omitempty"`
 	Action    *string `json:"action,omitempty"`
 	CreatedAt string  `json:"created_at"`
-	CreatedBy *string `json:"created_by,omitempty"`
+	CreatedBy string  `json:"created_by"`
 	UpdatedAt *string `json:"updated_at,omitempty"`
 	UpdatedBy *string `json:"updated_by,omitempty"`
 }
 
-type PermissionInput struct {
-	Name      string  `json:"name"`
-	ServiceID *string `json:"service_id,omitempty"`
-	Action    *string `json:"action,omitempty"`
-	CreatedBy *string `json:"created_by,omitempty"`
-	UpdatedBy *string `json:"updated_by,omitempty"`
-}
-
 type Role struct {
-	ID              string        `json:"id"`
-	Name            string        `json:"name"`
-	Permissions     []*Permission `json:"permissions"`
-	Description     *string       `json:"description,omitempty"`
-	Version         *string       `json:"version,omitempty"`
-	RoleType        RoleTypeEnum  `json:"roleType"`
-	AssignableScope dto.Resource  `json:"assignableScope"`
-	CreatedAt       string        `json:"created_at"`
-	CreatedBy       *string       `json:"created_by,omitempty"`
-	UpdatedAt       *string       `json:"updated_at,omitempty"`
-	UpdatedBy       *string       `json:"updated_by,omitempty"`
+	ID              string       `json:"id"`
+	Name            string       `json:"name"`
+	PermissionsIds  []*string    `json:"permissions_ids"`
+	Description     *string      `json:"description,omitempty"`
+	Version         *string      `json:"version,omitempty"`
+	RoleType        RoleTypeEnum `json:"roleType"`
+	AssignableScope dto.Resource `json:"assignableScope"`
+	CreatedAt       string       `json:"created_at"`
+	CreatedBy       *string      `json:"created_by,omitempty"`
+	UpdatedAt       *string      `json:"updated_at,omitempty"`
+	UpdatedBy       *string      `json:"updated_by,omitempty"`
 }
 
 func (Role) IsResource() {}
@@ -79,7 +71,7 @@ type RoleInput struct {
 	Version            *string      `json:"version,omitempty"`
 	CreatedBy          string       `json:"created_by"`
 	UpdatedBy          *string      `json:"updated_by,omitempty"`
-	Permissions        []string     `json:"permissions"`
+	PermissionsIds     []string     `json:"permissions_ids"`
 	RoleType           RoleTypeEnum `json:"roleType"`
 	AssignableScopeRef string       `json:"assignableScopeRef"`
 }

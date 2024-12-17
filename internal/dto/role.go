@@ -5,17 +5,18 @@ import (
 )
 
 type Role struct {
-	RoleID      string    `gorm:"type:char(36);primaryKey;column:role_id" json:"role_id"` // Use char(36) for UUID
-	ResourceID  string    `gorm:"type:char(36);not null;column:resource_id" json:"resource_id"`
-	Name        string    `gorm:"size:45;not null;column:name" json:"name"`
-	RoleType    string    `gorm:"type:text;not null;column:role_type;check:role_type IN ('DEFAULT', 'CUSTOM')" json:"role_type"`
-	RowStatus   int       `gorm:"default:1" json:"row_status"`
-	Description string    `gorm:"type:text;column:description" json:"description"`
-	Version     string    `gorm:"column:version" json:"version"`
-	CreatedBy   string    `gorm:"size:45;column:created_by" json:"created_by"`
-	UpdatedBy   string    `gorm:"size:45;column:updated_by" json:"updated_by"`
-	CreatedAt   time.Time `gorm:"column:created_at;autoCreateTime" json:"created_at"`
-	UpdatedAt   time.Time `gorm:"column:updated_at;autoUpdateTime" json:"updated_at"`
+	RoleID         string    `gorm:"type:char(36);primaryKey;column:role_id" json:"role_id"` // Use char(36) for UUID
+	ResourceID     string    `gorm:"type:char(36);not null;column:resource_id" json:"resource_id"`
+	Name           string    `gorm:"size:45;not null;column:name" json:"name"`
+	RoleType       string    `gorm:"type:text;not null;column:role_type;check:role_type IN ('DEFAULT', 'CUSTOM')" json:"role_type"`
+	RowStatus      int       `gorm:"default:1" json:"row_status"`
+	PermissionsIDs string    `gorm:"column:permissions_ids"`
+	Description    string    `gorm:"type:text;column:description" json:"description"`
+	Version        string    `gorm:"column:version" json:"version"`
+	CreatedBy      string    `gorm:"size:45;column:created_by" json:"created_by"`
+	UpdatedBy      string    `gorm:"size:45;column:updated_by" json:"updated_by"`
+	CreatedAt      time.Time `gorm:"column:created_at;autoCreateTime" json:"created_at"`
+	UpdatedAt      time.Time `gorm:"column:updated_at;autoUpdateTime" json:"updated_at"`
 }
 
 func (r *Role) TableName() string {

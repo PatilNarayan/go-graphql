@@ -122,6 +122,11 @@ func (r *queryResolver) GetRole(ctx context.Context, id string) (*models.Role, e
 	panic(fmt.Errorf("not implemented: GetRole - getRole"))
 }
 
+// GetPermission is the resolver for the getPermission field.
+func (r *queryResolver) GetPermission(ctx context.Context) ([]*models.Permission, error) {
+	panic(fmt.Errorf("not implemented: GetPermission - getPermission"))
+}
+
 // ID is the resolver for the id field.
 func (r *tenantResolver) ID(ctx context.Context, obj *dto.Tenant) (string, error) {
 	panic(fmt.Errorf("not implemented: ID - id"))

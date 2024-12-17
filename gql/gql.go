@@ -4,6 +4,7 @@ import (
 	"go_graphql/gql/generated"
 	"go_graphql/internal/groups"
 	"go_graphql/internal/organizations"
+	"go_graphql/internal/permission"
 	"go_graphql/internal/role"
 	"go_graphql/internal/tenants"
 
@@ -22,6 +23,7 @@ func (r *Resolver) Query() generated.QueryResolver {
 		TenantQueryResolver:       &tenants.TenantQueryResolver{DB: r.DB},
 		GroupQueryResolver:        &groups.GroupQueryResolver{DB: r.DB},
 		RoleQueryResolver:         &role.RoleQueryResolver{DB: r.DB},
+		PermissionQueryResolver:   &permission.PermissionQueryResolver{DB: r.DB},
 	}
 }
 
@@ -56,6 +58,7 @@ type queryResolver struct {
 	*tenants.TenantQueryResolver
 	*groups.GroupQueryResolver
 	*role.RoleQueryResolver
+	*permission.PermissionQueryResolver
 }
 
 type mutationResolver struct {

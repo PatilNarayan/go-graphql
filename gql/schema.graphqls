@@ -72,7 +72,7 @@ input AddressInput {
 type Role implements Resource {
   id: UUID!
   name: String!
-  permissions: [Permission!]!
+  permissions_ids: [String]!
   description: String
   version: String
   roleType: RoleTypeEnum!
@@ -89,27 +89,19 @@ input RoleInput {
   version: String
   created_by: String!
   updated_by: String
-  permissions: [String!]!
+  permissions_ids: [String!]!
   roleType: RoleTypeEnum!
   assignableScopeRef: UUID!
 }
 
 type Permission {
-  id: ID!
+  id: UUID!
   name: String!
   service_id: String
   action: String
   created_at: String!
-  created_by: String
+  created_by: String!
   updated_at: String
-  updated_by: String
-}
-
-input PermissionInput {
-  name: String!
-  service_id: String
-  action: String
-  created_by: String
   updated_by: String
 }
 
@@ -135,8 +127,7 @@ type Query {
   getGroup(id: UUID!): Group
   roles: [Role!]!
   getRole(id: UUID!): Role
-  
-  # getPermission()
+  getPermission:[Permission]
 }
 
 type Mutation {

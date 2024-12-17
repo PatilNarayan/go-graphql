@@ -51,6 +51,7 @@ func convertRoleToGraphQL(role *dto.Role) *models.Role {
 		CreatedAt:   role.CreatedAt.String(),
 		UpdatedAt:   ptr.String(role.UpdatedAt.String()),
 		UpdatedBy:   &role.UpdatedBy,
+		CreatedBy:   &role.CreatedBy,
 	}
 }
 
