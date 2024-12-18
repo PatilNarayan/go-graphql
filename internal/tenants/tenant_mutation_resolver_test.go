@@ -211,3 +211,208 @@ func TestDeleteTenant(t *testing.T) {
 	assert.Error(t, result.Error)
 
 }
+
+func TestTenant(t *testing.T) {
+	// Activate httpmock
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	// Test Case 1: Valid Input
+	t.Run("Valid Input", func(t *testing.T) {
+		// Register mock responder for successful API call
+		httpmock.RegisterResponder("POST", "http://localhost:8080/v2/facts/test/test/tenants",
+			func(req *http.Request) (*http.Response, error) {
+				resp := httpmock.NewStringResponse(200, `{"key": "tenant_123", "status": "success"}`)
+				resp.Header.Add("Content-Type", "application/json")
+				return resp, nil
+			},
+		)
+
+		// Setup the test database and resolver
+		db := setupTestDB()
+		ctx := context.Background()
+		resolver := &TenantMutationResolver{DB: db}
+
+		// Test input
+		input := models.TenantInput{
+			Name:           "Test Tenant",
+			Description:    ptr.String("Test Tenant Description"),
+			ParentOrgID:    "org_123",
+			ContactInfoID:  "contact_123",
+			Metadata:       ptr.String(`{"key": "value"}`),
+			ParentTenantID: ptr.String("parent_tenant_123"),
+			CreatedBy:      ptr.String("user_123"),
+		}
+
+		// Call the resolver to create the tenant
+		tenant, err := resolver.CreateTenant(ctx, input)
+		assert.NoError(t, err)
+		assert.NotNil(t, tenant)
+		assert.Equal(t, "Test Tenant", tenant.Name)
+		assert.Equal(t, "org_123", tenant.ParentOrgID)
+	})
+
+	// Test Case 2: Missing Name
+	t.Run("Missing Name", func(t *testing.T) {
+		// Setup the test database and resolver
+		db := setupTestDB()
+		ctx := context.Background()
+		resolver := &TenantMutationResolver{DB: db}
+
+		// Test input with missing name
+		input := models.TenantInput{
+			Name: "", // Name is missing
+		}
+
+		// Call the resolver to create the tenant
+		tenant, err := resolver.CreateTenant(ctx, input)
+		assert.Error(t, err)
+		assert.Nil(t, tenant)
+		assert.Equal(t, "name is required", err.Error())
+	})
+
+	// Test Case 3: Permit API Failure
+	t.Run("Permit API Failure", func(t *testing.T) {
+		// Register mock responder for failed API call
+		httpmock.RegisterResponder("POST", "http://localhost:8080/v2/facts/test/test/tenants",
+			func(req *http.Request) (*http.Response, error) {
+				resp := httpmock.NewStringResponse(500, `{"status": "error", "message": "internal server error"}`)
+				resp.Header.Add("Content-Type", "application/json")
+				return resp, nil
+			},
+		)
+
+		// Setup the test database and resolver
+		db := setupTestDB()
+		ctx := context.Background()
+		resolver := &TenantMutationResolver{DB: db}
+
+		// Test input with valid fields
+		input := models.TenantInput{
+			Name: "Test Tenant",
+		}
+
+		// Call the resolver to create the tenant
+		tenant, err := resolver.CreateTenant(ctx, input)
+		assert.Error(t, err)
+		assert.Nil(t, tenant)
+		fmt.Println("error", err)
+		assert.Contains(t, err.Error(), "HTTP error: 500")
+	})
+
+	// Test Case 4: No ContactInfoID
+	t.Run("No ContactInfoID", func(t *testing.T) {
+		// Register mock responder for successful API call
+		httpmock.RegisterResponder("POST", "http://localhost:8080/v2/facts/test/test/tenants",
+			func(req *http.Request) (*http.Response, error) {
+				resp := httpmock.NewStringResponse(200, `{"key": "tenant_123", "status": "success"}`)
+				resp.Header.Add("Content-Type", "application/json")
+				return resp, nil
+			},
+		)
+
+		// Setup the test database and resolver
+		db := setupTestDB()
+		ctx := context.Background()
+		resolver := &TenantMutationResolver{DB: db}
+
+		// Test input without ContactInfoID
+		input := models.TenantInput{
+			Name:        "Test Tenant",
+			ParentOrgID: "org_123",
+		}
+
+		// Call the resolver to create the tenant
+		tenant, err := resolver.CreateTenant(ctx, input)
+		assert.NoError(t, err)
+		assert.NotNil(t, tenant)
+	})
+
+	// Test Case 10: Empty ParentTenantID
+	t.Run("Empty ParentTenantID", func(t *testing.T) {
+		// Register mock responder for successful API call
+		httpmock.RegisterResponder("POST", "http://localhost:8080/v2/facts/test/test/tenants",
+			func(req *http.Request) (*http.Response, error) {
+				resp := httpmock.NewStringResponse(200, `{"key": "tenant_123", "status": "success"}`)
+				resp.Header.Add("Content-Type", "application/json")
+				return resp, nil
+			},
+		)
+
+		// Setup the test database and resolver
+		db := setupTestDB()
+		ctx := context.Background()
+		resolver := &TenantMutationResolver{DB: db}
+
+		// Test input with empty ParentTenantID
+		input := models.TenantInput{
+			Name:        "Test Tenant",
+			ParentOrgID: "org_123",
+		}
+
+		// Call the resolver to create the tenant
+		tenant, err := resolver.CreateTenant(ctx, input)
+		assert.NoError(t, err)
+		assert.NotNil(t, tenant)
+		assert.Equal(t, "Test Tenant", tenant.Name)
+		assert.Equal(t, "org_123", tenant.ParentOrgID)
+	})
+
+	// Test Case 11: Optional CreatedBy and UpdatedBy Fields
+	t.Run("Optional CreatedBy and UpdatedBy Fields", func(t *testing.T) {
+		// Register mock responder for successful API call
+		httpmock.RegisterResponder("POST", "http://localhost:8080/v2/facts/test/test/tenants",
+			func(req *http.Request) (*http.Response, error) {
+				resp := httpmock.NewStringResponse(200, `{"key": "tenant_123", "status": "success"}`)
+				resp.Header.Add("Content-Type", "application/json")
+				return resp, nil
+			},
+		)
+
+		// Setup the test database and resolver
+		db := setupTestDB()
+		ctx := context.Background()
+		resolver := &TenantMutationResolver{DB: db}
+
+		// Test input with missing CreatedBy
+		input := models.TenantInput{
+			Name:        "Test Tenant",
+			ParentOrgID: "org_123",
+		}
+
+		// Call the resolver to create the tenant
+		tenant, err := resolver.CreateTenant(ctx, input)
+		assert.NoError(t, err)
+		assert.NotNil(t, tenant)
+	})
+
+	// Test Case 12: Tenant Creation with ResourceID
+	t.Run("Tenant Creation with ResourceID", func(t *testing.T) {
+		// Register mock responder for successful API call
+		httpmock.RegisterResponder("POST", "http://localhost:8080/v2/facts/test/test/tenants",
+			func(req *http.Request) (*http.Response, error) {
+				resp := httpmock.NewStringResponse(200, `{"key": "tenant_123", "status": "success"}`)
+				resp.Header.Add("Content-Type", "application/json")
+				return resp, nil
+			},
+		)
+
+		// Setup the test database and resolver
+		db := setupTestDB()
+		ctx := context.Background()
+		resolver := &TenantMutationResolver{DB: db}
+
+		// Test input with ResourceID
+		input := models.TenantInput{
+			Name:        "Test Tenant",
+			ParentOrgID: "org_123",
+			ResourceID:  ptr.String("resource_123"),
+		}
+
+		// Call the resolver to create the tenant
+		tenant, err := resolver.CreateTenant(ctx, input)
+		assert.NoError(t, err)
+		assert.NotNil(t, tenant)
+	})
+
+}

@@ -4,7 +4,6 @@ package models
 
 import (
 	"fmt"
-	"go_graphql/internal/dto"
 	"io"
 	"strconv"
 )
@@ -50,31 +49,30 @@ type Permission struct {
 }
 
 type Role struct {
-	ID              string       `json:"id"`
-	Name            string       `json:"name"`
-	PermissionsIds  []*string    `json:"permissions_ids"`
-	Description     *string      `json:"description,omitempty"`
-	Version         *string      `json:"version,omitempty"`
-	RoleType        RoleTypeEnum `json:"roleType"`
-	AssignableScope dto.Resource `json:"assignableScope"`
-	CreatedAt       string       `json:"created_at"`
-	CreatedBy       *string      `json:"created_by,omitempty"`
-	UpdatedAt       *string      `json:"updated_at,omitempty"`
-	UpdatedBy       *string      `json:"updated_by,omitempty"`
+	ID             string       `json:"id"`
+	Name           string       `json:"name"`
+	PermissionsIds []*string    `json:"permissions_ids"`
+	Description    *string      `json:"description,omitempty"`
+	Version        *string      `json:"version,omitempty"`
+	RoleType       RoleTypeEnum `json:"roleType"`
+	ResourceID     *string      `json:"resource_id,omitempty"`
+	CreatedAt      string       `json:"created_at"`
+	CreatedBy      *string      `json:"created_by,omitempty"`
+	UpdatedAt      *string      `json:"updated_at,omitempty"`
+	UpdatedBy      *string      `json:"updated_by,omitempty"`
 }
 
 func (Role) IsResource() {}
 
 type RoleInput struct {
-	Name               string       `json:"name"`
-	Description        *string      `json:"description,omitempty"`
-	ResourceID         *string      `json:"resourceId,omitempty"`
-	Version            *string      `json:"version,omitempty"`
-	CreatedBy          string       `json:"created_by"`
-	UpdatedBy          *string      `json:"updated_by,omitempty"`
-	PermissionsIds     []string     `json:"permissions_ids"`
-	RoleType           RoleTypeEnum `json:"roleType"`
-	AssignableScopeRef string       `json:"assignableScopeRef"`
+	Name           string       `json:"name"`
+	Description    *string      `json:"description,omitempty"`
+	ResourceID     *string      `json:"resourceId,omitempty"`
+	Version        *string      `json:"version,omitempty"`
+	CreatedBy      string       `json:"created_by"`
+	UpdatedBy      *string      `json:"updated_by,omitempty"`
+	PermissionsIds []string     `json:"permissions_ids"`
+	RoleType       RoleTypeEnum `json:"roleType"`
 }
 
 type TenantInput struct {

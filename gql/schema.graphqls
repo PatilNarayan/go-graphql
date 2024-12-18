@@ -21,15 +21,15 @@ interface Organization {
 type Tenant implements Resource & Organization {
   id: UUID!
   name: String!
-  parentOrgId: UUID!
+  parent_org_id: UUID!
   metadata: String
-  parentTenantId: String
+  parent_tenant_id: String
   description: String
-  resourceId: String
+  resource_id: String
   created_at: String!
   updated_at: String
   updated_by: String
-  contactInfo: ContactInfo
+  contact_info_id: String
   created_by: String
 }
 
@@ -76,7 +76,7 @@ type Role implements Resource {
   description: String
   version: String
   roleType: RoleTypeEnum!
-  assignableScope: Resource!
+  resource_id: String
   created_at: String!
   created_by: String
   updated_at: String
@@ -92,7 +92,6 @@ input RoleInput {
   updated_by: String
   permissions_ids: [String!]!
   roleType: RoleTypeEnum!
-  assignableScopeRef: UUID!
 }
 
 type Permission {
@@ -126,7 +125,7 @@ type Query {
   getTenant(id: UUID!): Tenant
   groups: [Group!]!
   getGroup(id: UUID!): Group
-  roles: [Role!]!
+  roles: [Role]
   getRole(id: UUID!): Role
   getPermission:[Permission]
 }

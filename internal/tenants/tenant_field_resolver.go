@@ -2,7 +2,6 @@ package tenants
 
 import (
 	"context"
-	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
 	"time"
 
@@ -14,7 +13,7 @@ type TenantFieldResolver struct {
 }
 
 // ContactInfo implements generated.TenantResolver.
-func (r *TenantFieldResolver) ContactInfo(ctx context.Context, obj *dto.Tenant) (*models.ContactInfo, error) {
+func (r *TenantFieldResolver) ContactInfo(ctx context.Context, obj *dto.Tenant) (*string, error) {
 	return nil, nil
 }
 

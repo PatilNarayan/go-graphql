@@ -111,6 +111,11 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id string, input 
 	if input.Version != nil {
 		role.Version = *input.Version
 	}
+
+	if input.ResourceID != nil {
+		role.ResourceID = *input.ResourceID
+	}
+
 	if input.UpdatedBy != nil {
 		role.UpdatedBy = *input.UpdatedBy
 	} else {

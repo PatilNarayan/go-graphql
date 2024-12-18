@@ -149,3 +149,158 @@ func ptrString(s string) *string {
 func ptrInt(i int) *int {
 	return &i
 }
+
+func TestCreateRole_ValidData(t *testing.T) {
+	db := setupTestDB()
+	resolver := &RoleMutationResolver{DB: db}
+	ctx := context.Background()
+
+	// Seed permissions to validate them later
+	permission1 := dto.Permission{PermissionID: "perm_1", Name: "Permission 1"}
+	permission2 := dto.Permission{PermissionID: "perm_2", Name: "Permission 2"}
+	db.Create(&permission1)
+	db.Create(&permission2)
+
+	// Input for the role creation
+	input := models.RoleInput{
+		Name:           "Test Role",
+		Description:    ptrString("Test Role Description"),
+		PermissionsIds: []string{"perm_1", "perm_2"},
+		ResourceID:     ptrString("resource_123"),
+		RoleType:       "CUSTOM",
+		Version:        ptrString("1.0"),
+		CreatedBy:      "user_123",
+		UpdatedBy:      ptrString("user_123"),
+	}
+
+	// Call the resolver function
+	role, err := resolver.CreateRole(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, role)
+	assert.Equal(t, "Test Role", role.Name)
+
+	// Check if role assignments are created
+	var roleAssignments []dto.RoleAssignment
+	db.Find(&roleAssignments, "role_id = ?", role.ID)
+	assert.Equal(t, 2, len(roleAssignments))
+}
+
+func TestCreateRole_EmptyPermissionsIds(t *testing.T) {
+	db := setupTestDB()
+	resolver := &RoleMutationResolver{DB: db}
+	ctx := context.Background()
+
+	// Input with no permissions
+	input := models.RoleInput{
+		Name:        "Test Role",
+		Description: ptrString("Test Role Description"),
+		CreatedBy:   "user_123",
+	}
+
+	// Call the resolver function
+	role, err := resolver.CreateRole(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, role)
+	assert.Equal(t, "Test Role", role.Name)
+
+	// Check if no role assignments are created
+	var roleAssignments []dto.RoleAssignment
+	db.Find(&roleAssignments, "role_id = ?", role.ID)
+	assert.Equal(t, 0, len(roleAssignments))
+}
+
+func TestCreateRole_MinimalRequiredData(t *testing.T) {
+	db := setupTestDB()
+	resolver := &RoleMutationResolver{DB: db}
+	ctx := context.Background()
+
+	// Input with only required fields
+	input := models.RoleInput{
+		Name:      "Minimal Role",
+		CreatedBy: "user_123",
+	}
+
+	// Call the resolver function
+	role, err := resolver.CreateRole(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, role)
+	assert.Equal(t, "Minimal Role", role.Name)
+}
+
+func TestCreateRole_MissingRoleName(t *testing.T) {
+	db := setupTestDB()
+	resolver := &RoleMutationResolver{DB: db}
+	ctx := context.Background()
+
+	// Input with missing name
+	input := models.RoleInput{
+		Description: ptrString("Test Role Description"),
+		CreatedBy:   "user_123",
+	}
+
+	// Call the resolver function
+	role, err := resolver.CreateRole(ctx, input)
+	assert.Error(t, err)
+	assert.Nil(t, role)
+}
+
+func TestCreateRole_InvalidPermissionsIds(t *testing.T) {
+	db := setupTestDB()
+	resolver := &RoleMutationResolver{DB: db}
+	ctx := context.Background()
+
+	// Input with invalid permissions
+	input := models.RoleInput{
+		Name:           "Test Role",
+		PermissionsIds: []string{"invalid_perm"},
+		CreatedBy:      "user_123",
+	}
+
+	// Call the resolver function
+	role, err := resolver.CreateRole(ctx, input)
+	assert.Error(t, err)
+	assert.Nil(t, role)
+}
+
+func TestCreateRole_EmptyCreatedBy(t *testing.T) {
+	db := setupTestDB()
+	resolver := &RoleMutationResolver{DB: db}
+	ctx := context.Background()
+
+	// Input with missing CreatedBy
+	input := models.RoleInput{
+		Name:        "Test Role",
+		Description: ptrString("Test Role Description"),
+	}
+
+	// Call the resolver function
+	role, err := resolver.CreateRole(ctx, input)
+	assert.Error(t, err)
+	assert.Nil(t, role)
+}
+
+func TestCreateRole_DuplicatePermissionsIds(t *testing.T) {
+	db := setupTestDB()
+	resolver := &RoleMutationResolver{DB: db}
+	ctx := context.Background()
+
+	// Seed permissions
+	permission := dto.Permission{PermissionID: "perm_1", Name: "Permission 1"}
+	db.Create(&permission)
+
+	// Input with duplicate permissions
+	input := models.RoleInput{
+		Name:           "Test Role",
+		PermissionsIds: []string{"perm_1", "perm_1"},
+		CreatedBy:      "user_123",
+	}
+
+	// Call the resolver function
+	role, err := resolver.CreateRole(ctx, input)
+	assert.Error(t, err)
+	assert.Nil(t, role)
+	// Check if only one assignment is created
+	var roleAssignments []dto.RoleAssignment
+	db.Find(&roleAssignments, "role_id = ?", role.ID)
+	assert.Equal(t, 1, len(roleAssignments))
+}
