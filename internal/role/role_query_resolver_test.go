@@ -3,6 +3,7 @@ package role
 import (
 	"context"
 	"testing"
+	"time"
 
 	"go_graphql/internal/dto"
 
@@ -13,9 +14,8 @@ func TestRoles(t *testing.T) {
 	db := setupTestDB()
 	resolver := RoleQueryResolver{DB: db}
 
-	// Seed data
-	db.Create(&dto.Role{RoleID: "1", Name: "Admin", Description: "Administrator role", RoleType: "DEFAULT", Version: "0.0.1"})
-	db.Create(&dto.Role{RoleID: "2", Name: "User", Description: "User role", RoleType: "DEFAULT", Version: "0.0.1"})
+	db.Create(&dto.Role{RoleID: "1", Name: "Admin", Description: "Administrator role", RoleType: "DEFAULT", Version: "0.0.1", CreatedBy: "1", UpdatedBy: "1", PermissionsIDs: "[]", ResourceID: "1", UpdatedAt: time.Now(), CreatedAt: time.Now()})
+	db.Create(&dto.Role{RoleID: "2", Name: "User", Description: "User role", RoleType: "DEFAULT", Version: "0.0.1", CreatedBy: "1", UpdatedBy: "1", PermissionsIDs: "[]", ResourceID: "1", UpdatedAt: time.Now(), CreatedAt: time.Now()})
 
 	ctx := context.Background()
 

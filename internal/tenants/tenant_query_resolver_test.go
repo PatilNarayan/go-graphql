@@ -55,12 +55,12 @@ func TestGetTenant(t *testing.T) {
 	ctx := context.Background()
 
 	// Seed the database with a tenant.
-	tenant := dto.Tenant{ID: "1", Name: "Tenant 1", RowStatus: 1}
+	tenant := dto.Tenant{Name: "Tenant 1", RowStatus: 1}
 	db.Create(&tenant)
 
 	resolver := TenantQueryResolver{DB: db}
 
-	tenantID := "1"
+	tenantID := tenant.ID
 	result, err := resolver.GetTenant(ctx, tenantID)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
