@@ -180,6 +180,10 @@ func (r *RoleMutationResolver) DeleteRole(ctx context.Context, id string) (bool,
 	// if err := r.DB.Where("role_id = ?", id).Delete(&dto.RoleAssignment{}).Error; err != nil {
 	// 	return false, fmt.Errorf("failed to delete role assignments: %v", err)
 	// }
+	var roleDB dto.Role
+	if err := r.DB.First(&roleDB, "role_id = ?", id).Error; err != nil {
+		return false, errors.New("role not found")
+	}
 
 	// Attempt to delete the role
 	if err := r.DB.Delete(&dto.Role{}, "role_id = ?", id).Error; err != nil {
