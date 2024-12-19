@@ -32,7 +32,7 @@ func TestGetRole_Success(t *testing.T) {
 	resolver := RoleQueryResolver{DB: db}
 
 	// Seed data
-	roleDB := &dto.Role{RoleID: "1", Name: "Admin", Description: "Administrator role", RoleType: "DEFAULT", Version: "0.0.1"}
+	roleDB := &dto.Role{RoleID: "1", Name: "Admin", Description: "Administrator role", RoleType: "DEFAULT", Version: "0.0.1", CreatedBy: "1", UpdatedBy: "1", PermissionsIDs: "[]", ResourceID: "1", UpdatedAt: time.Now(), CreatedAt: time.Now()}
 	db.Create(roleDB)
 
 	ctx := context.Background()
