@@ -71,21 +71,21 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Role
 		return nil, err
 	}
 
-	// Create role assignments
-	for _, permissionID := range input.PermissionsIds {
-		permissionAssignment := dto.RoleAssignment{
-			RoleAssignmentID: uuid.New().String(),
-			RoleID:           role.RoleID,
-			PermissionID:     permissionID,
-			CreatedAt:        time.Now(),
-			CreatedBy:        input.CreatedBy,
-			UpdatedBy:        input.CreatedBy,
-		}
+	// // Create role assignments
+	// for _, permissionID := range input.PermissionsIds {
+	// 	permissionAssignment := dto.RoleAssignment{
+	// 		RoleAssignmentID: uuid.New().String(),
+	// 		RoleID:           role.RoleID,
+	// 		PermissionID:     permissionID,
+	// 		CreatedAt:        time.Now(),
+	// 		CreatedBy:        input.CreatedBy,
+	// 		UpdatedBy:        input.CreatedBy,
+	// 	}
 
-		if err := r.DB.Create(&permissionAssignment).Error; err != nil {
-			return nil, err
-		}
-	}
+	// 	if err := r.DB.Create(&permissionAssignment).Error; err != nil {
+	// 		return nil, err
+	// 	}
+	// }
 
 	return convertRoleToGraphQL(&role), nil
 }
@@ -125,31 +125,31 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id string, input 
 	role.UpdatedAt = time.Now()
 
 	// Update PermissionsIDs and RoleAssignments
-	if input.PermissionsIds != nil {
-		permissionsJSON, err := json.Marshal(input.PermissionsIds)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert permissions to JSON: %v", err)
-		}
-		role.PermissionsIDs = string(permissionsJSON)
+	// if input.PermissionsIds != nil {
+	// 	permissionsJSON, err := json.Marshal(input.PermissionsIds)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("failed to convert permissions to JSON: %v", err)
+	// 	}
+	// 	role.PermissionsIDs = string(permissionsJSON)
 
-		// Update role assignments
-		if err := r.DB.Where("role_id = ?", id).Delete(&dto.RoleAssignment{}).Error; err != nil {
-			return nil, fmt.Errorf("failed to clear old role assignments: %v", err)
-		}
-		for _, permissionID := range input.PermissionsIds {
-			permissionAssignment := dto.RoleAssignment{
-				RoleAssignmentID: uuid.New().String(),
-				RoleID:           id,
-				PermissionID:     permissionID,
-				CreatedAt:        time.Now(),
-				CreatedBy:        *input.UpdatedBy,
-				UpdatedBy:        *input.UpdatedBy,
-			}
-			if err := r.DB.Create(&permissionAssignment).Error; err != nil {
-				return nil, fmt.Errorf("failed to create role assignment: %v", err)
-			}
-		}
-	}
+	// 	// Update role assignments
+	// 	if err := r.DB.Where("role_id = ?", id).Delete(&dto.RoleAssignment{}).Error; err != nil {
+	// 		return nil, fmt.Errorf("failed to clear old role assignments: %v", err)
+	// 	}
+	// 	for _, permissionID := range input.PermissionsIds {
+	// 		permissionAssignment := dto.RoleAssignment{
+	// 			RoleAssignmentID: uuid.New().String(),
+	// 			RoleID:           id,
+	// 			PermissionID:     permissionID,
+	// 			CreatedAt:        time.Now(),
+	// 			CreatedBy:        *input.UpdatedBy,
+	// 			UpdatedBy:        *input.UpdatedBy,
+	// 		}
+	// 		if err := r.DB.Create(&permissionAssignment).Error; err != nil {
+	// 			return nil, fmt.Errorf("failed to create role assignment: %v", err)
+	// 		}
+	// 	}
+	// }
 
 	// Save changes explicitly using UpdateColumns
 	updateData := map[string]interface{}{
@@ -177,9 +177,9 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id string, input 
 // DeleteRole handles deleting a role by ID.
 func (r *RoleMutationResolver) DeleteRole(ctx context.Context, id string) (bool, error) {
 	// Delete role assignments
-	if err := r.DB.Where("role_id = ?", id).Delete(&dto.RoleAssignment{}).Error; err != nil {
-		return false, fmt.Errorf("failed to delete role assignments: %v", err)
-	}
+	// if err := r.DB.Where("role_id = ?", id).Delete(&dto.RoleAssignment{}).Error; err != nil {
+	// 	return false, fmt.Errorf("failed to delete role assignments: %v", err)
+	// }
 
 	// Attempt to delete the role
 	if err := r.DB.Delete(&dto.Role{}, "role_id = ?", id).Error; err != nil {

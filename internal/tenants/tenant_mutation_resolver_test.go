@@ -134,46 +134,148 @@ func TestCreateTenant_MissingName(t *testing.T) {
 func TestUpdateTenant(t *testing.T) {
 	db := setupTestDB()
 	ctx := context.Background()
-
 	resolver := &TenantMutationResolver{DB: db}
 
 	// Seed the database with a tenant
-	tenant := &dto.Tenant{ID: "tenant_123", Name: "Old Name", ParentOrgID: "org_123"}
+	tenant := &dto.Tenant{Name: "Old Name", ParentOrgID: "org_123"}
 	db.Create(tenant)
 
-	// Activate httpmock
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
+
+	// Default responder for unmatched requests
+	httpmock.RegisterNoResponder(httpmock.NewStringResponder(500, `{"error": "unmocked request"}`))
 
 	// Register the mock responder for the API endpoint
 	httpmock.RegisterResponder("PATCH", fmt.Sprintf("http://localhost:8080/v2/facts/test/test/tenants/%s", tenant.ID),
 		func(req *http.Request) (*http.Response, error) {
 			resp := httpmock.NewStringResponse(200, `
-					{
-						"key": "tenant_123",
-						"name": "Updated Name",
-						"status": "success"
-					}
-					`)
+				{
+					"key": "tenant_123",
+					"name": "Updated Name",
+					"status": "success"
+				}
+				`)
 			resp.Header.Add("Content-Type", "application/json")
 			return resp, nil
 		},
 	)
+	// Test scenarios
+	t.Run("Valid Input", func(t *testing.T) {
+		input := models.TenantInput{
+			Name:        "Updated Name",
+			ParentOrgID: "org_456",
+			Description: ptrString("Updated Description"),
+			Metadata:    ptrString(`{"key": "value"}`),
+			UpdatedBy:   ptrString("user_123"),
+		}
 
-	input := models.TenantInput{
-		Name:        "Updated Name",
-		ParentOrgID: "org_456",
-		Description: ptr.String("Updated Description"),
-		Metadata:    ptr.String(`{"key": "value"}`),
-		UpdatedBy:   ptr.String("user_123"),
-	}
+		updatedTenant, err := resolver.UpdateTenant(ctx, tenant.ID, input)
+		assert.NoError(t, err)
+		assert.NotNil(t, updatedTenant)
+		assert.Equal(t, "Updated Name", updatedTenant.Name)
+		assert.Equal(t, "org_456", updatedTenant.ParentOrgID)
+	})
 
-	updatedTenant, err := resolver.UpdateTenant(ctx, tenant.ID, input)
-	assert.NoError(t, err)
-	assert.NotNil(t, updatedTenant)
-	assert.Equal(t, "Updated Name", updatedTenant.Name)
-	assert.Equal(t, "org_456", updatedTenant.ParentOrgID)
+	t.Run("Invalid Tenant ID", func(t *testing.T) {
+		input := models.TenantInput{
+			Name: "Updated Name",
+		}
 
+		updatedTenant, err := resolver.UpdateTenant(ctx, "invalid_id", input)
+		assert.Error(t, err)
+		assert.Nil(t, updatedTenant)
+	})
+
+	t.Run("HTTPMock Failure", func(t *testing.T) {
+		// Activate httpmock
+		httpmock.Activate()
+		defer httpmock.DeactivateAndReset()
+
+		// Register the mock responder
+		httpmock.RegisterResponder("PATCH", fmt.Sprintf("http://localhost:8080/v2/facts/test/test/tenants/%s", tenant.ID),
+			httpmock.NewErrorResponder(fmt.Errorf("mock error")),
+		)
+
+		input := models.TenantInput{
+			Name:        "Updated Name",
+			ParentOrgID: "org_456",
+			UpdatedBy:   ptrString("user_123"),
+		}
+
+		updatedTenant, err := resolver.UpdateTenant(ctx, tenant.ID, input)
+		assert.Error(t, err)
+		assert.Nil(t, updatedTenant)
+	})
+
+	t.Run("Empty Fields", func(t *testing.T) {
+		input := models.TenantInput{
+			Name: "",
+		}
+
+		updatedTenant, err := resolver.UpdateTenant(ctx, tenant.ID, input)
+		assert.NoError(t, err)
+		assert.NotNil(t, updatedTenant)
+		assert.Equal(t, "Old Name", updatedTenant.Name)
+	})
+
+	t.Run("Invalid Metadata", func(t *testing.T) {
+		input := models.TenantInput{
+			Metadata: ptrString("invalid_json"),
+		}
+
+		updatedTenant, err := resolver.UpdateTenant(ctx, tenant.ID, input)
+		assert.Error(t, err)
+		assert.Nil(t, updatedTenant)
+	})
+
+	t.Run("Empty Metadata", func(t *testing.T) {
+		input := models.TenantInput{
+			Metadata:  ptrString(""),
+			UpdatedBy: ptrString("user_123"),
+		}
+
+		updatedTenant, err := resolver.UpdateTenant(ctx, tenant.ID, input)
+		assert.NoError(t, err)
+		assert.NotNil(t, updatedTenant)
+		assert.Equal(t, "", updatedTenant.Metadata)
+	})
+
+	t.Run("Database Unavailable", func(t *testing.T) {
+		resolver := &TenantMutationResolver{DB: nil}
+
+		input := models.TenantInput{
+			Name:      "Updated Name",
+			UpdatedBy: ptrString("user_123"),
+		}
+
+		updatedTenant, err := resolver.UpdateTenant(ctx, "some_id", input)
+		assert.Error(t, err)
+		assert.Nil(t, updatedTenant)
+	})
+
+	t.Run("Audit Fields", func(t *testing.T) {
+		input := models.TenantInput{
+			Name:      "Updated Name",
+			UpdatedBy: ptrString("user_456"),
+		}
+
+		updatedTenant, err := resolver.UpdateTenant(ctx, tenant.ID, input)
+		assert.NoError(t, err)
+		assert.NotNil(t, updatedTenant)
+		assert.Equal(t, "Updated Name", updatedTenant.Name)
+		assert.Equal(t, "user_456", updatedTenant.UpdatedBy)
+	})
+
+	t.Run("No Updates", func(t *testing.T) {
+		input := models.TenantInput{}
+
+		updatedTenant, err := resolver.UpdateTenant(ctx, tenant.ID, input)
+		assert.NoError(t, err)
+		assert.NotNil(t, updatedTenant)
+		assert.Equal(t, "Old Name", updatedTenant.Name)
+		assert.Equal(t, "org_123", updatedTenant.ParentOrgID)
+	})
 }
 
 func TestDeleteTenant(t *testing.T) {
@@ -181,9 +283,11 @@ func TestDeleteTenant(t *testing.T) {
 	ctx := context.Background()
 
 	resolver := &TenantMutationResolver{DB: db}
+
 	// Seed the database with a tenant
 	tenant := &dto.Tenant{Name: "Tenant to Delete", RowStatus: 1}
 	db.Create(tenant)
+
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -191,24 +295,42 @@ func TestDeleteTenant(t *testing.T) {
 	httpmock.RegisterResponder("DELETE", fmt.Sprintf("http://localhost:8080/v2/facts/test/test/tenants/%s", tenant.ID),
 		func(req *http.Request) (*http.Response, error) {
 			resp := httpmock.NewStringResponse(200, `
-					{
-						"key": "tenant_123",
-						"status": "success"
-					}
-					`)
+				{
+					"key": "tenant_123",
+					"status": "success"
+				}
+				`)
 			resp.Header.Add("Content-Type", "application/json")
 			return resp, nil
 		},
 	)
 
-	deleted, err := resolver.DeleteTenant(ctx, tenant.ID)
-	assert.NoError(t, err)
-	assert.True(t, deleted)
+	t.Run("Valid Deletion", func(t *testing.T) {
+		deleted, err := resolver.DeleteTenant(ctx, tenant.ID)
+		assert.NoError(t, err)
+		assert.True(t, deleted)
 
-	// Ensure the tenant is deleted from the database
-	var deletedTenant dto.Tenant
-	result := db.First(&deletedTenant, "tenant_123")
-	assert.Error(t, result.Error)
+		// Ensure the tenant is deleted from the database
+		var deletedTenant dto.Tenant
+		result := db.First(&deletedTenant, "id = ?", tenant.ID)
+		assert.Error(t, result.Error)
+	})
+
+	t.Run("Invalid Tenant ID", func(t *testing.T) {
+		deleted, err := resolver.DeleteTenant(ctx, "invalid_id")
+		assert.Error(t, err)
+		assert.False(t, deleted)
+	})
+
+	t.Run("HTTPMock Failure", func(t *testing.T) {
+		httpmock.RegisterResponder("DELETE", fmt.Sprintf("http://localhost:8080/v2/facts/test/test/tenants/%s", tenant.ID),
+			httpmock.NewErrorResponder(fmt.Errorf("mock error")),
+		)
+
+		deleted, err := resolver.DeleteTenant(ctx, tenant.ID)
+		assert.Error(t, err)
+		assert.False(t, deleted)
+	})
 
 }
 
@@ -415,4 +537,8 @@ func TestTenant(t *testing.T) {
 		assert.NotNil(t, tenant)
 	})
 
+}
+
+func ptrString(s string) *string {
+	return &s
 }
