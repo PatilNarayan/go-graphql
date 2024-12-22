@@ -39,7 +39,7 @@ func (g *GroupFieldResolver) CreatedAt(ctx context.Context, obj *dto.GroupEntity
 }
 
 // Tenant implements generated.GroupResolver.
-func (g *GroupFieldResolver) Tenant(ctx context.Context, obj *dto.GroupEntity) (*dto.Tenant, error) {
+func (g *GroupFieldResolver) Tenant(ctx context.Context, obj *dto.GroupEntity) (*models.Tenant, error) {
 	panic("unimplemented")
 }
 

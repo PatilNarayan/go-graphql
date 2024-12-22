@@ -43,9 +43,9 @@ func (r *Resolver) Mutation() generated.MutationResolver {
 // }
 
 // Organization resolves fields for the Organization type
-func (r *Resolver) Tenant() generated.TenantResolver {
-	return &tenants.TenantFieldResolver{DB: r.DB}
-}
+// func (r *Resolver) Tenant() generated.TenantResolver {
+// 	return &tenants.TenantFieldResolver{DB: r.DB}
+// }
 
 // Organization resolves fields for the Organization type
 func (r *Resolver) Group() generated.GroupResolver {

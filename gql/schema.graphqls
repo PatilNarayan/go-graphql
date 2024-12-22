@@ -29,7 +29,6 @@ type Tenant implements Resource & Organization {
   created_at: String!
   updated_at: String
   updated_by: String
-  contact_info_id: String
   created_by: String
 }
 
@@ -47,7 +46,6 @@ input TenantInput {
   metadata: String
   parentTenantId: String
   resourceId: String
-  contactInfoId: UUID!
   created_by: String
   updated_by: String
 }

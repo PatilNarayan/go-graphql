@@ -2,6 +2,7 @@ package tenants
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
@@ -15,7 +16,7 @@ type TenantMutationResolver struct {
 }
 
 // CreateTenant resolver for adding a new Tenant
-func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.TenantInput) (*dto.Tenant, error) {
+func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.TenantInput) (*models.Tenant, error) {
 
 	if input.Name == "" {
 		return nil, fmt.Errorf("name is required")
@@ -31,12 +32,19 @@ func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 	if input.ResourceID != nil {
 		tenantDB.ResourceID = *input.ResourceID
 	}
-	if input.ContactInfoID != "" {
-		tenantDB.ContactInfoID = input.ContactInfoID
-	}
 
 	if input.Metadata != nil {
-		tenantDB.Metadata = *input.Metadata
+		var temp interface{}
+		err := json.Unmarshal([]byte(*input.Metadata), &temp)
+		if err != nil {
+			return nil, fmt.Errorf("invalid JSON in metadata: %v", err)
+		}
+		// Re-marshal to standardize the JSON format
+		metaDataJson, err := json.Marshal(temp)
+		if err != nil {
+			return nil, err
+		}
+		tenantDB.Metadata = metaDataJson
 	}
 	if input.ParentTenantID != nil {
 		tenantDB.ParentTenantID = *input.ParentTenantID
@@ -78,11 +86,11 @@ func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 
 	// }
 
-	return tenantDB, nil
+	return convertTenantToGraphQL(tenantDB), nil
 }
 
 // UpdateTenant resolver for updating a Tenant
-func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, id string, input models.TenantInput) (*dto.Tenant, error) {
+func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, id string, input models.TenantInput) (*models.Tenant, error) {
 	var Tenant *dto.Tenant
 	if err := r.DB.Where(&dto.Tenant{ID: id}).First(&Tenant).Error; err != nil {
 		return nil, err
@@ -109,16 +117,25 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, id string, in
 	if input.ResourceID != nil {
 		Tenant.ResourceID = *input.ResourceID
 	}
-	if input.ContactInfoID != "" {
-		Tenant.ContactInfoID = input.ContactInfoID
-	}
 
 	if input.ParentOrgID != "" {
 		Tenant.ParentOrgID = input.ParentOrgID
 	}
 
 	if input.Metadata != nil {
-		Tenant.Metadata = *input.Metadata
+		var temp interface{}
+		err := json.Unmarshal([]byte(*input.Metadata), &temp)
+		if err != nil {
+			return nil, fmt.Errorf("invalid JSON in metadata: %v", err)
+		}
+		// Re-marshal to standardize the JSON format
+		metaDataJson, err := json.Marshal(temp)
+		if err != nil {
+			return nil, err
+		}
+		Tenant.Metadata = metaDataJson
+	} else {
+		Tenant.Metadata = json.RawMessage(`{}`)
 	}
 	if input.ParentTenantID != nil {
 		Tenant.ParentTenantID = *input.ParentTenantID
@@ -134,7 +151,7 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, id string, in
 		return nil, err
 	}
 
-	return Tenant, nil
+	return convertTenantToGraphQL(Tenant), nil
 }
 
 // DeleteTenant resolver for deleting a Tenant

@@ -48,3 +48,7 @@ func (r *TenantFieldResolver) Organization(ctx context.Context, obj *dto.Tenant)
 	}
 	return &organization, nil
 }
+
+func (r *TenantFieldResolver) Metadata(ctx context.Context, obj *dto.Tenant) (*string, error) {
+	return nil, nil
+}

@@ -18,7 +18,7 @@ func (r *groupResolver) ID(ctx context.Context, obj *dto.GroupEntity) (string, e
 }
 
 // Tenant is the resolver for the tenant field.
-func (r *groupResolver) Tenant(ctx context.Context, obj *dto.GroupEntity) (*dto.Tenant, error) {
+func (r *groupResolver) Tenant(ctx context.Context, obj *dto.GroupEntity) (*models.Tenant, error) {
 	panic(fmt.Errorf("not implemented: Tenant - tenant"))
 }
 
@@ -38,12 +38,12 @@ func (r *mutationResolver) CreateOrganization(ctx context.Context, name string) 
 }
 
 // CreateTenant is the resolver for the createTenant field.
-func (r *mutationResolver) CreateTenant(ctx context.Context, input models.TenantInput) (*dto.Tenant, error) {
+func (r *mutationResolver) CreateTenant(ctx context.Context, input models.TenantInput) (*models.Tenant, error) {
 	panic(fmt.Errorf("not implemented: CreateTenant - createTenant"))
 }
 
 // UpdateTenant is the resolver for the updateTenant field.
-func (r *mutationResolver) UpdateTenant(ctx context.Context, id string, input models.TenantInput) (*dto.Tenant, error) {
+func (r *mutationResolver) UpdateTenant(ctx context.Context, id string, input models.TenantInput) (*models.Tenant, error) {
 	panic(fmt.Errorf("not implemented: UpdateTenant - updateTenant"))
 }
 
@@ -93,12 +93,12 @@ func (r *queryResolver) GetOrganization(ctx context.Context, id string) (dto.Org
 }
 
 // Tenants is the resolver for the tenants field.
-func (r *queryResolver) Tenants(ctx context.Context) ([]*dto.Tenant, error) {
+func (r *queryResolver) Tenants(ctx context.Context) ([]*models.Tenant, error) {
 	panic(fmt.Errorf("not implemented: Tenants - tenants"))
 }
 
 // GetTenant is the resolver for the getTenant field.
-func (r *queryResolver) GetTenant(ctx context.Context, id string) (*dto.Tenant, error) {
+func (r *queryResolver) GetTenant(ctx context.Context, id string) (*models.Tenant, error) {
 	panic(fmt.Errorf("not implemented: GetTenant - getTenant"))
 }
 
@@ -127,16 +127,6 @@ func (r *queryResolver) GetPermission(ctx context.Context) ([]*models.Permission
 	panic(fmt.Errorf("not implemented: GetPermission - getPermission"))
 }
 
-// CreatedAt is the resolver for the createdAt field.
-func (r *tenantResolver) CreatedAt(ctx context.Context, obj *dto.Tenant) (string, error) {
-	panic(fmt.Errorf("not implemented: CreatedAt - createdAt"))
-}
-
-// UpdatedAt is the resolver for the updatedAt field.
-func (r *tenantResolver) UpdatedAt(ctx context.Context, obj *dto.Tenant) (*string, error) {
-	panic(fmt.Errorf("not implemented: UpdatedAt - updatedAt"))
-}
-
 // Group returns generated.GroupResolver implementation.
 func (r *Resolver) Group() generated.GroupResolver { return &groupResolver{r} }
 
@@ -146,10 +136,26 @@ func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResol
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
-// Tenant returns generated.TenantResolver implementation.
-func (r *Resolver) Tenant() generated.TenantResolver { return &tenantResolver{r} }
-
 type groupResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func (r *tenantResolver) Metadata(ctx context.Context, obj *dto.Tenant) (*string, error) {
+	panic(fmt.Errorf("not implemented: Metadata - metadata"))
+}
+func (r *tenantResolver) CreatedAt(ctx context.Context, obj *dto.Tenant) (string, error) {
+	panic(fmt.Errorf("not implemented: CreatedAt - createdAt"))
+}
+func (r *tenantResolver) UpdatedAt(ctx context.Context, obj *dto.Tenant) (*string, error) {
+	panic(fmt.Errorf("not implemented: UpdatedAt - updatedAt"))
+}
+func (r *Resolver) Tenant() generated.TenantResolver { return &tenantResolver{r} }
 type tenantResolver struct{ *Resolver }
+*/

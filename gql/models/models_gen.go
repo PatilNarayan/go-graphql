@@ -75,6 +75,24 @@ type RoleInput struct {
 	RoleType       RoleTypeEnum `json:"roleType"`
 }
 
+type Tenant struct {
+	ID             string  `json:"id"`
+	Name           string  `json:"name"`
+	ParentOrgID    string  `json:"parent_org_id"`
+	Metadata       *string `json:"metadata,omitempty"`
+	ParentTenantID *string `json:"parent_tenant_id,omitempty"`
+	Description    *string `json:"description,omitempty"`
+	ResourceID     *string `json:"resource_id,omitempty"`
+	CreatedAt      string  `json:"created_at"`
+	UpdatedAt      *string `json:"updated_at,omitempty"`
+	UpdatedBy      *string `json:"updated_by,omitempty"`
+	CreatedBy      *string `json:"created_by,omitempty"`
+}
+
+func (Tenant) IsResource() {}
+
+func (Tenant) IsOrganization() {}
+
 type TenantInput struct {
 	Name           string  `json:"name"`
 	Description    *string `json:"description,omitempty"`
@@ -82,7 +100,6 @@ type TenantInput struct {
 	Metadata       *string `json:"metadata,omitempty"`
 	ParentTenantID *string `json:"parentTenantId,omitempty"`
 	ResourceID     *string `json:"resourceId,omitempty"`
-	ContactInfoID  string  `json:"contactInfoId"`
 	CreatedBy      *string `json:"created_by,omitempty"`
 	UpdatedBy      *string `json:"updated_by,omitempty"`
 }

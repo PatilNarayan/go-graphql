@@ -28,8 +28,6 @@ models:
     model: go_graphql/gql/generated.Query 
   Organization:
     model: go_graphql/internal/dto.Organization
-  Tenant:
-    model: go_graphql/internal/dto.Tenant
   Group:
     model: go_graphql/internal/dto.GroupEntity
   Resource:
