@@ -1,53 +1,84 @@
+scalar Date
 scalar UUID
-
-enum RoleTypeEnum {
-  DEFAULT
-  CUSTOM
-}
 
 interface Resource {
   id: UUID!
   name: String!
   created_at: String!
   updated_at: String
+  created_by: String
+  updated_by: String
 }
 
 interface Organization {
   id: UUID!
   name: String!
   description: String
+  created_at: String!
+  updated_at: String
+  created_by: String
+  updated_by: String
+}
+
+type Root implements Resource & Organization {
+  id: UUID!
+  name: String!
+  description: String
+  created_at: String!
+  updated_at: String
+  created_by: String
+  updated_by: String
+}
+
+input CreateRootInput {
+  name: String!
+  description: String
+}
+
+input UpdateRootInput {
+  id: UUID!
+  name: String
+  description: String
 }
 
 type Tenant implements Resource & Organization {
   id: UUID!
   name: String!
-  parent_org_id: UUID!
-  metadata: String
-  parent_tenant_id: String
   description: String
-  resource_id: String
+  parentOrg: Organization!
+  contactInfo: ContactInfo
   created_at: String!
   updated_at: String
-  updated_by: String
   created_by: String
+  updated_by: String
 }
 
 type ContactInfo {
-  id: UUID!
   email: String
   phoneNumber: String
   address: Address
 }
 
-input TenantInput {
+input ContactInfoInput {
+  email: String
+  phoneNumber: String
+  address: CreateAddressInput
+}
+
+
+input CreateTenantInput {
   name: String!
   description: String
-  parentOrgId: UUID!
-  metadata: String
-  parentTenantId: String
-  resourceId: String
-  created_by: String
-  updated_by: String
+  parentOrgId: String!
+  contactInfo: ContactInfoInput
+}
+
+input UpdateTenantInput {
+  id: UUID!
+  name: String
+  description: String
+  parentOrgId: String
+  contactInfoId: String!
 }
 
 type Address {
@@ -59,7 +90,7 @@ type Address {
   country: String
 }
 
-input AddressInput {
+input CreateAddressInput {
   street: String
   city: String
   state: String
@@ -67,90 +98,71 @@ input AddressInput {
   country: String
 }
 
-type Role implements Resource {
-  id: UUID!
-  name: String!
-  permissions_ids: [String]!
-  description: String
-  version: String
-  roleType: RoleTypeEnum!
-  resource_id: String
-  created_at: String!
-  created_by: String
-  updated_at: String
-  updated_by: String
+input UpdateAddressInput {
+  street: String
+  city: String
+  state: String
+  zipCode: String
+  country: String
 }
 
-input RoleInput {
+type ClientOrganizationUnit implements Resource & Organization {
+  id: UUID!
   name: String!
   description: String
-  resourceId: String
-  version: String
-  created_by: String!
-  updated_by: String
-  permissions_ids: [String!]!
-  roleType: RoleTypeEnum!
-}
-
-type Permission {
-  id: UUID!
-  name: String!
-  service_id: String
-  action: String
-  created_at: String!
-  created_by: String!
-  updated_at: String
-  updated_by: String
-}
-
-type Group {
-  id: UUID!
-  name: String!
   tenant: Tenant!
-  created_at: String
+  parentOrg: Organization!
+  created_at: String!
   updated_at: String
+  created_by: String
+  updated_by: String
 }
 
-input GroupInput {
+input CreateClientOrganizationUnitInput {
   name: String!
-  tenantId: UUID!
+  description: String
+  tenantId: String!
+  parentOrgId: String!
+}
+
+input UpdateClientOrganizationUnitInput {
+  id: UUID!
+  name: String
+  description: String
+  tenantId: String
+  parentOrgId: String
 }
 
 type Query {
-  organizations: [Organization!]!
   getOrganization(id: UUID!): Organization
-  tenants: [Tenant!]!
+  allOrganizations: [Organization!]!
+
+  getResource(id: UUID!): Resource
+  allResources: [Resource!]!
+
+  getRoot(id: UUID!): Root
+
   getTenant(id: UUID!): Tenant
-  groups: [Group!]!
-  getGroup(id: UUID!): Group
-  roles: [Role]
-  getRole(id: UUID!): Role
-  getPermission:[Permission]
+  allTenants: [Tenant!]!
+
+  getClientOrganizationUnit(id: UUID!): ClientOrganizationUnit
+  allClientOrganizationUnits: [ClientOrganizationUnit!]!
 }
 
 type Mutation {
-  createOrganization(name: String!): Organization!
-  createTenant(input: TenantInput!): Tenant!
-  updateTenant(id: UUID!, input: TenantInput!): Tenant!
+  createRoot(input: CreateRootInput!): Root!
+  updateRoot(input: UpdateRootInput!): Root!
+  deleteRoot(id: UUID!): Boolean!
+
+  createTenant(input: CreateTenantInput!): Tenant!
+  updateTenant(input: UpdateTenantInput!): Tenant!
   deleteTenant(id: UUID!): Boolean!
-  createGroup(input: GroupInput!): Group!
-  updateGroup(id: UUID!, input: GroupInput!): Group!
-  deleteGroup(id: UUID!): Boolean!
-  createRole(input: RoleInput!): Role!
-  updateRole(id: UUID!, input: RoleInput!): Role!
-  deleteRole(id: UUID!): Boolean!
 
-  
-  # createPermission() 
-  # deletePermission() 
-  # updatePermission()
-
-  # createPrincipal()
-  # deletePrincipal()
-  # updatePrincipal()
-
-  # createRoleAssignment()
-  # deleteRoleAssignment()
-  # updateRoleAssignment() 
-
+  createClientOrganizationUnit(
+    input: CreateClientOrganizationUnitInput!
+  ): ClientOrganizationUnit!
+  updateClientOrganizationUnit(
+    input: UpdateClientOrganizationUnitInput!
+  ): ClientOrganizationUnit!
+  deleteClientOrganizationUnit(id: UUID!): Boolean!
 }

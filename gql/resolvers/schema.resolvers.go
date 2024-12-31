@@ -9,126 +9,99 @@ import (
 	"fmt"
 	"go_graphql/gql/generated"
 	"go_graphql/gql/models"
-	"go_graphql/internal/dto"
+
+	"github.com/google/uuid"
 )
 
-// ID is the resolver for the id field.
-func (r *groupResolver) ID(ctx context.Context, obj *dto.GroupEntity) (string, error) {
-	panic(fmt.Errorf("not implemented: ID - id"))
+// CreateRoot is the resolver for the createRoot field.
+func (r *mutationResolver) CreateRoot(ctx context.Context, input models.CreateRootInput) (*models.Root, error) {
+	panic(fmt.Errorf("not implemented: CreateRoot - createRoot"))
 }
 
-// Tenant is the resolver for the tenant field.
-func (r *groupResolver) Tenant(ctx context.Context, obj *dto.GroupEntity) (*models.Tenant, error) {
-	panic(fmt.Errorf("not implemented: Tenant - tenant"))
+// UpdateRoot is the resolver for the updateRoot field.
+func (r *mutationResolver) UpdateRoot(ctx context.Context, input models.UpdateRootInput) (*models.Root, error) {
+	panic(fmt.Errorf("not implemented: UpdateRoot - updateRoot"))
 }
 
-// CreatedAt is the resolver for the createdAt field.
-func (r *groupResolver) CreatedAt(ctx context.Context, obj *dto.GroupEntity) (*string, error) {
-	panic(fmt.Errorf("not implemented: CreatedAt - createdAt"))
-}
-
-// UpdatedAt is the resolver for the updatedAt field.
-func (r *groupResolver) UpdatedAt(ctx context.Context, obj *dto.GroupEntity) (*string, error) {
-	panic(fmt.Errorf("not implemented: UpdatedAt - updatedAt"))
-}
-
-// CreateOrganization is the resolver for the createOrganization field.
-func (r *mutationResolver) CreateOrganization(ctx context.Context, name string) (dto.Organization, error) {
-	panic(fmt.Errorf("not implemented: CreateOrganization - createOrganization"))
+// DeleteRoot is the resolver for the deleteRoot field.
+func (r *mutationResolver) DeleteRoot(ctx context.Context, id uuid.UUID) (bool, error) {
+	panic(fmt.Errorf("not implemented: DeleteRoot - deleteRoot"))
 }
 
 // CreateTenant is the resolver for the createTenant field.
-func (r *mutationResolver) CreateTenant(ctx context.Context, input models.TenantInput) (*models.Tenant, error) {
+func (r *mutationResolver) CreateTenant(ctx context.Context, input models.CreateTenantInput) (*models.Tenant, error) {
 	panic(fmt.Errorf("not implemented: CreateTenant - createTenant"))
 }
 
 // UpdateTenant is the resolver for the updateTenant field.
-func (r *mutationResolver) UpdateTenant(ctx context.Context, id string, input models.TenantInput) (*models.Tenant, error) {
+func (r *mutationResolver) UpdateTenant(ctx context.Context, input models.UpdateTenantInput) (*models.Tenant, error) {
 	panic(fmt.Errorf("not implemented: UpdateTenant - updateTenant"))
 }
 
 // DeleteTenant is the resolver for the deleteTenant field.
-func (r *mutationResolver) DeleteTenant(ctx context.Context, id string) (bool, error) {
+func (r *mutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID) (bool, error) {
 	panic(fmt.Errorf("not implemented: DeleteTenant - deleteTenant"))
 }
 
-// CreateGroup is the resolver for the createGroup field.
-func (r *mutationResolver) CreateGroup(ctx context.Context, input models.GroupInput) (*dto.GroupEntity, error) {
-	panic(fmt.Errorf("not implemented: CreateGroup - createGroup"))
+// CreateClientOrganizationUnit is the resolver for the createClientOrganizationUnit field.
+func (r *mutationResolver) CreateClientOrganizationUnit(ctx context.Context, input models.CreateClientOrganizationUnitInput) (*models.ClientOrganizationUnit, error) {
+	panic(fmt.Errorf("not implemented: CreateClientOrganizationUnit - createClientOrganizationUnit"))
 }
 
-// UpdateGroup is the resolver for the updateGroup field.
-func (r *mutationResolver) UpdateGroup(ctx context.Context, id string, input models.GroupInput) (*dto.GroupEntity, error) {
-	panic(fmt.Errorf("not implemented: UpdateGroup - updateGroup"))
+// UpdateClientOrganizationUnit is the resolver for the updateClientOrganizationUnit field.
+func (r *mutationResolver) UpdateClientOrganizationUnit(ctx context.Context, input models.UpdateClientOrganizationUnitInput) (*models.ClientOrganizationUnit, error) {
+	panic(fmt.Errorf("not implemented: UpdateClientOrganizationUnit - updateClientOrganizationUnit"))
 }
 
-// DeleteGroup is the resolver for the deleteGroup field.
-func (r *mutationResolver) DeleteGroup(ctx context.Context, id string) (bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteGroup - deleteGroup"))
-}
-
-// CreateRole is the resolver for the createRole field.
-func (r *mutationResolver) CreateRole(ctx context.Context, input models.RoleInput) (*models.Role, error) {
-	panic(fmt.Errorf("not implemented: CreateRole - createRole"))
-}
-
-// UpdateRole is the resolver for the updateRole field.
-func (r *mutationResolver) UpdateRole(ctx context.Context, id string, input models.RoleInput) (*models.Role, error) {
-	panic(fmt.Errorf("not implemented: UpdateRole - updateRole"))
-}
-
-// DeleteRole is the resolver for the deleteRole field.
-func (r *mutationResolver) DeleteRole(ctx context.Context, id string) (bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteRole - deleteRole"))
-}
-
-// Organizations is the resolver for the organizations field.
-func (r *queryResolver) Organizations(ctx context.Context) ([]dto.Organization, error) {
-	panic(fmt.Errorf("not implemented: Organizations - organizations"))
+// DeleteClientOrganizationUnit is the resolver for the deleteClientOrganizationUnit field.
+func (r *mutationResolver) DeleteClientOrganizationUnit(ctx context.Context, id uuid.UUID) (bool, error) {
+	panic(fmt.Errorf("not implemented: DeleteClientOrganizationUnit - deleteClientOrganizationUnit"))
 }
 
 // GetOrganization is the resolver for the getOrganization field.
-func (r *queryResolver) GetOrganization(ctx context.Context, id string) (dto.Organization, error) {
+func (r *queryResolver) GetOrganization(ctx context.Context, id uuid.UUID) (models.Organization, error) {
 	panic(fmt.Errorf("not implemented: GetOrganization - getOrganization"))
 }
 
-// Tenants is the resolver for the tenants field.
-func (r *queryResolver) Tenants(ctx context.Context) ([]*models.Tenant, error) {
-	panic(fmt.Errorf("not implemented: Tenants - tenants"))
+// AllOrganizations is the resolver for the allOrganizations field.
+func (r *queryResolver) AllOrganizations(ctx context.Context) ([]models.Organization, error) {
+	panic(fmt.Errorf("not implemented: AllOrganizations - allOrganizations"))
+}
+
+// GetResource is the resolver for the getResource field.
+func (r *queryResolver) GetResource(ctx context.Context, id uuid.UUID) (models.Resource, error) {
+	panic(fmt.Errorf("not implemented: GetResource - getResource"))
+}
+
+// AllResources is the resolver for the allResources field.
+func (r *queryResolver) AllResources(ctx context.Context) ([]models.Resource, error) {
+	panic(fmt.Errorf("not implemented: AllResources - allResources"))
+}
+
+// GetRoot is the resolver for the getRoot field.
+func (r *queryResolver) GetRoot(ctx context.Context, id uuid.UUID) (*models.Root, error) {
+	panic(fmt.Errorf("not implemented: GetRoot - getRoot"))
 }
 
 // GetTenant is the resolver for the getTenant field.
-func (r *queryResolver) GetTenant(ctx context.Context, id string) (*models.Tenant, error) {
+func (r *queryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*models.Tenant, error) {
 	panic(fmt.Errorf("not implemented: GetTenant - getTenant"))
 }
 
-// Groups is the resolver for the groups field.
-func (r *queryResolver) Groups(ctx context.Context) ([]*dto.GroupEntity, error) {
-	panic(fmt.Errorf("not implemented: Groups - groups"))
+// AllTenants is the resolver for the allTenants field.
+func (r *queryResolver) AllTenants(ctx context.Context) ([]*models.Tenant, error) {
+	panic(fmt.Errorf("not implemented: AllTenants - allTenants"))
 }
 
-// GetGroup is the resolver for the getGroup field.
-func (r *queryResolver) GetGroup(ctx context.Context, id string) (*dto.GroupEntity, error) {
-	panic(fmt.Errorf("not implemented: GetGroup - getGroup"))
+// GetClientOrganizationUnit is the resolver for the getClientOrganizationUnit field.
+func (r *queryResolver) GetClientOrganizationUnit(ctx context.Context, id uuid.UUID) (*models.ClientOrganizationUnit, error) {
+	panic(fmt.Errorf("not implemented: GetClientOrganizationUnit - getClientOrganizationUnit"))
 }
 
-// Roles is the resolver for the roles field.
-func (r *queryResolver) Roles(ctx context.Context) ([]*models.Role, error) {
-	panic(fmt.Errorf("not implemented: Roles - roles"))
+// AllClientOrganizationUnits is the resolver for the allClientOrganizationUnits field.
+func (r *queryResolver) AllClientOrganizationUnits(ctx context.Context) ([]*models.ClientOrganizationUnit, error) {
+	panic(fmt.Errorf("not implemented: AllClientOrganizationUnits - allClientOrganizationUnits"))
 }
-
-// GetRole is the resolver for the getRole field.
-func (r *queryResolver) GetRole(ctx context.Context, id string) (*models.Role, error) {
-	panic(fmt.Errorf("not implemented: GetRole - getRole"))
-}
-
-// GetPermission is the resolver for the getPermission field.
-func (r *queryResolver) GetPermission(ctx context.Context) ([]*models.Permission, error) {
-	panic(fmt.Errorf("not implemented: GetPermission - getPermission"))
-}
-
-// Group returns generated.GroupResolver implementation.
-func (r *Resolver) Group() generated.GroupResolver { return &groupResolver{r} }
 
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
@@ -136,26 +109,5 @@ func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResol
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
-type groupResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *tenantResolver) Metadata(ctx context.Context, obj *dto.Tenant) (*string, error) {
-	panic(fmt.Errorf("not implemented: Metadata - metadata"))
-}
-func (r *tenantResolver) CreatedAt(ctx context.Context, obj *dto.Tenant) (string, error) {
-	panic(fmt.Errorf("not implemented: CreatedAt - createdAt"))
-}
-func (r *tenantResolver) UpdatedAt(ctx context.Context, obj *dto.Tenant) (*string, error) {
-	panic(fmt.Errorf("not implemented: UpdatedAt - updatedAt"))
-}
-func (r *Resolver) Tenant() generated.TenantResolver { return &tenantResolver{r} }
-type tenantResolver struct{ *Resolver }
-*/

@@ -9,27 +9,26 @@ import (
 )
 
 // Tenant struct aligned with schema
-type Tenant struct {
-	ID             string          `gorm:"type:char(36);primaryKey" json:"id"`
-	ResourceID     string          `gorm:"type:char(36);not null" json:"resource_id"`
-	ParentTenantID string          `gorm:"type:char(36)" json:"parent_tenant_id"`
-	Name           string          `gorm:"type:varchar(255);not null" json:"name"`
-	ParentOrgID    string          `gorm:"type:char(36)" json:"parent_org_id"`
-	ContactInfoID  string          `gorm:"type:char(36)" json:"contact_info_id"`
-	RowStatus      int             `gorm:"default:1" json:"row_status"`
-	Description    string          `gorm:"type:text" json:"description"`
-	Metadata       json.RawMessage `gorm:"type:json;" json:"metadata"`
-	CreatedBy      string          `gorm:"size:45" json:"created_by"`
-	UpdatedBy      string          `gorm:"size:45" json:"updated_by"`
-	CreatedAt      time.Time       `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt      time.Time       `gorm:"autoUpdateTime" json:"updated_at"`
-	DeletedAt      gorm.DeletedAt  `gorm:"index" json:"-"` // Soft delete
+type TenantMetadata struct {
+	ID         string          `gorm:"type:char(36);primaryKey" json:"id"`
+	ResourceID string          `gorm:"type:char(36);not null" json:"resource_id"`
+	Metadata   json.RawMessage `gorm:"type:json;" json:"metadata"`
+	RowStatus  int             `gorm:"default:1" json:"row_status"`
+	CreatedBy  string          `gorm:"size:45" json:"created_by"`
+	UpdatedBy  string          `gorm:"size:45" json:"updated_by"`
+	CreatedAt  time.Time       `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt  time.Time       `gorm:"autoUpdateTime" json:"updated_at"`
+	DeletedAt  gorm.DeletedAt  `gorm:"index" json:"-"` // Soft delete
 }
 
 // BeforeCreate hook to generate UUID before saving
-func (t *Tenant) BeforeCreate(tx *gorm.DB) (err error) {
+func (t *TenantMetadata) BeforeCreate(tx *gorm.DB) (err error) {
 	t.ID = uuid.New().String()
 	return
+}
+
+func (t *TenantMetadata) TableName() string {
+	return "tnt_resource_metadata"
 }
 
 // // BeforeCreate hook for ContactInfo

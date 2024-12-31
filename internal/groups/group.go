@@ -56,12 +56,13 @@ func (q *GroupQueryResolver) GetGroup(ctx context.Context, id string) (*dto.Grou
 	panic("unimplemented")
 }
 
-func (r *GroupMutationResolver) CreateGroup(ctx context.Context, input models.GroupInput) (*dto.GroupEntity, error) {
-	panic("unimplemented")
-}
-func (r *GroupMutationResolver) UpdateGroup(ctx context.Context, id string, input models.GroupInput) (*dto.GroupEntity, error) {
-	panic("unimplemented")
-}
+//	func (r *GroupMutationResolver) CreateGroup(ctx context.Context, input models.groupInput) (*dto.GroupEntity, error) {
+//		panic("unimplemented")
+//	}
+//
+//	func (r *GroupMutationResolver) UpdateGroup(ctx context.Context, id string, input models.GroupInput) (*dto.GroupEntity, error) {
+//		panic("unimplemented")
+//	}
 func (r *GroupMutationResolver) DeleteGroup(ctx context.Context, id string) (bool, error) {
 	panic("unimplemented")
 }

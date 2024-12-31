@@ -2,9 +2,10 @@ package gql
 
 import (
 	"go_graphql/gql/generated"
+	clientorganizationunit "go_graphql/internal/clientOrganizationUnit"
 	"go_graphql/internal/groups"
 	"go_graphql/internal/organizations"
-	"go_graphql/internal/permission"
+	"go_graphql/internal/resource"
 	"go_graphql/internal/role"
 	"go_graphql/internal/tenants"
 
@@ -19,11 +20,11 @@ type Resolver struct {
 // Query returns the root query resolvers, delegating to feature-based resolvers
 func (r *Resolver) Query() generated.QueryResolver {
 	return &queryResolver{
-		OrganizationQueryResolver: &organizations.OrganizationQueryResolver{DB: r.DB},
-		TenantQueryResolver:       &tenants.TenantQueryResolver{DB: r.DB},
-		GroupQueryResolver:        &groups.GroupQueryResolver{DB: r.DB},
-		RoleQueryResolver:         &role.RoleQueryResolver{DB: r.DB},
-		PermissionQueryResolver:   &permission.PermissionQueryResolver{DB: r.DB},
+		OrganizationQueryResolver:           &organizations.OrganizationQueryResolver{DB: r.DB},
+		TenantQueryResolver:                 &tenants.TenantQueryResolver{DB: r.DB},
+		GroupQueryResolver:                  &groups.GroupQueryResolver{DB: r.DB},
+		ClientOrganizationUnitQueryResolver: &clientorganizationunit.ClientOrganizationUnitQueryResolver{DB: r.DB},
+		ResourceQueryResolver:               &resource.ResourceQueryResolver{DB: r.DB},
 	}
 }
 
@@ -48,22 +49,21 @@ func (r *Resolver) Mutation() generated.MutationResolver {
 // }
 
 // Organization resolves fields for the Organization type
-func (r *Resolver) Group() generated.GroupResolver {
-	return &groups.GroupFieldResolver{DB: r.DB}
-}
+// func (r *Resolver) Group() generated.GroupResolver {
+// 	return &groups.GroupFieldResolver{DB: r.DB}
+// }
 
 // Root resolvers for Query and Mutation
 type queryResolver struct {
 	*organizations.OrganizationQueryResolver
 	*tenants.TenantQueryResolver
 	*groups.GroupQueryResolver
-	*role.RoleQueryResolver
-	*permission.PermissionQueryResolver
+	*clientorganizationunit.ClientOrganizationUnitQueryResolver
+	*resource.ResourceQueryResolver
 }
 
 type mutationResolver struct {
 	*organizations.OrganizationMutationResolver
 	*tenants.TenantMutationResolver
 	*groups.GroupMutationResolver
-	*role.RoleMutationResolver
 }

@@ -2,32 +2,40 @@ package organizations
 
 import (
 	"context"
+	"errors"
+	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
 
+	"github.com/gofrs/uuid"
 	"gorm.io/gorm"
 )
-
-type OrganizationFieldResolver struct {
-	DB *gorm.DB
-}
 
 type OrganizationQueryResolver struct {
 	DB *gorm.DB
 }
 
-type OrganizationMutationResolver struct {
-	DB *gorm.DB
+// Organizations resolver for fetching all organizations
+func (r *OrganizationQueryResolver) Organizations(ctx context.Context) ([]*dto.Organization, error) {
+	var organizations []*dto.Organization
+	if err := r.DB.Find(&organizations).Error; err != nil {
+		return nil, err
+	}
+	return organizations, nil
 }
 
-// Organizations implements generated.QueryResolver.
-func (q *OrganizationQueryResolver) Organizations(ctx context.Context) ([]dto.Organization, error) {
-	panic("unimplemented")
+// GetOrganization resolver for fetching a single organization by ID
+func (r *OrganizationQueryResolver) GetOrganization(ctx context.Context, id uuid.UUID) (*dto.Organization, error) {
+	if id == uuid.Nil {
+		return nil, errors.New("id cannot be nil")
+	}
+
+	var organization dto.Organization
+	if err := r.DB.First(&organization, "organization_id = ?", id).Error; err != nil {
+		return nil, err
+	}
+	return &organization, nil
 }
 
-func (q *OrganizationQueryResolver) GetOrganization(ctx context.Context, id string) (dto.Organization, error) {
-	panic("unimplemented")
-}
-
-func (r *OrganizationMutationResolver) CreateOrganization(ctx context.Context, name string) (dto.Organization, error) {
-	panic("unimplemented")
+func (r *OrganizationQueryResolver) AllOrganizations(ctx context.Context) ([]models.Organization, error) {
+	return nil, nil
 }

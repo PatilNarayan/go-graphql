@@ -123,3 +123,7 @@ func convertTenantToGraphQL(tenant *dto.Tenant) *models.Tenant {
 
 	return &tenantGraphQL
 }
+
+func (r *TenantQueryResolver) AllTenants(ctx context.Context) ([]*models.Tenant, error) {
+	return r.Tenants(ctx)
+}

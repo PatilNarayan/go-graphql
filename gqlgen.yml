@@ -1,5 +1,5 @@
 schema:
-- gql/schema.graphqls
+  - gql/schema.graphqls
 
 
 exec:
@@ -19,16 +19,10 @@ resolver:
 
 
 models:
-  ID:
+  UUID:
     model:
-    - github.com/99designs/gqlgen/graphql.IntID
+      - github.com/99designs/gqlgen/graphql.UUID
   Mutation:
-    model: go_graphql/gql/generated.Mutation
+    model: iam_services_main_v1/gql/generated.Mutation
   Query:
-    model: go_graphql/gql/generated.Query 
-  Organization:
-    model: go_graphql/internal/dto.Organization
-  Group:
-    model: go_graphql/internal/dto.GroupEntity
-  Resource:
-    model: go_graphql/internal/dto.Resource
+    model: iam_services_main_v1/gql/generated.Query
