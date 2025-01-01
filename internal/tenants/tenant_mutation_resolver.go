@@ -3,11 +3,14 @@ package tenants
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
-	"go_graphql/permit"
+	"time"
 
+	"github.com/google/uuid"
+	"go.uber.org/thriftrw/ptr"
 	"gorm.io/gorm"
 )
 
@@ -16,167 +19,231 @@ type TenantMutationResolver struct {
 }
 
 // CreateTenant resolver for adding a new Tenant
-func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.TenantInput) (*models.Tenant, error) {
-
-	if input.Name == "" {
-		return nil, fmt.Errorf("name is required")
-	}
-	tenantDB := &dto.Tenant{
-		Name:        input.Name,
-		ParentOrgID: input.ParentOrgID,
-		RowStatus:   1,
-	}
-	if input.Description != nil {
-		tenantDB.Description = *input.Description
-	}
-	if input.ResourceID != nil {
-		tenantDB.ResourceID = *input.ResourceID
+func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.CreateTenantInput) (*models.Tenant, error) {
+	// Create a new TenantResource
+	tenantResource := &dto.TenantResource{
+		ResourceID: uuid.New(), // Generate new UUID
+		Name:       input.Name,
+		CreatedBy:  input.CreatedBy,
+		UpdatedBy:  input.CreatedBy,
+		CreatedAt:  time.Now(),
 	}
 
-	if input.Metadata != nil {
-		var temp interface{}
-		err := json.Unmarshal([]byte(*input.Metadata), &temp)
-		if err != nil {
-			return nil, fmt.Errorf("invalid JSON in metadata: %v", err)
+	//get resource type by name
+	resourceType := dto.ResourceType{}
+	if err := r.DB.Where("name = ?", "Tenant").First(&resourceType).Error; err != nil {
+		return nil, fmt.Errorf("resource type not found: %w", err)
+	}
+	tenantResource.ResourceTypeID = resourceType.ResourceTypeID
+
+	if input.ParentOrgID != nil {
+		//check if parentOrgID is valid
+		var parentOrg dto.TenantResource
+		if err := r.DB.Where(&dto.TenantResource{ResourceID: *input.ParentOrgID}).First(&parentOrg).Error; err != nil {
+			return nil, fmt.Errorf("parent organization not found: %w", err)
 		}
-		// Re-marshal to standardize the JSON format
-		metaDataJson, err := json.Marshal(temp)
-		if err != nil {
-			return nil, err
-		}
-		tenantDB.Metadata = metaDataJson
-	}
-	if input.ParentTenantID != nil {
-		tenantDB.ParentTenantID = *input.ParentTenantID
-	}
-	if input.CreatedBy != nil {
-		tenantDB.CreatedBy = *input.CreatedBy
-		tenantDB.UpdatedBy = *input.CreatedBy
-	}
-	if err := r.DB.Create(tenantDB).Error; err != nil {
-		return nil, err
+		tenantResource.ParentResourceID = input.ParentOrgID
 	}
 
-	pc := permit.NewPermitClient()
+	// pc := permit.NewPermitClient()
+	// _, err := pc.APIExecute(ctx, "POST", "tenants", map[string]interface{}{
+	// 	"name": input.Name,
+	// 	"key":  tenantResource.ResourceID.String(),
+	// })
 
-	tenant, err := pc.APIExecute(ctx, "POST", "tenants", map[string]interface{}{
-		"name": input.Name,
-		"key":  tenantDB.ID,
-	})
+	// if err != nil {
+	// 	return nil, err
+	// }
 
+	// Save TenantResource to the database
+	if err := r.DB.Create(&tenantResource).Error; err != nil {
+		return nil, fmt.Errorf("failed to create tenant resource: %w", err)
+	}
+
+	// Prepare metadata (ContactInfo)
+	metadata := map[string]interface{}{
+		"description": input.Description,
+		"contactInfo": input.ContactInfo,
+	}
+	metadataJSON, err := json.Marshal(metadata)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to marshal metadata: %w", err)
 	}
 
-	if tenant == nil {
-		return nil, fmt.Errorf("Tenant not created")
+	// Create a new TenantMetadata
+	tenantMetadata := &dto.TenantMetadata{
+		ResourceID: tenantResource.ResourceID.String(),
+		Metadata:   metadataJSON,
+		CreatedBy:  input.CreatedBy,
+		CreatedAt:  time.Now(),
 	}
 
-	// CreateResource := map[string]interface{}{
-	// 	"resource": xid.New().String(),
-	// 	"tenant":   tenant["key"],
-	// }
-	// resourceKeyList := []string{}
-	// for _, v := range resourceKeyList {
-	// 	CreateResource["key"] = v
-	// 	_, err = pc.APIExecute(ctx, "POST", "resources", CreateResource)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
+	// Save TenantMetadata to the database
+	if err := r.DB.Create(&tenantMetadata).Error; err != nil {
+		return nil, fmt.Errorf("failed to create tenant metadata: %w", err)
+	}
 
-	// }
-
-	return convertTenantToGraphQL(tenantDB), nil
+	// Return the created Tenant object
+	return &models.Tenant{
+		ID:          tenantResource.ResourceID,
+		Name:        tenantResource.Name,
+		Description: input.Description,
+		ContactInfo: &models.ContactInfo{
+			Email:       input.ContactInfo.Email,
+			PhoneNumber: input.ContactInfo.PhoneNumber,
+			Address: &models.Address{
+				Street:  input.ContactInfo.Address.Street,
+				City:    input.ContactInfo.Address.City,
+				State:   input.ContactInfo.Address.State,
+				ZipCode: input.ContactInfo.Address.ZipCode,
+				Country: input.ContactInfo.Address.Country,
+			},
+		},
+		CreatedAt: tenantResource.CreatedAt.String(),
+		CreatedBy: &tenantResource.CreatedBy,
+	}, nil
 }
 
 // UpdateTenant resolver for updating a Tenant
-func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, id string, input models.TenantInput) (*models.Tenant, error) {
-	var Tenant *dto.Tenant
-	if err := r.DB.Where(&dto.Tenant{ID: id}).First(&Tenant).Error; err != nil {
-		return nil, err
+func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.UpdateTenantInput) (*models.Tenant, error) {
+	// Fetch the existing TenantResource
+	var tenantResource dto.TenantResource
+	if err := r.DB.Where(&dto.TenantResource{ResourceID: input.ID}).First(&tenantResource).Error; err != nil {
+		return nil, fmt.Errorf("tenant resource not found: %w", err)
 	}
 
-	if Tenant != nil {
-		pc := permit.NewPermitClient()
-		_, err := pc.APIExecute(ctx, "PATCH", "tenants/"+Tenant.ID, map[string]interface{}{
-			"name": input.Name,
-		})
-		if err != nil {
-			return nil, err
+	// Update TenantResource fields if provided
+	if input.Name != nil && *input.Name != "" {
+		tenantResource.Name = *input.Name
+	}
+	if input.ParentOrgID != nil && *input.ParentOrgID != "" {
+		// Validate ParentOrgID
+		var parentOrg dto.TenantResource
+		if err := r.DB.Where(&dto.TenantResource{ResourceID: uuid.MustParse(*input.ParentOrgID)}).First(&parentOrg).Error; err != nil {
+			return nil, fmt.Errorf("parent organization not found: %w", err)
 		}
-	} else {
-		return nil, fmt.Errorf("Tenant not found")
+		parsedUUID := uuid.MustParse(*input.ParentOrgID)
+		tenantResource.ParentResourceID = &parsedUUID
+	}
+	tenantResource.UpdatedBy = input.UpdatedBy
+	tenantResource.UpdatedAt = time.Now()
+
+	// Save updated TenantResource to the database
+	if err := r.DB.Save(&tenantResource).Error; err != nil {
+		return nil, fmt.Errorf("failed to update tenant resource: %w", err)
 	}
 
-	if input.Name != "" {
-		Tenant.Name = input.Name
-	}
-	if input.Description != nil {
-		Tenant.Description = *input.Description
-	}
-	if input.ResourceID != nil {
-		Tenant.ResourceID = *input.ResourceID
+	// Fetch the existing TenantMetadata
+	var tenantMetadata dto.TenantMetadata
+	if err := r.DB.Where(&dto.TenantMetadata{ResourceID: tenantResource.ResourceID.String()}).First(&tenantMetadata).Error; err != nil {
+		return nil, fmt.Errorf("tenant metadata not found: %w", err)
 	}
 
-	if input.ParentOrgID != "" {
-		Tenant.ParentOrgID = input.ParentOrgID
+	// Unmarshal the existing metadata
+	metadata := map[string]interface{}{}
+	if err := json.Unmarshal(tenantMetadata.Metadata, &metadata); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal metadata: %w", err)
 	}
 
-	if input.Metadata != nil {
-		var temp interface{}
-		err := json.Unmarshal([]byte(*input.Metadata), &temp)
-		if err != nil {
-			return nil, fmt.Errorf("invalid JSON in metadata: %v", err)
+	// Update metadata fields if provided
+	if input.Description != nil && *input.Description != "" {
+		metadata["description"] = *input.Description
+	}
+	if input.ContactInfo != nil {
+		contactInfo := metadata["contactInfo"].(map[string]interface{})
+		if input.ContactInfo.Email != nil && *input.ContactInfo.Email != "" {
+			contactInfo["email"] = *input.ContactInfo.Email
 		}
-		// Re-marshal to standardize the JSON format
-		metaDataJson, err := json.Marshal(temp)
-		if err != nil {
-			return nil, err
+		if input.ContactInfo.PhoneNumber != nil && *input.ContactInfo.PhoneNumber != "" {
+			contactInfo["phoneNumber"] = *input.ContactInfo.PhoneNumber
 		}
-		Tenant.Metadata = metaDataJson
-	} else {
-		Tenant.Metadata = json.RawMessage(`{}`)
-	}
-	if input.ParentTenantID != nil {
-		Tenant.ParentTenantID = *input.ParentTenantID
-	}
-	if input.UpdatedBy != nil {
-		Tenant.UpdatedBy = *input.UpdatedBy
-	}
-	if Tenant == nil {
-		return nil, fmt.Errorf("Tenant not found")
+		if input.ContactInfo.Address != nil {
+			address := contactInfo["address"].(map[string]interface{})
+			if input.ContactInfo.Address.Street != nil && *input.ContactInfo.Address.Street != "" {
+				address["street"] = *input.ContactInfo.Address.Street
+			}
+			if input.ContactInfo.Address.City != nil && *input.ContactInfo.Address.City != "" {
+				address["city"] = *input.ContactInfo.Address.City
+			}
+			if input.ContactInfo.Address.State != nil && *input.ContactInfo.Address.State != "" {
+				address["state"] = *input.ContactInfo.Address.State
+			}
+			if input.ContactInfo.Address.ZipCode != nil && *input.ContactInfo.Address.ZipCode != "" {
+				address["zipCode"] = *input.ContactInfo.Address.ZipCode
+			}
+			if input.ContactInfo.Address.Country != nil && *input.ContactInfo.Address.Country != "" {
+				address["country"] = *input.ContactInfo.Address.Country
+			}
+		}
+		metadata["contactInfo"] = contactInfo
 	}
 
-	if err := r.DB.Where(&dto.Tenant{ID: id}).Save(&Tenant).Error; err != nil {
-		return nil, err
+	// Marshal the updated metadata back to JSON
+	updatedMetadataJSON, err := json.Marshal(metadata)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal updated metadata: %w", err)
+	}
+	tenantMetadata.Metadata = updatedMetadataJSON
+	tenantMetadata.UpdatedBy = "system" // Replace with actual user
+	tenantMetadata.UpdatedAt = time.Now()
+
+	// Save updated TenantMetadata to the database
+	if err := r.DB.Save(&tenantMetadata).Error; err != nil {
+		return nil, fmt.Errorf("failed to update tenant metadata: %w", err)
 	}
 
-	return convertTenantToGraphQL(Tenant), nil
+	// Return the updated Tenant object
+	return &models.Tenant{
+		ID:          tenantResource.ResourceID,
+		Name:        tenantResource.Name,
+		Description: ptr.String(metadata["description"].(string)),
+		ContactInfo: &models.ContactInfo{
+			Email:       ptr.String(metadata["contactInfo"].(map[string]interface{})["email"].(string)),
+			PhoneNumber: ptr.String(metadata["contactInfo"].(map[string]interface{})["phoneNumber"].(string)),
+			Address: &models.Address{
+				Street:  ptr.String(metadata["contactInfo"].(map[string]interface{})["address"].(map[string]interface{})["street"].(string)),
+				City:    ptr.String(metadata["contactInfo"].(map[string]interface{})["address"].(map[string]interface{})["city"].(string)),
+				State:   ptr.String(metadata["contactInfo"].(map[string]interface{})["address"].(map[string]interface{})["state"].(string)),
+				ZipCode: ptr.String(metadata["contactInfo"].(map[string]interface{})["address"].(map[string]interface{})["zipCode"].(string)),
+				Country: ptr.String(metadata["contactInfo"].(map[string]interface{})["address"].(map[string]interface{})["country"].(string)),
+			},
+		},
+		UpdatedAt: ptr.String(tenantResource.UpdatedAt.String()),
+		UpdatedBy: &tenantResource.UpdatedBy,
+	}, nil
 }
 
-// DeleteTenant resolver for deleting a Tenant
-func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id string) (bool, error) {
-	var tenant *dto.Tenant
-	if err := r.DB.Where(&dto.Tenant{ID: id}).First(&tenant).Error; err != nil {
-		return false, err
-	}
-	if tenant == nil {
-		return false, fmt.Errorf("Tenant not found")
-	}
-	pc := permit.NewPermitClient()
-	_, err := pc.APIExecute(ctx, "DELETE", "tenants/"+tenant.ID, nil)
-	if err != nil {
-		return false, err
+func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID) (bool, error) {
+	// Start a database transaction
+	tx := r.DB.Begin()
+
+	// Fetch the TenantResource to ensure it exists
+	var tenantResource dto.TenantResource
+	if err := tx.Where(&dto.TenantResource{ResourceID: id}).First(&tenantResource).Error; err != nil {
+		tx.Rollback()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, fmt.Errorf("tenant resource not found: %w", err)
+		}
+		return false, fmt.Errorf("failed to fetch tenant resource: %w", err)
 	}
 
-	tenant.RowStatus = 0
-	if err := r.DB.Where(&dto.Tenant{ID: id}).Save(&tenant).Error; err != nil {
-		return false, err
+	// Delete associated TenantMetadata
+	if err := tx.Where(&dto.TenantMetadata{ResourceID: id.String()}).Delete(&dto.TenantMetadata{}).Error; err != nil {
+		tx.Rollback()
+		return false, fmt.Errorf("failed to delete tenant metadata: %w", err)
 	}
 
-	if err := r.DB.Delete(&tenant).Error; err != nil {
-		return false, err
+	// Delete the TenantResource
+	if err := tx.Delete(&tenantResource).Error; err != nil {
+		tx.Rollback()
+		return false, fmt.Errorf("failed to delete tenant resource: %w", err)
 	}
 
+	// Commit the transaction
+	if err := tx.Commit().Error; err != nil {
+		return false, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	// Return success
 	return true, nil
 }

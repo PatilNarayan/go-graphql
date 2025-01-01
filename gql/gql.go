@@ -5,8 +5,6 @@ import (
 	clientorganizationunit "go_graphql/internal/clientOrganizationUnit"
 	"go_graphql/internal/groups"
 	"go_graphql/internal/organizations"
-	"go_graphql/internal/resource"
-	"go_graphql/internal/role"
 	"go_graphql/internal/tenants"
 
 	"gorm.io/gorm"
@@ -24,7 +22,6 @@ func (r *Resolver) Query() generated.QueryResolver {
 		TenantQueryResolver:                 &tenants.TenantQueryResolver{DB: r.DB},
 		GroupQueryResolver:                  &groups.GroupQueryResolver{DB: r.DB},
 		ClientOrganizationUnitQueryResolver: &clientorganizationunit.ClientOrganizationUnitQueryResolver{DB: r.DB},
-		ResourceQueryResolver:               &resource.ResourceQueryResolver{DB: r.DB},
 	}
 }
 
@@ -34,7 +31,6 @@ func (r *Resolver) Mutation() generated.MutationResolver {
 		OrganizationMutationResolver: &organizations.OrganizationMutationResolver{DB: r.DB},
 		TenantMutationResolver:       &tenants.TenantMutationResolver{DB: r.DB},
 		GroupMutationResolver:        &groups.GroupMutationResolver{DB: r.DB},
-		RoleMutationResolver:         &role.RoleMutationResolver{DB: r.DB},
 	}
 }
 
@@ -59,7 +55,6 @@ type queryResolver struct {
 	*tenants.TenantQueryResolver
 	*groups.GroupQueryResolver
 	*clientorganizationunit.ClientOrganizationUnitQueryResolver
-	*resource.ResourceQueryResolver
 }
 
 type mutationResolver struct {

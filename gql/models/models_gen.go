@@ -28,12 +28,11 @@ type Resource interface {
 }
 
 type Address struct {
-	ID      uuid.UUID `json:"id"`
-	Street  *string   `json:"street,omitempty"`
-	City    *string   `json:"city,omitempty"`
-	State   *string   `json:"state,omitempty"`
-	ZipCode *string   `json:"zipCode,omitempty"`
-	Country *string   `json:"country,omitempty"`
+	Street  *string `json:"street,omitempty"`
+	City    *string `json:"city,omitempty"`
+	State   *string `json:"state,omitempty"`
+	ZipCode *string `json:"zipCode,omitempty"`
+	Country *string `json:"country,omitempty"`
 }
 
 type ClientOrganizationUnit struct {
@@ -95,8 +94,9 @@ type CreateRootInput struct {
 type CreateTenantInput struct {
 	Name        string            `json:"name"`
 	Description *string           `json:"description,omitempty"`
-	ParentOrgID string            `json:"parentOrgId"`
+	ParentOrgID *uuid.UUID        `json:"parentOrgId,omitempty"`
 	ContactInfo *ContactInfoInput `json:"contactInfo,omitempty"`
+	CreatedBy   string            `json:"createdBy"`
 }
 
 type Root struct {
@@ -125,7 +125,7 @@ type Tenant struct {
 	ID          uuid.UUID    `json:"id"`
 	Name        string       `json:"name"`
 	Description *string      `json:"description,omitempty"`
-	ParentOrg   Organization `json:"parentOrg"`
+	ParentOrg   Organization `json:"parentOrg,omitempty"`
 	ContactInfo *ContactInfo `json:"contactInfo,omitempty"`
 	CreatedAt   string       `json:"created_at"`
 	UpdatedAt   *string      `json:"updated_at,omitempty"`
@@ -168,9 +168,10 @@ type UpdateRootInput struct {
 }
 
 type UpdateTenantInput struct {
-	ID            uuid.UUID `json:"id"`
-	Name          *string   `json:"name,omitempty"`
-	Description   *string   `json:"description,omitempty"`
-	ParentOrgID   *string   `json:"parentOrgId,omitempty"`
-	ContactInfoID string    `json:"contactInfoId"`
+	ID          uuid.UUID         `json:"id"`
+	Name        *string           `json:"name,omitempty"`
+	Description *string           `json:"description,omitempty"`
+	ParentOrgID *string           `json:"parentOrgId,omitempty"`
+	ContactInfo *ContactInfoInput `json:"contactInfo,omitempty"`
+	UpdatedBy   string            `json:"updatedBy"`
 }

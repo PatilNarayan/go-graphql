@@ -4,7 +4,7 @@ import (
 	"context"
 	"go_graphql/gql/models"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 

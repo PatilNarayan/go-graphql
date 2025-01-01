@@ -10,7 +10,7 @@ import (
 
 // Tenant struct aligned with schema
 type TenantMetadata struct {
-	ID         string          `gorm:"type:char(36);primaryKey" json:"id"`
+	ID         uuid.UUID       `gorm:"type:char(36);primaryKey;column:id" json:"id"`
 	ResourceID string          `gorm:"type:char(36);not null" json:"resource_id"`
 	Metadata   json.RawMessage `gorm:"type:json;" json:"metadata"`
 	RowStatus  int             `gorm:"default:1" json:"row_status"`
@@ -23,16 +23,10 @@ type TenantMetadata struct {
 
 // BeforeCreate hook to generate UUID before saving
 func (t *TenantMetadata) BeforeCreate(tx *gorm.DB) (err error) {
-	t.ID = uuid.New().String()
+	t.ID = uuid.New()
 	return
 }
 
 func (t *TenantMetadata) TableName() string {
 	return "tnt_resource_metadata"
 }
-
-// // BeforeCreate hook for ContactInfo
-// func (c *ContactInfo) BeforeCreate(tx *gorm.DB) (err error) {
-// 	c.ID = uuid.New().String()
-// 	return
-// }

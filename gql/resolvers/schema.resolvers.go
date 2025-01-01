@@ -13,21 +13,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// CreateRoot is the resolver for the createRoot field.
-func (r *mutationResolver) CreateRoot(ctx context.Context, input models.CreateRootInput) (*models.Root, error) {
-	panic(fmt.Errorf("not implemented: CreateRoot - createRoot"))
-}
-
-// UpdateRoot is the resolver for the updateRoot field.
-func (r *mutationResolver) UpdateRoot(ctx context.Context, input models.UpdateRootInput) (*models.Root, error) {
-	panic(fmt.Errorf("not implemented: UpdateRoot - updateRoot"))
-}
-
-// DeleteRoot is the resolver for the deleteRoot field.
-func (r *mutationResolver) DeleteRoot(ctx context.Context, id uuid.UUID) (bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteRoot - deleteRoot"))
-}
-
 // CreateTenant is the resolver for the createTenant field.
 func (r *mutationResolver) CreateTenant(ctx context.Context, input models.CreateTenantInput) (*models.Tenant, error) {
 	panic(fmt.Errorf("not implemented: CreateTenant - createTenant"))
@@ -43,46 +28,6 @@ func (r *mutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID) (bool
 	panic(fmt.Errorf("not implemented: DeleteTenant - deleteTenant"))
 }
 
-// CreateClientOrganizationUnit is the resolver for the createClientOrganizationUnit field.
-func (r *mutationResolver) CreateClientOrganizationUnit(ctx context.Context, input models.CreateClientOrganizationUnitInput) (*models.ClientOrganizationUnit, error) {
-	panic(fmt.Errorf("not implemented: CreateClientOrganizationUnit - createClientOrganizationUnit"))
-}
-
-// UpdateClientOrganizationUnit is the resolver for the updateClientOrganizationUnit field.
-func (r *mutationResolver) UpdateClientOrganizationUnit(ctx context.Context, input models.UpdateClientOrganizationUnitInput) (*models.ClientOrganizationUnit, error) {
-	panic(fmt.Errorf("not implemented: UpdateClientOrganizationUnit - updateClientOrganizationUnit"))
-}
-
-// DeleteClientOrganizationUnit is the resolver for the deleteClientOrganizationUnit field.
-func (r *mutationResolver) DeleteClientOrganizationUnit(ctx context.Context, id uuid.UUID) (bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteClientOrganizationUnit - deleteClientOrganizationUnit"))
-}
-
-// GetOrganization is the resolver for the getOrganization field.
-func (r *queryResolver) GetOrganization(ctx context.Context, id uuid.UUID) (models.Organization, error) {
-	panic(fmt.Errorf("not implemented: GetOrganization - getOrganization"))
-}
-
-// AllOrganizations is the resolver for the allOrganizations field.
-func (r *queryResolver) AllOrganizations(ctx context.Context) ([]models.Organization, error) {
-	panic(fmt.Errorf("not implemented: AllOrganizations - allOrganizations"))
-}
-
-// GetResource is the resolver for the getResource field.
-func (r *queryResolver) GetResource(ctx context.Context, id uuid.UUID) (models.Resource, error) {
-	panic(fmt.Errorf("not implemented: GetResource - getResource"))
-}
-
-// AllResources is the resolver for the allResources field.
-func (r *queryResolver) AllResources(ctx context.Context) ([]models.Resource, error) {
-	panic(fmt.Errorf("not implemented: AllResources - allResources"))
-}
-
-// GetRoot is the resolver for the getRoot field.
-func (r *queryResolver) GetRoot(ctx context.Context, id uuid.UUID) (*models.Root, error) {
-	panic(fmt.Errorf("not implemented: GetRoot - getRoot"))
-}
-
 // GetTenant is the resolver for the getTenant field.
 func (r *queryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*models.Tenant, error) {
 	panic(fmt.Errorf("not implemented: GetTenant - getTenant"))
@@ -91,16 +36,6 @@ func (r *queryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*models.Te
 // AllTenants is the resolver for the allTenants field.
 func (r *queryResolver) AllTenants(ctx context.Context) ([]*models.Tenant, error) {
 	panic(fmt.Errorf("not implemented: AllTenants - allTenants"))
-}
-
-// GetClientOrganizationUnit is the resolver for the getClientOrganizationUnit field.
-func (r *queryResolver) GetClientOrganizationUnit(ctx context.Context, id uuid.UUID) (*models.ClientOrganizationUnit, error) {
-	panic(fmt.Errorf("not implemented: GetClientOrganizationUnit - getClientOrganizationUnit"))
-}
-
-// AllClientOrganizationUnits is the resolver for the allClientOrganizationUnits field.
-func (r *queryResolver) AllClientOrganizationUnits(ctx context.Context) ([]*models.ClientOrganizationUnit, error) {
-	panic(fmt.Errorf("not implemented: AllClientOrganizationUnits - allClientOrganizationUnits"))
 }
 
 // Mutation returns generated.MutationResolver implementation.

@@ -6,7 +6,7 @@ import (
 	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -24,7 +24,7 @@ func (r *OrganizationQueryResolver) Organizations(ctx context.Context) ([]*dto.O
 }
 
 // GetOrganization resolver for fetching a single organization by ID
-func (r *OrganizationQueryResolver) GetOrganization(ctx context.Context, id uuid.UUID) (*dto.Organization, error) {
+func (r *OrganizationQueryResolver) GetOrganization(ctx context.Context, id uuid.UUID) (models.Organization, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("id cannot be nil")
 	}
@@ -33,7 +33,7 @@ func (r *OrganizationQueryResolver) GetOrganization(ctx context.Context, id uuid
 	if err := r.DB.First(&organization, "organization_id = ?", id).Error; err != nil {
 		return nil, err
 	}
-	return &organization, nil
+	return nil, nil
 }
 
 func (r *OrganizationQueryResolver) AllOrganizations(ctx context.Context) ([]models.Organization, error) {

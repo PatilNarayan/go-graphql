@@ -15,7 +15,7 @@ func InitDB() *gorm.DB {
 		panic("failed to connect database")
 	}
 
-	err = db.AutoMigrate(&dto.Tenant{}, &dto.GroupEntity{}, &dto.Role{}, &dto.RoleAssignment{}, &dto.Permission{})
+	err = db.AutoMigrate(&dto.TenantResource{}, &dto.TenantMetadata{})
 	if err != nil {
 		panic(err)
 	}

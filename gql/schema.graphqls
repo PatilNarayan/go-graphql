@@ -45,7 +45,7 @@ type Tenant implements Resource & Organization {
   id: UUID!
   name: String!
   description: String
-  parentOrg: Organization!
+  parentOrg: Organization
   contactInfo: ContactInfo
   created_at: String!
   updated_at: String
@@ -65,12 +65,12 @@ input ContactInfoInput {
   address: CreateAddressInput
 }
 
-
 input CreateTenantInput {
   name: String!
   description: String
-  parentOrgId: String!
+  parentOrgId: UUID
   contactInfo: ContactInfoInput
+  createdBy: String!
 }
 
 input UpdateTenantInput {
@@ -78,11 +78,11 @@ input UpdateTenantInput {
   name: String
   description: String
   parentOrgId: String
-  contactInfoId: String!
+  contactInfo: ContactInfoInput
+  updatedBy: String!
 }
 
 type Address {
-  id: UUID!
   street: String
   city: String
   state: String
@@ -134,35 +134,35 @@ input UpdateClientOrganizationUnitInput {
 }
 
 type Query {
-  getOrganization(id: UUID!): Organization
-  allOrganizations: [Organization!]!
+  # getOrganization(id: UUID!): Organization
+  # allOrganizations: [Organization!]!
 
-  getResource(id: UUID!): Resource
-  allResources: [Resource!]!
+  # getResource(id: UUID!): Resource
+  # allResources: [Resource!]!
 
-  getRoot(id: UUID!): Root
+  # getRoot(id: UUID!): Root
 
   getTenant(id: UUID!): Tenant
-  allTenants: [Tenant!]!
+  allTenants: [Tenant]
 
-  getClientOrganizationUnit(id: UUID!): ClientOrganizationUnit
-  allClientOrganizationUnits: [ClientOrganizationUnit!]!
+  # getClientOrganizationUnit(id: UUID!): ClientOrganizationUnit
+  # allClientOrganizationUnits: [ClientOrganizationUnit!]!
 }
 
 type Mutation {
-  createRoot(input: CreateRootInput!): Root!
-  updateRoot(input: UpdateRootInput!): Root!
-  deleteRoot(id: UUID!): Boolean!
+  # createRoot(input: CreateRootInput!): Root!
+  # updateRoot(input: UpdateRootInput!): Root!
+  # deleteRoot(id: UUID!): Boolean!
 
   createTenant(input: CreateTenantInput!): Tenant!
   updateTenant(input: UpdateTenantInput!): Tenant!
   deleteTenant(id: UUID!): Boolean!
 
-  createClientOrganizationUnit(
-    input: CreateClientOrganizationUnitInput!
-  ): ClientOrganizationUnit!
-  updateClientOrganizationUnit(
-    input: UpdateClientOrganizationUnitInput!
-  ): ClientOrganizationUnit!
-  deleteClientOrganizationUnit(id: UUID!): Boolean!
+  # createClientOrganizationUnit(
+  #   input: CreateClientOrganizationUnitInput!
+  # ): ClientOrganizationUnit!
+  # updateClientOrganizationUnit(
+  #   input: UpdateClientOrganizationUnitInput!
+  # ): ClientOrganizationUnit!
+  # deleteClientOrganizationUnit(id: UUID!): Boolean!
 }

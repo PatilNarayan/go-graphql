@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
 
+	"github.com/google/uuid"
 	"go.uber.org/thriftrw/ptr"
 	"gorm.io/gorm"
 )
@@ -16,114 +18,151 @@ type TenantQueryResolver struct {
 }
 
 // Tenants resolver for fetching all Tenants
-func (r *TenantQueryResolver) Tenants(ctx context.Context) ([]*models.Tenant, error) {
-	var Tenants []*dto.Tenant
-	if err := r.DB.Find(&Tenants).Error; err != nil {
-		return nil, err
+func (r *TenantQueryResolver) AllTenants(ctx context.Context) ([]*models.Tenant, error) {
+	var tenantResources []dto.TenantResource
+	if err := r.DB.Find(&tenantResources).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch tenants: %w", err)
 	}
-	var TenantsGraphQL []*models.Tenant
-	for _, tenant := range Tenants {
-		tenantGraphQL := convertTenantToGraphQL(tenant)
-		TenantsGraphQL = append(TenantsGraphQL, tenantGraphQL)
+
+	tenants := make([]*models.Tenant, 0, len(tenantResources))
+	for _, tenantResource := range tenantResources {
+		var parentorg *dto.TenantResource
+		if tenantResource.ParentResourceID != nil {
+			if err := r.DB.Where(&dto.TenantResource{ResourceID: *tenantResource.ParentResourceID}).First(&parentorg).Error; err != nil {
+				return nil, fmt.Errorf("failed to fetch parent organization: %w", err)
+			}
+		}
+
+		tenant := convertTenantToGraphQL(&tenantResource, parentorg)
+		// Fetch associated metadata
+		var tenantMetadata dto.TenantMetadata
+		if err := r.DB.Where(&dto.TenantMetadata{ResourceID: tenantResource.ResourceID.String()}).First(&tenantMetadata).Error; err == nil {
+			// Parse metadata and update tenant
+			updateTenantWithMetadata(tenant, tenantMetadata)
+		}
+		tenants = append(tenants, tenant)
 	}
-	return TenantsGraphQL, nil
+
+	return tenants, nil
 }
 
 // GetTenant resolver for fetching a single Tenant by ID
-func (r *TenantQueryResolver) GetTenant(ctx context.Context, id string) (*models.Tenant, error) {
-	if id == "" {
-		return nil, errors.New("id cannot be nil")
+func (r *TenantQueryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*models.Tenant, error) {
+	var tenantResource dto.TenantResource
+	if err := r.DB.Where(&dto.TenantResource{ResourceID: id}).First(&tenantResource).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("tenant not found: %w", err)
+		}
+		return nil, fmt.Errorf("failed to fetch tenant: %w", err)
 	}
 
-	var Tenant dto.Tenant
-	if err := r.DB.Where(&dto.Tenant{ID: id}).First(&Tenant).Error; err != nil {
-		return nil, err
-	}
-	return convertTenantToGraphQL(&Tenant), nil
-}
-
-func convertTenantToGraphQL(tenant *dto.Tenant) *models.Tenant {
-	var tenantGraphQL models.Tenant
-
-	// Ensure ID is always set
-	tenantGraphQL.ID = tenant.ID
-
-	// Ensure Name is always set
-	tenantGraphQL.Name = tenant.Name
-
-	// Ensure Description is always set (use empty string if nil)
-	if tenant.Description == "" {
-		tenantGraphQL.Description = ptr.String("") // Default to empty string if nil
-	} else {
-		tenantGraphQL.Description = &tenant.Description
-	}
-
-	// Ensure ParentOrgID is always set (use empty string if nil)
-	if tenant.ParentOrgID == "" {
-		tenantGraphQL.ParentOrgID = "" // Default to empty string if nil
-	} else {
-		tenantGraphQL.ParentOrgID = tenant.ParentOrgID
-	}
-
-	// Ensure Metadata is always set (use "{}" if nil or empty)
-	if tenant.Metadata == nil {
-		tenantGraphQL.Metadata = ptr.String("{}") // Default to "{}" if nil or empty
-	} else {
-		var temp interface{}
-		err := json.Unmarshal([]byte(tenant.Metadata), &temp)
-		if err != nil {
-			tenantGraphQL.Metadata = ptr.String("{}") // Default to "{}" if invalid JSON
-		} else {
-			metaDataJson, err := json.Marshal(temp)
-			if err != nil {
-				tenantGraphQL.Metadata = ptr.String("{}") // Default to "{}" if re-marshalling fails
-			} else {
-				tenantGraphQL.Metadata = ptr.String(string(metaDataJson))
+	var parentOrg *dto.TenantResource
+	if tenantResource.ParentResourceID != nil {
+		if err := r.DB.Where(&dto.TenantResource{ResourceID: *tenantResource.ParentResourceID}).First(&parentOrg).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, fmt.Errorf("parent organization not found: %w", err)
 			}
+			return nil, fmt.Errorf("failed to fetch parent organization: %w", err)
 		}
 	}
 
-	// Ensure ParentTenantID is always set (use empty string if nil)
-	if tenant.ParentTenantID == "" {
-		tenantGraphQL.ParentTenantID = nil // Default to nil if empty
-	} else {
-		tenantGraphQL.ParentTenantID = &tenant.ParentTenantID
+	tenant := convertTenantToGraphQL(&tenantResource, parentOrg)
+
+	// Fetch associated metadata
+	var tenantMetadata dto.TenantMetadata
+	if err := r.DB.Where("resource_id = ?", id).First(&tenantMetadata).Error; err == nil {
+		// Parse metadata and update tenant
+		updateTenantWithMetadata(tenant, tenantMetadata)
 	}
 
-	// Ensure ResourceID is always set (use empty string if nil)
-	if tenant.ResourceID == "" {
-		tenantGraphQL.ResourceID = nil // Default to nil if empty
-	} else {
-		tenantGraphQL.ResourceID = &tenant.ResourceID
-	}
-
-	// Ensure CreatedAt is always set
-	tenantGraphQL.CreatedAt = tenant.CreatedAt.String()
-
-	// Ensure UpdatedAt is always set (use nil if empty)
-	if tenant.UpdatedAt.IsZero() {
-		tenantGraphQL.UpdatedAt = nil // Default to nil if empty
-	} else {
-		tenantGraphQL.UpdatedAt = ptr.String(tenant.UpdatedAt.String())
-	}
-
-	// Ensure UpdatedBy is always set (use empty string if nil)
-	if tenant.UpdatedBy == "" {
-		tenantGraphQL.UpdatedBy = nil // Default to nil if empty
-	} else {
-		tenantGraphQL.UpdatedBy = &tenant.UpdatedBy
-	}
-
-	// Ensure CreatedBy is always set (use empty string if nil)
-	if tenant.CreatedBy == "" {
-		tenantGraphQL.CreatedBy = nil // Default to nil if empty
-	} else {
-		tenantGraphQL.CreatedBy = &tenant.CreatedBy
-	}
-
-	return &tenantGraphQL
+	return tenant, nil
 }
 
-func (r *TenantQueryResolver) AllTenants(ctx context.Context) ([]*models.Tenant, error) {
-	return r.Tenants(ctx)
+// Helper function to convert a TenantResource to a GraphQL Tenant model
+func convertTenantToGraphQL(tenant *dto.TenantResource, parentOrg *dto.TenantResource) *models.Tenant {
+	if tenant == nil {
+		return nil
+	}
+
+	resp := &models.Tenant{
+		ID:        tenant.ResourceID,
+		Name:      tenant.Name,
+		CreatedAt: tenant.CreatedAt.String(),
+		CreatedBy: &tenant.CreatedBy,
+		UpdatedAt: ptr.String(tenant.UpdatedAt.String()),
+		UpdatedBy: &tenant.UpdatedBy,
+	}
+
+	if parentOrg != nil {
+		resp.ParentOrg = &models.Root{
+			ID:        parentOrg.ResourceID,
+			Name:      parentOrg.Name,
+			CreatedAt: parentOrg.CreatedAt.String(),
+			UpdatedAt: ptr.String(parentOrg.UpdatedAt.String()),
+			CreatedBy: &parentOrg.CreatedBy,
+			UpdatedBy: &parentOrg.UpdatedBy,
+		}
+	}
+
+	return resp
+}
+
+// Helper function to update Tenant with metadata
+func updateTenantWithMetadata(tenant *models.Tenant, metadata dto.TenantMetadata) {
+	if tenant == nil {
+		return
+	}
+
+	var meta map[string]interface{}
+	if err := json.Unmarshal(metadata.Metadata, &meta); err != nil {
+		return
+	}
+
+	// Safely update fields from metadata
+	if description, ok := meta["description"].(string); ok {
+		tenant.Description = ptr.String(description)
+	}
+
+	if contactInfo, ok := meta["contactInfo"].(map[string]interface{}); ok {
+		// Check if ContactInfo is non-nil
+		if tenant.ContactInfo == nil {
+			tenant.ContactInfo = &models.ContactInfo{}
+		}
+
+		if email, ok := contactInfo["email"].(string); ok {
+			tenant.ContactInfo.Email = ptr.String(email)
+		}
+
+		if phoneNumber, ok := contactInfo["phoneNumber"].(string); ok {
+			tenant.ContactInfo.PhoneNumber = ptr.String(phoneNumber)
+		}
+
+		// Handle Address
+		if address, ok := contactInfo["address"].(map[string]interface{}); ok {
+			// Initialize Address if it's nil
+			if tenant.ContactInfo.Address == nil {
+				tenant.ContactInfo.Address = &models.Address{}
+			}
+
+			if street, ok := address["street"].(string); ok {
+				tenant.ContactInfo.Address.Street = ptr.String(street)
+			}
+
+			if city, ok := address["city"].(string); ok {
+				tenant.ContactInfo.Address.City = ptr.String(city)
+			}
+
+			if state, ok := address["state"].(string); ok {
+				tenant.ContactInfo.Address.State = ptr.String(state)
+			}
+
+			if zipCode, ok := address["zipCode"].(string); ok {
+				tenant.ContactInfo.Address.ZipCode = ptr.String(zipCode)
+			}
+
+			if country, ok := address["country"].(string); ok {
+				tenant.ContactInfo.Address.Country = ptr.String(country)
+			}
+		}
+	}
 }
