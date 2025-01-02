@@ -19,8 +19,14 @@ type TenantQueryResolver struct {
 
 // Tenants resolver for fetching all Tenants
 func (r *TenantQueryResolver) AllTenants(ctx context.Context) ([]*models.Tenant, error) {
+
+	resourceType := dto.Mst_ResourceTypes{}
+	if err := r.DB.Where("name = ?", "Tenant").First(&resourceType).Error; err != nil {
+		return nil, fmt.Errorf("resource type not found: %w", err)
+	}
+
 	var tenantResources []dto.TenantResource
-	if err := r.DB.Find(&tenantResources).Error; err != nil {
+	if err := r.DB.Where(&dto.TenantResource{ResourceTypeID: resourceType.ResourceTypeID}).Find(&tenantResources).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch tenants: %w", err)
 	}
 
@@ -48,8 +54,13 @@ func (r *TenantQueryResolver) AllTenants(ctx context.Context) ([]*models.Tenant,
 
 // GetTenant resolver for fetching a single Tenant by ID
 func (r *TenantQueryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*models.Tenant, error) {
+	resourceType := dto.Mst_ResourceTypes{}
+	if err := r.DB.Where("name = ?", "Tenant").First(&resourceType).Error; err != nil {
+		return nil, fmt.Errorf("resource type not found: %w", err)
+	}
+
 	var tenantResource dto.TenantResource
-	if err := r.DB.Where(&dto.TenantResource{ResourceID: id}).First(&tenantResource).Error; err != nil {
+	if err := r.DB.Where(&dto.TenantResource{ResourceID: id, ResourceTypeID: resourceType.ResourceTypeID}).First(&tenantResource).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("tenant not found: %w", err)
 		}
