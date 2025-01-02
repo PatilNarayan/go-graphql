@@ -30,7 +30,7 @@ func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 	}
 
 	//get resource type by name
-	resourceType := dto.ResourceType{}
+	resourceType := dto.Mst_ResourceType{}
 	if err := r.DB.Where("name = ?", "Tenant").First(&resourceType).Error; err != nil {
 		return nil, fmt.Errorf("resource type not found: %w", err)
 	}

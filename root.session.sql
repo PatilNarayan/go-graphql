@@ -1,9 +1,9 @@
--- Create the resource_types table with GORM UUID format
-DROP TABLE IF EXISTS resource_types;
+-- Create the mst_resource_types table with GORM UUID format
+DROP TABLE IF EXISTS mst_resource_types;
 DROP TABLE IF EXISTS tnt_resource_metadata;
 DROP TABLE IF EXISTS tnt_resource;
 
-CREATE TABLE IF NOT EXISTS resource_types (
+CREATE TABLE IF NOT EXISTS mst_resource_types (
     resource_type_id VARCHAR(36) PRIMARY KEY,
     service_id VARCHAR(36) NOT NULL,
     name VARCHAR(45) NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS resource_types (
 );
 
 -- Insert sample data
-INSERT INTO resource_types (
+INSERT INTO mst_resource_types (
     resource_type_id,
     service_id,
     name,
@@ -57,5 +57,5 @@ INSERT INTO resource_types (
 );
 
 -- Create indexes for better performance
-CREATE INDEX idx_resource_types_service_id ON resource_types(service_id);
-CREATE INDEX idx_resource_types_name ON resource_types(name);
+CREATE INDEX idx_mst_resource_types_service_id ON mst_resource_types(service_id);
+CREATE INDEX idx_mst_resource_types_name ON mst_resource_types(name);
