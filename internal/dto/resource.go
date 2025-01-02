@@ -22,7 +22,7 @@ func (t *TenantResource) TableName() string {
 	return "tnt_resource"
 }
 
-type Mst_ResourceType struct {
+type Mst_ResourceTypes struct {
 	ResourceTypeID uuid.UUID `gorm:"type:char(36);primaryKey;column:resource_type_id" json:"resource_type_id"`
 	ServiceID      uuid.UUID `gorm:"type:char(36);not null;column:service_id" json:"service_id"`
 	Name           string    `gorm:"size:45;not null;column:name" json:"name"`
@@ -33,6 +33,6 @@ type Mst_ResourceType struct {
 	UpdatedAt      time.Time `gorm:"column:updated_at;autoCreateTime" json:"updated_at"`
 }
 
-func (t *Mst_ResourceType) TableName() string {
-	return "mst_resource_type"
+func (t *Mst_ResourceTypes) TableName() string {
+	return "mst_resource_types"
 }
