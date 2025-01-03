@@ -8,6 +8,7 @@ import (
 	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
 	"go_graphql/logger"
+	"go_graphql/permit"
 	"time"
 
 	"github.com/google/uuid"
@@ -48,6 +49,16 @@ func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 		}
 		tenantResource.ParentResourceID = input.ParentOrgID
 		log.WithField("parentOrgID", input.ParentOrgID).Info("Parent organization validated")
+	}
+
+	pc := permit.NewPermitClient()
+	_, err := pc.APIExecute(ctx, "POST", "tenants", map[string]interface{}{
+		"name": input.Name,
+		"key":  tenantResource.ResourceID.String(),
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
 	if err := r.DB.Create(&tenantResource).Error; err != nil {
@@ -129,6 +140,14 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 	}
 	tenantResource.UpdatedBy = input.UpdatedBy
 	tenantResource.UpdatedAt = time.Now()
+
+	pc := permit.NewPermitClient()
+	_, err := pc.APIExecute(ctx, "PATCH", "tenants/"+input.ID.String(), map[string]interface{}{
+		"name": input.Name,
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	// Save updated TenantResource to the database
 	if err := r.DB.Save(&tenantResource).Error; err != nil {
