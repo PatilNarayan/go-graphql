@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
+	"go_graphql/logger"
 
 	"github.com/google/uuid"
 	"go.uber.org/thriftrw/ptr"
@@ -19,32 +20,43 @@ type TenantQueryResolver struct {
 
 // Tenants resolver for fetching all Tenants
 func (r *TenantQueryResolver) AllTenants(ctx context.Context) ([]*models.Tenant, error) {
+	log := logger.Log.WithField("operation", "AllTenants")
+	log.Info("Fetching all tenants")
 
 	resourceType := dto.Mst_ResourceTypes{}
 	if err := r.DB.Where("name = ?", "Tenant").First(&resourceType).Error; err != nil {
+		log.WithError(err).Error("Failed to find resource type")
 		return nil, fmt.Errorf("resource type not found: %w", err)
 	}
 
 	var tenantResources []dto.TenantResource
 	if err := r.DB.Where(&dto.TenantResource{ResourceTypeID: resourceType.ResourceTypeID}).Find(&tenantResources).Error; err != nil {
+		log.WithError(err).Error("Failed to fetch tenants")
 		return nil, fmt.Errorf("failed to fetch tenants: %w", err)
 	}
 
+	log.WithField("count", len(tenantResources)).Info("Found tenants")
 	tenants := make([]*models.Tenant, 0, len(tenantResources))
-	for _, tenantResource := range tenantResources {
-		var parentorg *dto.TenantResource
-		if tenantResource.ParentResourceID != nil {
-			if err := r.DB.Where(&dto.TenantResource{ResourceID: *tenantResource.ParentResourceID}).First(&parentorg).Error; err != nil {
+
+	for _, tr := range tenantResources {
+		tenantLog := log.WithField("tenantID", tr.ResourceID)
+		var parentOrg *dto.TenantResource
+
+		if tr.ParentResourceID != nil {
+			if err := r.DB.Where(&dto.TenantResource{ResourceID: *tr.ParentResourceID}).First(&parentOrg).Error; err != nil {
+				tenantLog.WithError(err).Error("Failed to fetch parent organization")
 				return nil, fmt.Errorf("failed to fetch parent organization: %w", err)
 			}
+			tenantLog.WithField("parentID", *tr.ParentResourceID).Info("Found parent organization")
 		}
 
-		tenant := convertTenantToGraphQL(&tenantResource, parentorg)
-		// Fetch associated metadata
-		var tenantMetadata dto.TenantMetadata
-		if err := r.DB.Where(&dto.TenantMetadata{ResourceID: tenantResource.ResourceID.String()}).First(&tenantMetadata).Error; err == nil {
-			// Parse metadata and update tenant
-			updateTenantWithMetadata(tenant, tenantMetadata)
+		tenant := convertTenantToGraphQL(&tr, parentOrg)
+		var metadata dto.TenantMetadata
+		if err := r.DB.Where(&dto.TenantMetadata{ResourceID: tr.ResourceID.String()}).First(&metadata).Error; err == nil {
+			updateTenantWithMetadata(tenant, metadata)
+			tenantLog.Info("Updated tenant with metadata")
+		} else {
+			tenantLog.WithError(err).Warn("No metadata found for tenant")
 		}
 		tenants = append(tenants, tenant)
 	}
@@ -52,15 +64,23 @@ func (r *TenantQueryResolver) AllTenants(ctx context.Context) ([]*models.Tenant,
 	return tenants, nil
 }
 
-// GetTenant resolver for fetching a single Tenant by ID
 func (r *TenantQueryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*models.Tenant, error) {
+	log := logger.Log.WithField("operation", "GetTenant").WithField("tenantID", id)
+	log.Info("Fetching tenant")
+
+	if id == uuid.Nil {
+		return nil, fmt.Errorf("tenant ID is required")
+	}
+
 	resourceType := dto.Mst_ResourceTypes{}
 	if err := r.DB.Where("name = ?", "Tenant").First(&resourceType).Error; err != nil {
+		log.WithError(err).Error("Failed to find resource type")
 		return nil, fmt.Errorf("resource type not found: %w", err)
 	}
 
 	var tenantResource dto.TenantResource
 	if err := r.DB.Where(&dto.TenantResource{ResourceID: id, ResourceTypeID: resourceType.ResourceTypeID}).First(&tenantResource).Error; err != nil {
+		log.WithError(err).Error("Failed to fetch tenant")
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("tenant not found: %w", err)
 		}
@@ -70,20 +90,19 @@ func (r *TenantQueryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*mod
 	var parentOrg *dto.TenantResource
 	if tenantResource.ParentResourceID != nil {
 		if err := r.DB.Where(&dto.TenantResource{ResourceID: *tenantResource.ParentResourceID}).First(&parentOrg).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, fmt.Errorf("parent organization not found: %w", err)
-			}
+			log.WithError(err).Error("Failed to fetch parent organization")
 			return nil, fmt.Errorf("failed to fetch parent organization: %w", err)
 		}
+		log.WithField("parentID", *tenantResource.ParentResourceID).Info("Found parent organization")
 	}
 
 	tenant := convertTenantToGraphQL(&tenantResource, parentOrg)
-
-	// Fetch associated metadata
-	var tenantMetadata dto.TenantMetadata
-	if err := r.DB.Where("resource_id = ?", id).First(&tenantMetadata).Error; err == nil {
-		// Parse metadata and update tenant
-		updateTenantWithMetadata(tenant, tenantMetadata)
+	var metadata dto.TenantMetadata
+	if err := r.DB.Where("resource_id = ?", id).First(&metadata).Error; err == nil {
+		updateTenantWithMetadata(tenant, metadata)
+		log.Info("Updated tenant with metadata")
+	} else {
+		log.WithError(err).Warn("No metadata found for tenant")
 	}
 
 	return tenant, nil

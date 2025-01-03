@@ -4,7 +4,7 @@ import (
 	config "go_graphql/config"
 	"go_graphql/gql"
 	"go_graphql/gql/generated"
-	"log"
+	"go_graphql/logger"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -12,33 +12,37 @@ import (
 )
 
 func main() {
+	// Initialize logger
+	logger.InitLogger()
+	log := logger.Log
+
 	// Load environment variables
-	config.LoadEnv()
+	if err := config.LoadEnv(); err != nil {
+		logger.AddContext(err).Fatal("Failed to load environment variables")
+	}
+	log.Info("Environment variables loaded successfully")
 
-	// Initialize the Gin router
+	// Initialize Gin router
 	r := gin.Default()
+	log.Info("Gin router initialized")
 
-	// Initialize the database connection
+	// Initialize database connection
 	db := config.InitDB()
+	log.Info("Database connection established")
 
-	// Migrate the schema (optional, but recommended)
-	// database.AutoMigrate(&gqlmodels.Article{}, &gqlmodels.User{}, &gqlmodels.Comment{})
-
-	// Initialize the resolver with the database connection
+	// Initialize resolver and GraphQL server
 	resolver := &gql.Resolver{DB: db}
-
-	// Initialize the GraphQL server with the executable schema
 	gqlServer := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: resolver}))
+	log.Info("GraphQL server initialized")
 
+	// Set up routes
 	r.GET("/playground", gin.WrapH(playground.Handler("GraphQL Playground", "/graphql")))
-
-	//r.Use(middlewares.AuthMiddleware())
-	// Set up routes for GraphQL and Playground
 	r.POST("/graphql", gin.WrapH(gqlServer))
+	log.Info("Routes configured")
 
-	// Start the server on port 8080
-	log.Println("Server started at http://localhost:8080/playground")
+	// Start server
+	log.Info("Starting server at http://localhost:8080/playground")
 	if err := r.Run(":8080"); err != nil {
-		log.Fatalf("Server failed to start: %v", err)
+		logger.AddContext(err).Fatal("Server failed to start")
 	}
 }

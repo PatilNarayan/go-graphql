@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
+	"go_graphql/logger"
 	"time"
 
 	"github.com/google/uuid"
@@ -20,57 +21,51 @@ type TenantMutationResolver struct {
 
 // CreateTenant resolver for adding a new Tenant
 func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.CreateTenantInput) (*models.Tenant, error) {
-	// Create a new TenantResource
+	log := logger.Log.WithField("operation", "CreateTenant")
+	log.Info("Starting tenant creation process")
+
 	tenantResource := &dto.TenantResource{
-		ResourceID: uuid.New(), // Generate new UUID
+		ResourceID: uuid.New(),
 		Name:       input.Name,
 		CreatedBy:  input.CreatedBy,
 		UpdatedBy:  input.CreatedBy,
 		CreatedAt:  time.Now(),
 	}
+	log.WithField("tenantID", tenantResource.ResourceID).Info("Generated new tenant resource")
 
-	//get resource type by name
 	resourceType := dto.Mst_ResourceTypes{}
 	if err := r.DB.Where("name = ?", "Tenant").First(&resourceType).Error; err != nil {
+		log.WithError(err).Error("Failed to find resource type")
 		return nil, fmt.Errorf("resource type not found: %w", err)
 	}
 	tenantResource.ResourceTypeID = resourceType.ResourceTypeID
 
 	if input.ParentOrgID != nil {
-		//check if parentOrgID is valid
 		var parentOrg dto.TenantResource
 		if err := r.DB.Where(&dto.TenantResource{ResourceID: *input.ParentOrgID}).First(&parentOrg).Error; err != nil {
+			log.WithError(err).Error("Failed to find parent organization")
 			return nil, fmt.Errorf("parent organization not found: %w", err)
 		}
 		tenantResource.ParentResourceID = input.ParentOrgID
+		log.WithField("parentOrgID", input.ParentOrgID).Info("Parent organization validated")
 	}
 
-	// pc := permit.NewPermitClient()
-	// _, err := pc.APIExecute(ctx, "POST", "tenants", map[string]interface{}{
-	// 	"name": input.Name,
-	// 	"key":  tenantResource.ResourceID.String(),
-	// })
-
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// Save TenantResource to the database
 	if err := r.DB.Create(&tenantResource).Error; err != nil {
+		log.WithError(err).Error("Failed to create tenant resource")
 		return nil, fmt.Errorf("failed to create tenant resource: %w", err)
 	}
+	log.Info("Tenant resource created successfully")
 
-	// Prepare metadata (ContactInfo)
 	metadata := map[string]interface{}{
 		"description": input.Description,
 		"contactInfo": input.ContactInfo,
 	}
 	metadataJSON, err := json.Marshal(metadata)
 	if err != nil {
+		log.WithError(err).Error("Failed to marshal metadata")
 		return nil, fmt.Errorf("failed to marshal metadata: %w", err)
 	}
 
-	// Create a new TenantMetadata
 	tenantMetadata := &dto.TenantMetadata{
 		ResourceID: tenantResource.ResourceID.String(),
 		Metadata:   metadataJSON,
@@ -78,13 +73,13 @@ func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 		CreatedAt:  time.Now(),
 	}
 
-	// Save TenantMetadata to the database
 	if err := r.DB.Create(&tenantMetadata).Error; err != nil {
+		log.WithError(err).Error("Failed to create tenant metadata")
 		return nil, fmt.Errorf("failed to create tenant metadata: %w", err)
 	}
+	log.Info("Tenant metadata created successfully")
 
-	// Return the created Tenant object
-	return &models.Tenant{
+	result := &models.Tenant{
 		ID:          tenantResource.ResourceID,
 		Name:        tenantResource.Name,
 		Description: input.Description,
@@ -101,14 +96,20 @@ func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 		},
 		CreatedAt: tenantResource.CreatedAt.String(),
 		CreatedBy: &tenantResource.CreatedBy,
-	}, nil
+	}
+	log.WithField("tenantID", result.ID).Info("Tenant creation completed successfully")
+	return result, nil
 }
 
 // UpdateTenant resolver for updating a Tenant
 func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.UpdateTenantInput) (*models.Tenant, error) {
+	log := logger.Log.WithField("operation", "UpdateTenant")
+	log.Info("Starting tenant update process")
+
 	// Fetch the existing TenantResource
 	var tenantResource dto.TenantResource
 	if err := r.DB.Where(&dto.TenantResource{ResourceID: input.ID}).First(&tenantResource).Error; err != nil {
+		log.WithError(err).Error("tenant resource not found")
 		return nil, fmt.Errorf("tenant resource not found: %w", err)
 	}
 
@@ -120,6 +121,7 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 		// Validate ParentOrgID
 		var parentOrg dto.TenantResource
 		if err := r.DB.Where(&dto.TenantResource{ResourceID: uuid.MustParse(*input.ParentOrgID)}).First(&parentOrg).Error; err != nil {
+			log.WithError(err).Error("parent organization not found")
 			return nil, fmt.Errorf("parent organization not found: %w", err)
 		}
 		parsedUUID := uuid.MustParse(*input.ParentOrgID)
@@ -130,18 +132,21 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 
 	// Save updated TenantResource to the database
 	if err := r.DB.Save(&tenantResource).Error; err != nil {
+		log.WithError(err).Error("failed to update tenant resource")
 		return nil, fmt.Errorf("failed to update tenant resource: %w", err)
 	}
 
 	// Fetch the existing TenantMetadata
 	var tenantMetadata dto.TenantMetadata
 	if err := r.DB.Where(&dto.TenantMetadata{ResourceID: tenantResource.ResourceID.String()}).First(&tenantMetadata).Error; err != nil {
+		log.WithError(err).Error("tenant metadata not found")
 		return nil, fmt.Errorf("tenant metadata not found: %w", err)
 	}
 
 	// Unmarshal the existing metadata
 	metadata := map[string]interface{}{}
 	if err := json.Unmarshal(tenantMetadata.Metadata, &metadata); err != nil {
+		log.WithError(err).Error("failed to unmarshal metadata")
 		return nil, fmt.Errorf("failed to unmarshal metadata: %w", err)
 	}
 
@@ -181,6 +186,7 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 	// Marshal the updated metadata back to JSON
 	updatedMetadataJSON, err := json.Marshal(metadata)
 	if err != nil {
+		log.WithError(err).Error("failed to marshal updated metadata")
 		return nil, fmt.Errorf("failed to marshal updated metadata: %w", err)
 	}
 	tenantMetadata.Metadata = updatedMetadataJSON
@@ -189,6 +195,7 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 
 	// Save updated TenantMetadata to the database
 	if err := r.DB.Save(&tenantMetadata).Error; err != nil {
+		log.WithError(err).Error("failed to update tenant metadata")
 		return nil, fmt.Errorf("failed to update tenant metadata: %w", err)
 	}
 
@@ -216,33 +223,46 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID) (bool, error) {
 	// Start a database transaction
 	tx := r.DB.Begin()
+	log := logger.Log.WithField("operation", "DeleteTenant")
 
 	// Fetch the TenantResource to ensure it exists
 	var tenantResource dto.TenantResource
 	if err := tx.Where(&dto.TenantResource{ResourceID: id}).First(&tenantResource).Error; err != nil {
 		tx.Rollback()
+		log.WithError(err).Error("failed to fetch tenant resource")
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, fmt.Errorf("tenant resource not found: %w", err)
 		}
 		return false, fmt.Errorf("failed to fetch tenant resource: %w", err)
 	}
 
+	log.WithField("tenantID", id).Info("Found tenant resource")
+
 	// Delete associated TenantMetadata
 	if err := tx.Where(&dto.TenantMetadata{ResourceID: id.String()}).Delete(&dto.TenantMetadata{}).Error; err != nil {
 		tx.Rollback()
+		log.WithError(err).Error("failed to delete tenant metadata")
 		return false, fmt.Errorf("failed to delete tenant metadata: %w", err)
 	}
+
+	log.Info("Deleted tenant metadata")
 
 	// Delete the TenantResource
 	if err := tx.Delete(&tenantResource).Error; err != nil {
 		tx.Rollback()
+		log.WithError(err).Error("failed to delete tenant resource")
 		return false, fmt.Errorf("failed to delete tenant resource: %w", err)
 	}
 
+	log.Info("Deleted tenant resource")
+
 	// Commit the transaction
 	if err := tx.Commit().Error; err != nil {
+		log.WithError(err).Error("failed to commit transaction")
 		return false, fmt.Errorf("failed to commit transaction: %w", err)
 	}
+
+	log.Info("Deleted tenant successfully")
 
 	// Return success
 	return true, nil

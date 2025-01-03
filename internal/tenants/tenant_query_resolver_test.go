@@ -1,85 +1,346 @@
 package tenants
 
-// Helper function to set up a test database.
-// func setupTestDB() *gorm.DB {
-// 	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-// 	db.AutoMigrate(&dto.Tenant{})
-// 	return db
-// }
+import (
+	"context"
+	"encoding/json"
+	"go_graphql/gql/models"
+	"go_graphql/internal/dto"
+	"go_graphql/logger"
+	"testing"
+	"time"
 
-// func TestTenants(t *testing.T) {
-// 	db := setupTestDB()
-// 	ctx := context.Background()
+	"github.com/glebarez/sqlite"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
-// 	// Seed the database with tenants.
-// 	tenantsList := []dto.Tenant{
-// 		{ID: "1", Name: "Tenant 1", RowStatus: 1},
-// 		{ID: "2", Name: "Tenant 2", RowStatus: 1},
-// 	}
-// 	for _, tenant := range tenantsList {
-// 		db.Create(&tenant)
-// 	}
+func TestTenantQueryResolver_AllTenants(t *testing.T) {
+	// Initialize an in-memory SQLite database for testing
+	logger.InitLogger()
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	if err != nil {
+		t.Fatalf("failed to connect to database: %v", err)
+	}
 
-// 	resolver := TenantQueryResolver{DB: db}
+	// Migrate the required schema
+	err = db.AutoMigrate(&dto.TenantResource{}, &dto.TenantMetadata{}, &dto.Mst_ResourceTypes{})
+	if err != nil {
+		t.Fatalf("failed to migrate database: %v", err)
+	}
 
-// 	result, err := resolver.Tenants(ctx)
-// 	assert.NoError(t, err)
-// 	assert.NotNil(t, result)
-// 	assert.Equal(t, 2, len(result))
-// 	assert.Equal(t, "Tenant 1", result[0].Name)
-// 	assert.Equal(t, "Tenant 2", result[1].Name)
-// }
+	mstResType1 := dto.Mst_ResourceTypes{
+		ResourceTypeID: uuid.New(),
+		ServiceID:      uuid.New(),
+		Name:           "Tenant",
+		RowStatus:      1,
+		CreatedBy:      "user1",
+		UpdatedBy:      "user1",
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
 
-// func TestTenants_NoRecords(t *testing.T) {
-// 	db := setupTestDB()
-// 	ctx := context.Background()
+	db.Create(&mstResType1)
 
-// 	resolver := TenantQueryResolver{DB: db}
+	err = db.Create(&mstResType1).Error
 
-// 	result, err := resolver.Tenants(ctx)
-// 	assert.NoError(t, err)
-// 	assert.NotNil(t, result)
-// 	assert.Equal(t, 0, len(result))
-// }
+	// Seed test data
+	tenant1 := dto.TenantResource{
+		ResourceID:     uuid.New(),
+		Name:           "Tenant 1",
+		ResourceTypeID: mstResType1.ResourceTypeID,
+		RowStatus:      1,
+		CreatedBy:      "user1",
+		UpdatedBy:      "user1",
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+	tenant1Metadata := dto.TenantMetadata{
+		ResourceID: tenant1.ResourceID.String(),
+		Metadata:   json.RawMessage(`{"contactInfo": {"email": "abc", "address": {"city": "String", "state": "String", "street": "String", "country": "String", "zipCode": "String"}, "phoneNumber": "12345"}, "description": "xyz"}`),
+		RowStatus:  1,
+		CreatedBy:  "user1",
+		UpdatedBy:  "user1",
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
 
-// func TestGetTenant(t *testing.T) {
-// 	db := setupTestDB()
-// 	ctx := context.Background()
+	tenant2 := dto.TenantResource{
+		ResourceID:     uuid.New(),
+		Name:           "Tenant 2",
+		ResourceTypeID: uuid.New(),
+		RowStatus:      1,
+		CreatedBy:      "user1",
+		UpdatedBy:      "user1",
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
 
-// 	// Seed the database with a tenant.
-// 	tenant := dto.Tenant{Name: "Tenant 1", RowStatus: 1}
-// 	db.Create(&tenant)
+	tenant2Metadata := dto.TenantMetadata{
+		ResourceID: tenant2.ResourceID.String(),
+		Metadata:   json.RawMessage(`{"contactInfo": {"email": "abc", "address": {"city": "String", "state": "String", "street": "String", "country": "String", "zipCode": "String"}, "phoneNumber": "12345"}, "description": "xyz"}`),
+		RowStatus:  1,
+		CreatedBy:  "user1",
+		UpdatedBy:  "user1",
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
 
-// 	resolver := TenantQueryResolver{DB: db}
+	db.Create(&tenant1)
+	db.Create(&tenant2)
+	db.Create(&tenant1Metadata)
+	db.Create(&tenant2Metadata)
 
-// 	tenantID := tenant.ID
-// 	result, err := resolver.GetTenant(ctx, tenantID)
-// 	assert.NoError(t, err)
-// 	assert.NotNil(t, result)
-// 	assert.Equal(t, "Tenant 1", result.Name)
-// }
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name    string
+		r       *TenantQueryResolver
+		args    args
+		want    []*models.Tenant
+		wantErr bool
+	}{
+		{
+			name: "Retrieve all tenants",
+			r:    &TenantQueryResolver{DB: db},
+			args: args{ctx: context.Background()},
+			want: []*models.Tenant{
+				{
+					ID:   tenant1.ResourceID,
+					Name: tenant1.Name,
+				},
+				{
+					ID:   tenant2.ResourceID,
+					Name: tenant1.Name,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:    "Empty database",
+			r:       &TenantQueryResolver{DB: db},
+			args:    args{ctx: context.Background()},
+			want:    []*models.Tenant{},
+			wantErr: false,
+		},
+	}
 
-// func TestGetTenant_NotFound(t *testing.T) {
-// 	db := setupTestDB()
-// 	ctx := context.Background()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := tt.r.AllTenants(tt.args.ctx)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("TenantQueryResolver.AllTenants() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
 
-// 	resolver := TenantQueryResolver{DB: db}
+func TestTenantQueryResolver_GetTenant(t *testing.T) {
+	logger.InitLogger()
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
 
-// 	tenantID := "999" // ID not present in the database.
-// 	result, err := resolver.GetTenant(ctx, tenantID)
-// 	assert.Error(t, err)
-// 	assert.Nil(t, result)
-// }
+	// Migrate the required schema
+	err = db.AutoMigrate(&dto.TenantResource{}, &dto.TenantMetadata{}, &dto.Mst_ResourceTypes{})
+	if err != nil {
+		panic(err)
+	}
 
-// func TestGetTenant_NilID(t *testing.T) {
-// 	db := setupTestDB()
-// 	ctx := context.Background()
+	mstResType1 := dto.Mst_ResourceTypes{
+		ResourceTypeID: uuid.New(),
+		ServiceID:      uuid.New(),
+		Name:           "Tenant",
+		RowStatus:      1,
+		CreatedBy:      "user1",
+		UpdatedBy:      "user1",
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
 
-// 	resolver := TenantQueryResolver{DB: db}
+	db.Create(&mstResType1)
 
-// 	var tenantID string = ""
-// 	result, err := resolver.GetTenant(ctx, tenantID)
-// 	assert.Error(t, err)
-// 	assert.Nil(t, result)
-// 	assert.Equal(t, "id cannot be nil", err.Error())
-// }
+	root := dto.TenantResource{
+		ResourceID:       uuid.New(),
+		Name:             "Tenant 1",
+		ResourceTypeID:   mstResType1.ResourceTypeID,
+		ParentResourceID: nil,
+		RowStatus:        1,
+		CreatedBy:        "user1",
+		UpdatedBy:        "user1",
+		CreatedAt:        time.Now(),
+		UpdatedAt:        time.Now(),
+	}
+	rootMetadata := dto.TenantMetadata{
+		ResourceID: root.ResourceID.String(),
+		Metadata:   json.RawMessage(`{"contactInfo": {"email": "abc", "address": {"city": "String", "state": "String", "street": "String", "country": "String", "zipCode": "String"}, "phoneNumber": "12345"}, "description": "xyz"}`),
+		RowStatus:  1,
+		CreatedBy:  "user1",
+		UpdatedBy:  "user1",
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+
+	db.Create(&root)
+	db.Create(&rootMetadata)
+
+	// Seed test data
+	tenant1 := dto.TenantResource{
+		ResourceID:       uuid.New(),
+		Name:             "Tenant 1",
+		ResourceTypeID:   mstResType1.ResourceTypeID,
+		ParentResourceID: &root.ResourceID,
+		RowStatus:        1,
+		CreatedBy:        "user1",
+		UpdatedBy:        "user1",
+		CreatedAt:        time.Now(),
+		UpdatedAt:        time.Now(),
+	}
+	tenant1Metadata := dto.TenantMetadata{
+		ResourceID: tenant1.ResourceID.String(),
+		Metadata:   json.RawMessage(`{"contactInfo": {"email": "abc", "address": {"city": "String", "state": "String", "street": "String", "country": "String", "zipCode": "String"}, "phoneNumber": "12345"}, "description": "xyz"}`),
+		RowStatus:  1,
+		CreatedBy:  "user1",
+		UpdatedBy:  "user1",
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+
+	tenant2 := dto.TenantResource{
+		ResourceID:       uuid.New(),
+		Name:             "Tenant 2",
+		ResourceTypeID:   mstResType1.ResourceTypeID,
+		ParentResourceID: &root.ResourceID,
+		RowStatus:        1,
+		CreatedBy:        "user1",
+		UpdatedBy:        "user1",
+		CreatedAt:        time.Now(),
+		UpdatedAt:        time.Now(),
+	}
+
+	tenant2Metadata := dto.TenantMetadata{
+		ResourceID: tenant2.ResourceID.String(),
+		Metadata:   json.RawMessage(`{"contactInfo": {"email": "abc", "address": {"city": "String", "state": "String", "street": "String", "country": "String", "zipCode": "String"}, "phoneNumber": "12345"}, "description": "xyz"}`),
+		RowStatus:  1,
+		CreatedBy:  "user1",
+		UpdatedBy:  "user1",
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+
+	db.Create(&tenant1)
+	db.Create(&tenant2)
+	db.Create(&tenant1Metadata)
+	db.Create(&tenant2Metadata)
+	type args struct {
+		ctx context.Context
+		id  uuid.UUID
+	}
+	tests := []struct {
+		name    string
+		r       *TenantQueryResolver
+		args    args
+		want    *models.Tenant
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+		{"test", &TenantQueryResolver{DB: db}, args{ctx: context.Background(), id: tenant1.ResourceID}, &models.Tenant{
+			ID:   tenant1.ResourceID,
+			Name: tenant1.Name,
+		}, false},
+		{"test2", &TenantQueryResolver{DB: db}, args{ctx: context.Background(), id: tenant2.ResourceID}, &models.Tenant{
+			ID:   tenant2.ResourceID,
+			Name: tenant2.Name,
+		}, false},
+		{"test3", &TenantQueryResolver{DB: db}, args{ctx: context.Background(), id: uuid.Nil}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := tt.r.GetTenant(tt.args.ctx, tt.args.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("TenantQueryResolver.GetTenant() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func getDB() *gorm.DB {
+	logger.InitLogger()
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+
+	// Migrate the required schema
+	err = db.AutoMigrate(&dto.TenantResource{}, &dto.TenantMetadata{}, &dto.Mst_ResourceTypes{})
+	if err != nil {
+		panic(err)
+	}
+
+	mstResType1 := dto.Mst_ResourceTypes{
+		ResourceTypeID: uuid.New(),
+		ServiceID:      uuid.New(),
+		Name:           "Tenant",
+		RowStatus:      1,
+		CreatedBy:      "user1",
+		UpdatedBy:      "user1",
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+
+	db.Create(&mstResType1)
+
+	err = db.Create(&mstResType1).Error
+
+	// Seed test data
+	tenant1 := dto.TenantResource{
+		ResourceID:     uuid.New(),
+		Name:           "Tenant 1",
+		ResourceTypeID: mstResType1.ResourceTypeID,
+		RowStatus:      1,
+		CreatedBy:      "user1",
+		UpdatedBy:      "user1",
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+	tenant1Metadata := dto.TenantMetadata{
+		ResourceID: tenant1.ResourceID.String(),
+		Metadata:   json.RawMessage(`{"contactInfo": {"email": "abc", "address": {"city": "String", "state": "String", "street": "String", "country": "String", "zipCode": "String"}, "phoneNumber": "12345"}, "description": "xyz"}`),
+		RowStatus:  1,
+		CreatedBy:  "user1",
+		UpdatedBy:  "user1",
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+
+	tenant2 := dto.TenantResource{
+		ResourceID:     uuid.New(),
+		Name:           "Tenant 2",
+		ResourceTypeID: uuid.New(),
+		RowStatus:      1,
+		CreatedBy:      "user1",
+		UpdatedBy:      "user1",
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+
+	tenant2Metadata := dto.TenantMetadata{
+		ResourceID: tenant2.ResourceID.String(),
+		Metadata:   json.RawMessage(`{"contactInfo": {"email": "abc", "address": {"city": "String", "state": "String", "street": "String", "country": "String", "zipCode": "String"}, "phoneNumber": "12345"}, "description": "xyz"}`),
+		RowStatus:  1,
+		CreatedBy:  "user1",
+		UpdatedBy:  "user1",
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+
+	db.Create(&tenant1)
+	db.Create(&tenant2)
+	db.Create(&tenant1Metadata)
+	db.Create(&tenant2Metadata)
+
+	return db
+}
