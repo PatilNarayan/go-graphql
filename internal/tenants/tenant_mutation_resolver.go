@@ -266,6 +266,14 @@ func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID)
 
 	log.Info("Deleted tenant metadata")
 
+	pc := permit.NewPermitClient()
+	_, err := pc.APIExecute(ctx, "DELETE", "tenants/"+id.String(), nil)
+	if err != nil {
+		tx.Rollback()
+		log.WithError(err).Error("failed to delete tenant from PDP")
+		return false, fmt.Errorf("failed to delete tenant from PDP: %w", err)
+	}
+
 	// Delete the TenantResource
 	if err := tx.Delete(&tenantResource).Error; err != nil {
 		tx.Rollback()

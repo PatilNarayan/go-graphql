@@ -3,14 +3,18 @@ package tenants
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
 	"go_graphql/logger"
+	"net/http"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/glebarez/sqlite"
 	"github.com/google/uuid"
+	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/mock"
 	"go.uber.org/thriftrw/ptr"
 	"gorm.io/gorm"
@@ -21,8 +25,18 @@ type MockPermitClient struct {
 	BaseURL string
 }
 
-func TestTenantMutationResolver_CreateTenant(t *testing.T) {
+func TestMain(m *testing.M) {
 	logger.InitLogger()
+	//set environment variables
+	os.Setenv("PERMIT_PROJECT", "test")
+	os.Setenv("PERMIT_ENV", "test")
+	os.Setenv("PERMIT_TOKEN", "test")
+	os.Setenv("PERMIT_PDP_ENDPOINT", "https://localhost:8080")
+
+	m.Run()
+}
+
+func TestTenantMutationResolver_CreateTenant(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
 		t.Fatalf("failed to connect to database: %v", err)
@@ -33,6 +47,27 @@ func TestTenantMutationResolver_CreateTenant(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to migrate database: %v", err)
 	}
+
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	// Default responder for unmatched requests
+	httpmock.RegisterNoResponder(httpmock.NewStringResponder(500, `{"error": "unmocked request"}`))
+
+	// Register the mock responder for the API endpoint
+	httpmock.RegisterResponder("POST", "https://localhost:8080/v2/facts/test/test/tenants",
+		func(req *http.Request) (*http.Response, error) {
+			resp := httpmock.NewStringResponse(200, `
+				{
+					"key": "tenant_123",
+					"name": "Updated Name",
+					"status": "success"
+				}
+				`)
+			resp.Header.Add("Content-Type", "application/json")
+			return resp, nil
+		},
+	)
 
 	// Seed initial data
 	mstResType1 := dto.Mst_ResourceTypes{
@@ -183,6 +218,20 @@ func TestTenantMutationResolver_UpdateTenant(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+
+			// Default responder for unmatched requests
+			httpmock.RegisterNoResponder(httpmock.NewStringResponder(500, `{"error": "unmocked request"}`))
+
+			// Register the mock responder for the API endpoint
+			httpmock.RegisterResponder("PATCH", fmt.Sprintf("https://localhost:8080/v2/facts/test/test/tenants/%s", tt.args.input.ID.String()),
+				func(req *http.Request) (*http.Response, error) {
+					resp := httpmock.NewStringResponse(200, ``)
+					resp.Header.Add("Content-Type", "application/json")
+					return resp, nil
+				},
+			)
 			_, err := tt.r.UpdateTenant(tt.args.ctx, tt.args.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("TenantMutationResolver.UpdateTenant() error = %v, wantErr %v", err, tt.wantErr)
@@ -275,6 +324,20 @@ func TestTenantMutationResolver_DeleteTenant(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+
+			// Default responder for unmatched requests
+			httpmock.RegisterNoResponder(httpmock.NewStringResponder(500, `{"error": "unmocked request"}`))
+
+			// Register the mock responder for the API endpoint
+			httpmock.RegisterResponder("DELETE", fmt.Sprintf("https://localhost:8080/v2/facts/test/test/tenants/%s", tt.args.id.String()),
+				func(req *http.Request) (*http.Response, error) {
+					resp := httpmock.NewStringResponse(200, ``)
+					resp.Header.Add("Content-Type", "application/json")
+					return resp, nil
+				},
+			)
 			got, err := tt.r.DeleteTenant(tt.args.ctx, tt.args.id)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("TenantMutationResolver.DeleteTenant() error = %v, wantErr %v", err, tt.wantErr)
