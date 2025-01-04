@@ -9,8 +9,9 @@ import (
 
 // Initialize environment variables from .env file
 func LoadEnv() error {
-	if err := godotenv.Load("C:/Users/patil/OneDrive/Desktop/graphql/go-graphql/.env"); err != nil {
-		log.Println("No .env file found, using system environment variables")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
 		return err
 	}
 	return nil
