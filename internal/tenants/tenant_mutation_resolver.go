@@ -240,11 +240,9 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 }
 
 func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID) (bool, error) {
-	// Start a database transaction
 	tx := r.DB.Begin()
 	log := logger.Log.WithField("operation", "DeleteTenant")
 
-	// Fetch the TenantResource to ensure it exists
 	var tenantResource dto.TenantResource
 	if err := tx.Where(&dto.TenantResource{ResourceID: id}).First(&tenantResource).Error; err != nil {
 		tx.Rollback()
@@ -257,11 +255,15 @@ func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID)
 
 	log.WithField("tenantID", id).Info("Found tenant resource")
 
-	// Delete associated TenantMetadata
-	if err := tx.Where(&dto.TenantMetadata{ResourceID: id.String()}).Delete(&dto.TenantMetadata{}).Error; err != nil {
+	// Update TenantMetadata with both DeletedAt and RowStatus
+	updates := map[string]interface{}{
+		"deleted_at": gorm.DeletedAt{Time: time.Now(), Valid: true},
+		"row_status": 0,
+	}
+	if err := tx.Model(&dto.TenantMetadata{}).Where("resource_id = ?", id.String()).Updates(updates).Error; err != nil {
 		tx.Rollback()
-		log.WithError(err).Error("failed to delete tenant metadata")
-		return false, fmt.Errorf("failed to delete tenant metadata: %w", err)
+		log.WithError(err).Error("failed to soft delete tenant metadata")
+		return false, fmt.Errorf("failed to soft delete tenant metadata: %w", err)
 	}
 
 	log.Info("Deleted tenant metadata")
@@ -274,8 +276,8 @@ func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID)
 		return false, fmt.Errorf("failed to delete tenant from PDP: %w", err)
 	}
 
-	// Delete the TenantResource
-	if err := tx.Delete(&tenantResource).Error; err != nil {
+	// Update TenantResource with both DeletedAt and RowStatus
+	if err := tx.Model(&dto.TenantResource{}).Where("resource_id = ?", id).Updates(updates).Error; err != nil {
 		tx.Rollback()
 		log.WithError(err).Error("failed to delete tenant resource")
 		return false, fmt.Errorf("failed to delete tenant resource: %w", err)
@@ -283,7 +285,6 @@ func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID)
 
 	log.Info("Deleted tenant resource")
 
-	// Commit the transaction
 	if err := tx.Commit().Error; err != nil {
 		log.WithError(err).Error("failed to commit transaction")
 		return false, fmt.Errorf("failed to commit transaction: %w", err)
@@ -291,6 +292,5 @@ func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID)
 
 	log.Info("Deleted tenant successfully")
 
-	// Return success
 	return true, nil
 }
