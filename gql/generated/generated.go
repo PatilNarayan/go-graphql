@@ -171,14 +171,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Address.ZipCode(childComplexity), true
 
-	case "ClientOrganizationUnit.created_at":
+	case "ClientOrganizationUnit.createdAt":
 		if e.complexity.ClientOrganizationUnit.CreatedAt == nil {
 			break
 		}
 
 		return e.complexity.ClientOrganizationUnit.CreatedAt(childComplexity), true
 
-	case "ClientOrganizationUnit.created_by":
+	case "ClientOrganizationUnit.createdBy":
 		if e.complexity.ClientOrganizationUnit.CreatedBy == nil {
 			break
 		}
@@ -220,14 +220,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ClientOrganizationUnit.Tenant(childComplexity), true
 
-	case "ClientOrganizationUnit.updated_at":
+	case "ClientOrganizationUnit.updatedAt":
 		if e.complexity.ClientOrganizationUnit.UpdatedAt == nil {
 			break
 		}
 
 		return e.complexity.ClientOrganizationUnit.UpdatedAt(childComplexity), true
 
-	case "ClientOrganizationUnit.updated_by":
+	case "ClientOrganizationUnit.updatedBy":
 		if e.complexity.ClientOrganizationUnit.UpdatedBy == nil {
 			break
 		}
@@ -310,14 +310,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetTenant(childComplexity, args["id"].(uuid.UUID)), true
 
-	case "Root.created_at":
+	case "Root.createdAt":
 		if e.complexity.Root.CreatedAt == nil {
 			break
 		}
 
 		return e.complexity.Root.CreatedAt(childComplexity), true
 
-	case "Root.created_by":
+	case "Root.createdBy":
 		if e.complexity.Root.CreatedBy == nil {
 			break
 		}
@@ -345,14 +345,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Root.Name(childComplexity), true
 
-	case "Root.updated_at":
+	case "Root.updatedAt":
 		if e.complexity.Root.UpdatedAt == nil {
 			break
 		}
 
 		return e.complexity.Root.UpdatedAt(childComplexity), true
 
-	case "Root.updated_by":
+	case "Root.updatedBy":
 		if e.complexity.Root.UpdatedBy == nil {
 			break
 		}
@@ -366,14 +366,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tenant.ContactInfo(childComplexity), true
 
-	case "Tenant.created_at":
+	case "Tenant.createdAt":
 		if e.complexity.Tenant.CreatedAt == nil {
 			break
 		}
 
 		return e.complexity.Tenant.CreatedAt(childComplexity), true
 
-	case "Tenant.created_by":
+	case "Tenant.createdBy":
 		if e.complexity.Tenant.CreatedBy == nil {
 			break
 		}
@@ -408,14 +408,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tenant.ParentOrg(childComplexity), true
 
-	case "Tenant.updated_at":
+	case "Tenant.updatedAt":
 		if e.complexity.Tenant.UpdatedAt == nil {
 			break
 		}
 
 		return e.complexity.Tenant.UpdatedAt(childComplexity), true
 
-	case "Tenant.updated_by":
+	case "Tenant.updatedBy":
 		if e.complexity.Tenant.UpdatedBy == nil {
 			break
 		}
@@ -542,30 +542,30 @@ scalar UUID
 interface Resource {
   id: UUID!
   name: String!
-  created_at: String!
-  updated_at: String
-  created_by: String
-  updated_by: String
+  createdAt: String!
+  updatedAt: String
+  createdBy: String
+  updatedBy: String
 }
 
 interface Organization {
   id: UUID!
   name: String!
   description: String
-  created_at: String!
-  updated_at: String
-  created_by: String
-  updated_by: String
+  createdAt: String!
+  updatedAt: String
+  createdBy: String
+  updatedBy: String
 }
 
 type Root implements Resource & Organization {
   id: UUID!
   name: String!
   description: String
-  created_at: String!
-  updated_at: String
-  created_by: String
-  updated_by: String
+  createdAt: String!
+  updatedAt: String
+  createdBy: String
+  updatedBy: String
 }
 
 input CreateRootInput {
@@ -585,10 +585,10 @@ type Tenant implements Resource & Organization {
   description: String
   parentOrg: Organization
   contactInfo: ContactInfo
-  created_at: String!
-  updated_at: String
-  created_by: String
-  updated_by: String
+  createdAt: String!
+  updatedAt: String
+  createdBy: String
+  updatedBy: String
 }
 
 type ContactInfo {
@@ -650,10 +650,10 @@ type ClientOrganizationUnit implements Resource & Organization {
   description: String
   tenant: Tenant!
   parentOrg: Organization!
-  created_at: String!
-  updated_at: String
-  created_by: String
-  updated_by: String
+  createdAt: String!
+  updatedAt: String
+  createdBy: String
+  updatedBy: String
 }
 
 input CreateClientOrganizationUnitInput {
@@ -1327,14 +1327,14 @@ func (ec *executionContext) fieldContext_ClientOrganizationUnit_tenant(_ context
 				return ec.fieldContext_Tenant_parentOrg(ctx, field)
 			case "contactInfo":
 				return ec.fieldContext_Tenant_contactInfo(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Tenant_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Tenant_updated_at(ctx, field)
-			case "created_by":
-				return ec.fieldContext_Tenant_created_by(ctx, field)
-			case "updated_by":
-				return ec.fieldContext_Tenant_updated_by(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Tenant_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Tenant_updatedAt(ctx, field)
+			case "createdBy":
+				return ec.fieldContext_Tenant_createdBy(ctx, field)
+			case "updatedBy":
+				return ec.fieldContext_Tenant_updatedBy(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tenant", field.Name)
 		},
@@ -1386,8 +1386,8 @@ func (ec *executionContext) fieldContext_ClientOrganizationUnit_parentOrg(_ cont
 	return fc, nil
 }
 
-func (ec *executionContext) _ClientOrganizationUnit_created_at(ctx context.Context, field graphql.CollectedField, obj *models.ClientOrganizationUnit) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ClientOrganizationUnit_created_at(ctx, field)
+func (ec *executionContext) _ClientOrganizationUnit_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.ClientOrganizationUnit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClientOrganizationUnit_createdAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1417,7 +1417,7 @@ func (ec *executionContext) _ClientOrganizationUnit_created_at(ctx context.Conte
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ClientOrganizationUnit_created_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ClientOrganizationUnit_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ClientOrganizationUnit",
 		Field:      field,
@@ -1430,8 +1430,8 @@ func (ec *executionContext) fieldContext_ClientOrganizationUnit_created_at(_ con
 	return fc, nil
 }
 
-func (ec *executionContext) _ClientOrganizationUnit_updated_at(ctx context.Context, field graphql.CollectedField, obj *models.ClientOrganizationUnit) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ClientOrganizationUnit_updated_at(ctx, field)
+func (ec *executionContext) _ClientOrganizationUnit_updatedAt(ctx context.Context, field graphql.CollectedField, obj *models.ClientOrganizationUnit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClientOrganizationUnit_updatedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1458,7 +1458,7 @@ func (ec *executionContext) _ClientOrganizationUnit_updated_at(ctx context.Conte
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ClientOrganizationUnit_updated_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ClientOrganizationUnit_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ClientOrganizationUnit",
 		Field:      field,
@@ -1471,8 +1471,8 @@ func (ec *executionContext) fieldContext_ClientOrganizationUnit_updated_at(_ con
 	return fc, nil
 }
 
-func (ec *executionContext) _ClientOrganizationUnit_created_by(ctx context.Context, field graphql.CollectedField, obj *models.ClientOrganizationUnit) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ClientOrganizationUnit_created_by(ctx, field)
+func (ec *executionContext) _ClientOrganizationUnit_createdBy(ctx context.Context, field graphql.CollectedField, obj *models.ClientOrganizationUnit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClientOrganizationUnit_createdBy(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1499,7 +1499,7 @@ func (ec *executionContext) _ClientOrganizationUnit_created_by(ctx context.Conte
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ClientOrganizationUnit_created_by(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ClientOrganizationUnit_createdBy(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ClientOrganizationUnit",
 		Field:      field,
@@ -1512,8 +1512,8 @@ func (ec *executionContext) fieldContext_ClientOrganizationUnit_created_by(_ con
 	return fc, nil
 }
 
-func (ec *executionContext) _ClientOrganizationUnit_updated_by(ctx context.Context, field graphql.CollectedField, obj *models.ClientOrganizationUnit) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ClientOrganizationUnit_updated_by(ctx, field)
+func (ec *executionContext) _ClientOrganizationUnit_updatedBy(ctx context.Context, field graphql.CollectedField, obj *models.ClientOrganizationUnit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClientOrganizationUnit_updatedBy(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1540,7 +1540,7 @@ func (ec *executionContext) _ClientOrganizationUnit_updated_by(ctx context.Conte
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ClientOrganizationUnit_updated_by(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ClientOrganizationUnit_updatedBy(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ClientOrganizationUnit",
 		Field:      field,
@@ -1737,14 +1737,14 @@ func (ec *executionContext) fieldContext_Mutation_createTenant(ctx context.Conte
 				return ec.fieldContext_Tenant_parentOrg(ctx, field)
 			case "contactInfo":
 				return ec.fieldContext_Tenant_contactInfo(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Tenant_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Tenant_updated_at(ctx, field)
-			case "created_by":
-				return ec.fieldContext_Tenant_created_by(ctx, field)
-			case "updated_by":
-				return ec.fieldContext_Tenant_updated_by(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Tenant_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Tenant_updatedAt(ctx, field)
+			case "createdBy":
+				return ec.fieldContext_Tenant_createdBy(ctx, field)
+			case "updatedBy":
+				return ec.fieldContext_Tenant_updatedBy(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tenant", field.Name)
 		},
@@ -1812,14 +1812,14 @@ func (ec *executionContext) fieldContext_Mutation_updateTenant(ctx context.Conte
 				return ec.fieldContext_Tenant_parentOrg(ctx, field)
 			case "contactInfo":
 				return ec.fieldContext_Tenant_contactInfo(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Tenant_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Tenant_updated_at(ctx, field)
-			case "created_by":
-				return ec.fieldContext_Tenant_created_by(ctx, field)
-			case "updated_by":
-				return ec.fieldContext_Tenant_updated_by(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Tenant_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Tenant_updatedAt(ctx, field)
+			case "createdBy":
+				return ec.fieldContext_Tenant_createdBy(ctx, field)
+			case "updatedBy":
+				return ec.fieldContext_Tenant_updatedBy(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tenant", field.Name)
 		},
@@ -1939,14 +1939,14 @@ func (ec *executionContext) fieldContext_Query_getTenant(ctx context.Context, fi
 				return ec.fieldContext_Tenant_parentOrg(ctx, field)
 			case "contactInfo":
 				return ec.fieldContext_Tenant_contactInfo(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Tenant_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Tenant_updated_at(ctx, field)
-			case "created_by":
-				return ec.fieldContext_Tenant_created_by(ctx, field)
-			case "updated_by":
-				return ec.fieldContext_Tenant_updated_by(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Tenant_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Tenant_updatedAt(ctx, field)
+			case "createdBy":
+				return ec.fieldContext_Tenant_createdBy(ctx, field)
+			case "updatedBy":
+				return ec.fieldContext_Tenant_updatedBy(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tenant", field.Name)
 		},
@@ -2011,14 +2011,14 @@ func (ec *executionContext) fieldContext_Query_allTenants(_ context.Context, fie
 				return ec.fieldContext_Tenant_parentOrg(ctx, field)
 			case "contactInfo":
 				return ec.fieldContext_Tenant_contactInfo(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Tenant_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Tenant_updated_at(ctx, field)
-			case "created_by":
-				return ec.fieldContext_Tenant_created_by(ctx, field)
-			case "updated_by":
-				return ec.fieldContext_Tenant_updated_by(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Tenant_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Tenant_updatedAt(ctx, field)
+			case "createdBy":
+				return ec.fieldContext_Tenant_createdBy(ctx, field)
+			case "updatedBy":
+				return ec.fieldContext_Tenant_updatedBy(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tenant", field.Name)
 		},
@@ -2284,8 +2284,8 @@ func (ec *executionContext) fieldContext_Root_description(_ context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Root_created_at(ctx context.Context, field graphql.CollectedField, obj *models.Root) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Root_created_at(ctx, field)
+func (ec *executionContext) _Root_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.Root) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Root_createdAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2315,7 +2315,7 @@ func (ec *executionContext) _Root_created_at(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Root_created_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Root_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Root",
 		Field:      field,
@@ -2328,8 +2328,8 @@ func (ec *executionContext) fieldContext_Root_created_at(_ context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Root_updated_at(ctx context.Context, field graphql.CollectedField, obj *models.Root) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Root_updated_at(ctx, field)
+func (ec *executionContext) _Root_updatedAt(ctx context.Context, field graphql.CollectedField, obj *models.Root) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Root_updatedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2356,7 +2356,7 @@ func (ec *executionContext) _Root_updated_at(ctx context.Context, field graphql.
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Root_updated_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Root_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Root",
 		Field:      field,
@@ -2369,8 +2369,8 @@ func (ec *executionContext) fieldContext_Root_updated_at(_ context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Root_created_by(ctx context.Context, field graphql.CollectedField, obj *models.Root) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Root_created_by(ctx, field)
+func (ec *executionContext) _Root_createdBy(ctx context.Context, field graphql.CollectedField, obj *models.Root) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Root_createdBy(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2397,7 +2397,7 @@ func (ec *executionContext) _Root_created_by(ctx context.Context, field graphql.
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Root_created_by(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Root_createdBy(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Root",
 		Field:      field,
@@ -2410,8 +2410,8 @@ func (ec *executionContext) fieldContext_Root_created_by(_ context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Root_updated_by(ctx context.Context, field graphql.CollectedField, obj *models.Root) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Root_updated_by(ctx, field)
+func (ec *executionContext) _Root_updatedBy(ctx context.Context, field graphql.CollectedField, obj *models.Root) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Root_updatedBy(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2438,7 +2438,7 @@ func (ec *executionContext) _Root_updated_by(ctx context.Context, field graphql.
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Root_updated_by(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Root_updatedBy(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Root",
 		Field:      field,
@@ -2670,8 +2670,8 @@ func (ec *executionContext) fieldContext_Tenant_contactInfo(_ context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Tenant_created_at(ctx context.Context, field graphql.CollectedField, obj *models.Tenant) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tenant_created_at(ctx, field)
+func (ec *executionContext) _Tenant_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.Tenant) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tenant_createdAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2701,7 +2701,7 @@ func (ec *executionContext) _Tenant_created_at(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Tenant_created_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Tenant_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Tenant",
 		Field:      field,
@@ -2714,8 +2714,8 @@ func (ec *executionContext) fieldContext_Tenant_created_at(_ context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Tenant_updated_at(ctx context.Context, field graphql.CollectedField, obj *models.Tenant) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tenant_updated_at(ctx, field)
+func (ec *executionContext) _Tenant_updatedAt(ctx context.Context, field graphql.CollectedField, obj *models.Tenant) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tenant_updatedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2742,7 +2742,7 @@ func (ec *executionContext) _Tenant_updated_at(ctx context.Context, field graphq
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Tenant_updated_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Tenant_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Tenant",
 		Field:      field,
@@ -2755,8 +2755,8 @@ func (ec *executionContext) fieldContext_Tenant_updated_at(_ context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Tenant_created_by(ctx context.Context, field graphql.CollectedField, obj *models.Tenant) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tenant_created_by(ctx, field)
+func (ec *executionContext) _Tenant_createdBy(ctx context.Context, field graphql.CollectedField, obj *models.Tenant) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tenant_createdBy(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2783,7 +2783,7 @@ func (ec *executionContext) _Tenant_created_by(ctx context.Context, field graphq
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Tenant_created_by(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Tenant_createdBy(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Tenant",
 		Field:      field,
@@ -2796,8 +2796,8 @@ func (ec *executionContext) fieldContext_Tenant_created_by(_ context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Tenant_updated_by(ctx context.Context, field graphql.CollectedField, obj *models.Tenant) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tenant_updated_by(ctx, field)
+func (ec *executionContext) _Tenant_updatedBy(ctx context.Context, field graphql.CollectedField, obj *models.Tenant) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tenant_updatedBy(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2824,7 +2824,7 @@ func (ec *executionContext) _Tenant_updated_by(ctx context.Context, field graphq
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Tenant_updated_by(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Tenant_updatedBy(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Tenant",
 		Field:      field,
@@ -5201,17 +5201,17 @@ func (ec *executionContext) _ClientOrganizationUnit(ctx context.Context, sel ast
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "created_at":
-			out.Values[i] = ec._ClientOrganizationUnit_created_at(ctx, field, obj)
+		case "createdAt":
+			out.Values[i] = ec._ClientOrganizationUnit_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "updated_at":
-			out.Values[i] = ec._ClientOrganizationUnit_updated_at(ctx, field, obj)
-		case "created_by":
-			out.Values[i] = ec._ClientOrganizationUnit_created_by(ctx, field, obj)
-		case "updated_by":
-			out.Values[i] = ec._ClientOrganizationUnit_updated_by(ctx, field, obj)
+		case "updatedAt":
+			out.Values[i] = ec._ClientOrganizationUnit_updatedAt(ctx, field, obj)
+		case "createdBy":
+			out.Values[i] = ec._ClientOrganizationUnit_createdBy(ctx, field, obj)
+		case "updatedBy":
+			out.Values[i] = ec._ClientOrganizationUnit_updatedBy(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5449,17 +5449,17 @@ func (ec *executionContext) _Root(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "description":
 			out.Values[i] = ec._Root_description(ctx, field, obj)
-		case "created_at":
-			out.Values[i] = ec._Root_created_at(ctx, field, obj)
+		case "createdAt":
+			out.Values[i] = ec._Root_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "updated_at":
-			out.Values[i] = ec._Root_updated_at(ctx, field, obj)
-		case "created_by":
-			out.Values[i] = ec._Root_created_by(ctx, field, obj)
-		case "updated_by":
-			out.Values[i] = ec._Root_updated_by(ctx, field, obj)
+		case "updatedAt":
+			out.Values[i] = ec._Root_updatedAt(ctx, field, obj)
+		case "createdBy":
+			out.Values[i] = ec._Root_createdBy(ctx, field, obj)
+		case "updatedBy":
+			out.Values[i] = ec._Root_updatedBy(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5510,17 +5510,17 @@ func (ec *executionContext) _Tenant(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = ec._Tenant_parentOrg(ctx, field, obj)
 		case "contactInfo":
 			out.Values[i] = ec._Tenant_contactInfo(ctx, field, obj)
-		case "created_at":
-			out.Values[i] = ec._Tenant_created_at(ctx, field, obj)
+		case "createdAt":
+			out.Values[i] = ec._Tenant_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "updated_at":
-			out.Values[i] = ec._Tenant_updated_at(ctx, field, obj)
-		case "created_by":
-			out.Values[i] = ec._Tenant_created_by(ctx, field, obj)
-		case "updated_by":
-			out.Values[i] = ec._Tenant_updated_by(ctx, field, obj)
+		case "updatedAt":
+			out.Values[i] = ec._Tenant_updatedAt(ctx, field, obj)
+		case "createdBy":
+			out.Values[i] = ec._Tenant_createdBy(ctx, field, obj)
+		case "updatedBy":
+			out.Values[i] = ec._Tenant_updatedBy(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

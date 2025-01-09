@@ -41,10 +41,10 @@ type ClientOrganizationUnit struct {
 	Description *string      `json:"description,omitempty"`
 	Tenant      *Tenant      `json:"tenant"`
 	ParentOrg   Organization `json:"parentOrg"`
-	CreatedAt   string       `json:"created_at"`
-	UpdatedAt   *string      `json:"updated_at,omitempty"`
-	CreatedBy   *string      `json:"created_by,omitempty"`
-	UpdatedBy   *string      `json:"updated_by,omitempty"`
+	CreatedAt   string       `json:"createdAt"`
+	UpdatedAt   *string      `json:"updatedAt,omitempty"`
+	CreatedBy   *string      `json:"createdBy,omitempty"`
+	UpdatedBy   *string      `json:"updatedBy,omitempty"`
 }
 
 func (ClientOrganizationUnit) IsResource()                {}
@@ -103,10 +103,10 @@ type Root struct {
 	ID          uuid.UUID `json:"id"`
 	Name        string    `json:"name"`
 	Description *string   `json:"description,omitempty"`
-	CreatedAt   string    `json:"created_at"`
-	UpdatedAt   *string   `json:"updated_at,omitempty"`
-	CreatedBy   *string   `json:"created_by,omitempty"`
-	UpdatedBy   *string   `json:"updated_by,omitempty"`
+	CreatedAt   string    `json:"createdAt"`
+	UpdatedAt   *string   `json:"updatedAt,omitempty"`
+	CreatedBy   *string   `json:"createdBy,omitempty"`
+	UpdatedBy   *string   `json:"updatedBy,omitempty"`
 }
 
 func (Root) IsResource()                {}
@@ -127,10 +127,10 @@ type Tenant struct {
 	Description *string      `json:"description,omitempty"`
 	ParentOrg   Organization `json:"parentOrg,omitempty"`
 	ContactInfo *ContactInfo `json:"contactInfo,omitempty"`
-	CreatedAt   string       `json:"created_at"`
-	UpdatedAt   *string      `json:"updated_at,omitempty"`
-	CreatedBy   *string      `json:"created_by,omitempty"`
-	UpdatedBy   *string      `json:"updated_by,omitempty"`
+	CreatedAt   string       `json:"createdAt"`
+	UpdatedAt   *string      `json:"updatedAt,omitempty"`
+	CreatedBy   *string      `json:"createdBy,omitempty"`
+	UpdatedBy   *string      `json:"updatedBy,omitempty"`
 }
 
 func (Tenant) IsResource()                {}

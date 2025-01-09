@@ -4,30 +4,30 @@ scalar UUID
 interface Resource {
   id: UUID!
   name: String!
-  created_at: String!
-  updated_at: String
-  created_by: String
-  updated_by: String
+  createdAt: String!
+  updatedAt: String
+  createdBy: String
+  updatedBy: String
 }
 
 interface Organization {
   id: UUID!
   name: String!
   description: String
-  created_at: String!
-  updated_at: String
-  created_by: String
-  updated_by: String
+  createdAt: String!
+  updatedAt: String
+  createdBy: String
+  updatedBy: String
 }
 
 type Root implements Resource & Organization {
   id: UUID!
   name: String!
   description: String
-  created_at: String!
-  updated_at: String
-  created_by: String
-  updated_by: String
+  createdAt: String!
+  updatedAt: String
+  createdBy: String
+  updatedBy: String
 }
 
 input CreateRootInput {
@@ -47,10 +47,10 @@ type Tenant implements Resource & Organization {
   description: String
   parentOrg: Organization
   contactInfo: ContactInfo
-  created_at: String!
-  updated_at: String
-  created_by: String
-  updated_by: String
+  createdAt: String!
+  updatedAt: String
+  createdBy: String
+  updatedBy: String
 }
 
 type ContactInfo {
@@ -112,10 +112,10 @@ type ClientOrganizationUnit implements Resource & Organization {
   description: String
   tenant: Tenant!
   parentOrg: Organization!
-  created_at: String!
-  updated_at: String
-  created_by: String
-  updated_by: String
+  createdAt: String!
+  updatedAt: String
+  createdBy: String
+  updatedBy: String
 }
 
 input CreateClientOrganizationUnitInput {
