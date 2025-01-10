@@ -14,6 +14,7 @@ interface Organization {
   id: UUID!
   name: String!
   description: String
+  parentOrg: Organization
   createdAt: String!
   updatedAt: String
   createdBy: String
@@ -24,6 +25,7 @@ type Root implements Resource & Organization {
   id: UUID!
   name: String!
   description: String
+  parentOrg: Organization
   createdAt: String!
   updatedAt: String
   createdBy: String
@@ -133,6 +135,49 @@ input UpdateClientOrganizationUnitInput {
   parentOrgId: String
 }
 
+enum RoleTypeEnum {
+  DEFAULT
+  CUSTOM
+}
+
+type Role implements Resource {
+  id: UUID!
+  name: String!
+  permissionsIds: [String]!
+  description: String
+  version: String
+  parentOrgId: Organization 
+  roleType: RoleTypeEnum!
+  resourceId: String
+  createdAt: String!
+  createdBy: String
+  updatedAt: String
+  updatedBy: String
+}
+
+input RoleInput {
+  name: String!
+  description: String
+  resourceId: String
+  parentOrgId: String
+  version: String
+  createdBy: String!
+  updatedBy: String
+  permissionsIds: [String!]!
+  roleType: RoleTypeEnum!
+}
+
+type Permission {
+  id: UUID!
+  name: String!
+  serviceId: String
+  action: String
+  createdAt: String!
+  createdBy: String!
+  updatedAt: String
+  updatedBy: String
+}
+
 type Query {
   # getOrganization(id: UUID!): Organization
   # allOrganizations: [Organization!]!
@@ -144,6 +189,9 @@ type Query {
 
   getTenant(id: UUID!): Tenant
   allTenants: [Tenant]
+
+  getRole(id: String!): Role
+  allRoles: [Role!]!
 
   # getClientOrganizationUnit(id: UUID!): ClientOrganizationUnit
   # allClientOrganizationUnits: [ClientOrganizationUnit!]!
@@ -157,6 +205,10 @@ type Mutation {
   createTenant(input: CreateTenantInput!): Tenant!
   updateTenant(input: UpdateTenantInput!): Tenant!
   deleteTenant(id: UUID!): Boolean!
+
+  createRole(input: RoleInput!): Role!
+  updateRole(id: UUID!, input: RoleInput!): Role!
+  deleteRole(id: UUID!): Boolean!
 
   # createClientOrganizationUnit(
   #   input: CreateClientOrganizationUnitInput!

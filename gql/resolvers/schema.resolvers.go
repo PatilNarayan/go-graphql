@@ -28,6 +28,21 @@ func (r *mutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID) (bool
 	panic(fmt.Errorf("not implemented: DeleteTenant - deleteTenant"))
 }
 
+// CreateRole is the resolver for the createRole field.
+func (r *mutationResolver) CreateRole(ctx context.Context, input models.RoleInput) (*models.Role, error) {
+	panic(fmt.Errorf("not implemented: CreateRole - createRole"))
+}
+
+// UpdateRole is the resolver for the updateRole field.
+func (r *mutationResolver) UpdateRole(ctx context.Context, id uuid.UUID, input models.RoleInput) (*models.Role, error) {
+	panic(fmt.Errorf("not implemented: UpdateRole - updateRole"))
+}
+
+// DeleteRole is the resolver for the deleteRole field.
+func (r *mutationResolver) DeleteRole(ctx context.Context, id uuid.UUID) (bool, error) {
+	panic(fmt.Errorf("not implemented: DeleteRole - deleteRole"))
+}
+
 // GetTenant is the resolver for the getTenant field.
 func (r *queryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*models.Tenant, error) {
 	panic(fmt.Errorf("not implemented: GetTenant - getTenant"))
@@ -36,6 +51,16 @@ func (r *queryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*models.Te
 // AllTenants is the resolver for the allTenants field.
 func (r *queryResolver) AllTenants(ctx context.Context) ([]*models.Tenant, error) {
 	panic(fmt.Errorf("not implemented: AllTenants - allTenants"))
+}
+
+// GetRole is the resolver for the getRole field.
+func (r *queryResolver) GetRole(ctx context.Context, id string) (*models.Role, error) {
+	panic(fmt.Errorf("not implemented: GetRole - getRole"))
+}
+
+// AllRoles is the resolver for the allRoles field.
+func (r *queryResolver) AllRoles(ctx context.Context) ([]*models.Role, error) {
+	panic(fmt.Errorf("not implemented: AllRoles - allRoles"))
 }
 
 // Mutation returns generated.MutationResolver implementation.

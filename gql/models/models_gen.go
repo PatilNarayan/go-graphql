@@ -3,6 +3,10 @@
 package models
 
 import (
+	"fmt"
+	"io"
+	"strconv"
+
 	"github.com/google/uuid"
 )
 
@@ -11,6 +15,7 @@ type Organization interface {
 	GetID() uuid.UUID
 	GetName() string
 	GetDescription() *string
+	GetParentOrg() Organization
 	GetCreatedAt() string
 	GetUpdatedAt() *string
 	GetCreatedBy() *string
@@ -57,7 +62,8 @@ func (this ClientOrganizationUnit) GetUpdatedBy() *string { return this.UpdatedB
 
 func (ClientOrganizationUnit) IsOrganization() {}
 
-func (this ClientOrganizationUnit) GetDescription() *string { return this.Description }
+func (this ClientOrganizationUnit) GetDescription() *string    { return this.Description }
+func (this ClientOrganizationUnit) GetParentOrg() Organization { return this.ParentOrg }
 
 type ContactInfo struct {
 	Email       *string  `json:"email,omitempty"`
@@ -99,14 +105,61 @@ type CreateTenantInput struct {
 	CreatedBy   string            `json:"createdBy"`
 }
 
+type Permission struct {
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	ServiceID *string   `json:"serviceId,omitempty"`
+	Action    *string   `json:"action,omitempty"`
+	CreatedAt string    `json:"createdAt"`
+	CreatedBy string    `json:"createdBy"`
+	UpdatedAt *string   `json:"updatedAt,omitempty"`
+	UpdatedBy *string   `json:"updatedBy,omitempty"`
+}
+
+type Role struct {
+	ID             uuid.UUID    `json:"id"`
+	Name           string       `json:"name"`
+	PermissionsIds []*string    `json:"permissionsIds"`
+	Description    *string      `json:"description,omitempty"`
+	Version        *string      `json:"version,omitempty"`
+	ParentOrgID    Organization `json:"parentOrgId,omitempty"`
+	RoleType       RoleTypeEnum `json:"roleType"`
+	ResourceID     *string      `json:"resourceId,omitempty"`
+	CreatedAt      string       `json:"createdAt"`
+	CreatedBy      *string      `json:"createdBy,omitempty"`
+	UpdatedAt      *string      `json:"updatedAt,omitempty"`
+	UpdatedBy      *string      `json:"updatedBy,omitempty"`
+}
+
+func (Role) IsResource()                {}
+func (this Role) GetID() uuid.UUID      { return this.ID }
+func (this Role) GetName() string       { return this.Name }
+func (this Role) GetCreatedAt() string  { return this.CreatedAt }
+func (this Role) GetUpdatedAt() *string { return this.UpdatedAt }
+func (this Role) GetCreatedBy() *string { return this.CreatedBy }
+func (this Role) GetUpdatedBy() *string { return this.UpdatedBy }
+
+type RoleInput struct {
+	Name           string       `json:"name"`
+	Description    *string      `json:"description,omitempty"`
+	ResourceID     *string      `json:"resourceId,omitempty"`
+	ParentOrgID    *string      `json:"parentOrgId,omitempty"`
+	Version        *string      `json:"version,omitempty"`
+	CreatedBy      string       `json:"createdBy"`
+	UpdatedBy      *string      `json:"updatedBy,omitempty"`
+	PermissionsIds []string     `json:"permissionsIds"`
+	RoleType       RoleTypeEnum `json:"roleType"`
+}
+
 type Root struct {
-	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"name"`
-	Description *string   `json:"description,omitempty"`
-	CreatedAt   string    `json:"createdAt"`
-	UpdatedAt   *string   `json:"updatedAt,omitempty"`
-	CreatedBy   *string   `json:"createdBy,omitempty"`
-	UpdatedBy   *string   `json:"updatedBy,omitempty"`
+	ID          uuid.UUID    `json:"id"`
+	Name        string       `json:"name"`
+	Description *string      `json:"description,omitempty"`
+	ParentOrg   Organization `json:"parentOrg,omitempty"`
+	CreatedAt   string       `json:"createdAt"`
+	UpdatedAt   *string      `json:"updatedAt,omitempty"`
+	CreatedBy   *string      `json:"createdBy,omitempty"`
+	UpdatedBy   *string      `json:"updatedBy,omitempty"`
 }
 
 func (Root) IsResource()                {}
@@ -119,7 +172,8 @@ func (this Root) GetUpdatedBy() *string { return this.UpdatedBy }
 
 func (Root) IsOrganization() {}
 
-func (this Root) GetDescription() *string { return this.Description }
+func (this Root) GetDescription() *string    { return this.Description }
+func (this Root) GetParentOrg() Organization { return this.ParentOrg }
 
 type Tenant struct {
 	ID          uuid.UUID    `json:"id"`
@@ -143,7 +197,8 @@ func (this Tenant) GetUpdatedBy() *string { return this.UpdatedBy }
 
 func (Tenant) IsOrganization() {}
 
-func (this Tenant) GetDescription() *string { return this.Description }
+func (this Tenant) GetDescription() *string    { return this.Description }
+func (this Tenant) GetParentOrg() Organization { return this.ParentOrg }
 
 type UpdateAddressInput struct {
 	Street  *string `json:"street,omitempty"`
@@ -174,4 +229,45 @@ type UpdateTenantInput struct {
 	ParentOrgID *string           `json:"parentOrgId,omitempty"`
 	ContactInfo *ContactInfoInput `json:"contactInfo,omitempty"`
 	UpdatedBy   string            `json:"updatedBy"`
+}
+
+type RoleTypeEnum string
+
+const (
+	RoleTypeEnumDefault RoleTypeEnum = "DEFAULT"
+	RoleTypeEnumCustom  RoleTypeEnum = "CUSTOM"
+)
+
+var AllRoleTypeEnum = []RoleTypeEnum{
+	RoleTypeEnumDefault,
+	RoleTypeEnumCustom,
+}
+
+func (e RoleTypeEnum) IsValid() bool {
+	switch e {
+	case RoleTypeEnumDefault, RoleTypeEnumCustom:
+		return true
+	}
+	return false
+}
+
+func (e RoleTypeEnum) String() string {
+	return string(e)
+}
+
+func (e *RoleTypeEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = RoleTypeEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid RoleTypeEnum", str)
+	}
+	return nil
+}
+
+func (e RoleTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
