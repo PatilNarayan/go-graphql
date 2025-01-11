@@ -1,0 +1,156 @@
+
+I'll provide you with GraphQL queries and mutations for all the CRUD operations you mentioned for roles and permissions.
+
+Create Role:
+
+graphqlCopymutation CreateRole {
+  createRole(input: {
+    name: "Admin Role"
+    description: "Administrator role with full access"
+    parentOrgId: "123e4567-e89b-12d3-a456-426614174000"  # Replace with actual UUID
+    version: "1.0.0"
+    roleType: ADMIN  # Replace with your actual RoleTypeEnum value
+  }) {
+    id
+    name
+    description
+    permissionsIds
+    roleType
+    createdAt
+    createdBy
+  }
+}
+
+Create Permission:
+
+graphqlCopymutation CreatePermission {
+  createPermission(input: {
+    name: "READ_USERS"
+    roleId: "123e4567-e89b-12d3-a456-426614174000"  # Replace with actual UUID
+    serviceId: "user-service"
+    action: "read"
+  }) {
+    id
+    name
+    serviceId
+    action
+    createdAt
+    createdBy
+  }
+}
+
+Update Role:
+
+graphqlCopymutation UpdateRole {
+  updateRole(
+    id: "123e4567-e89b-12d3-a456-426614174000"  # Replace with actual UUID
+    input: {
+      name: "Updated Admin Role"
+      description: "Updated administrator role"
+      parentOrgId: "123e4567-e89b-12d3-a456-426614174000"  # Replace with actual UUID
+      version: "1.0.1"
+      roleType: ADMIN
+    }
+  ) {
+    id
+    name
+    description
+    version
+    roleType
+    updatedAt
+    updatedBy
+  }
+}
+
+Update Permission:
+
+graphqlCopymutation UpdatePermission {
+  updatePermission(input: {
+    name: "UPDATED_READ_USERS"
+    roleId: "123e4567-e89b-12d3-a456-426614174000"  # Replace with actual UUID
+    serviceId: "user-service"
+    action: "read-write"
+  }) {
+    id
+    name
+    serviceId
+    action
+    updatedAt
+    updatedBy
+  }
+}
+
+Delete Role:
+
+graphqlCopymutation DeleteRole {
+  deleteRole(id: "123e4567-e89b-12d3-a456-426614174000")  # Replace with actual UUID
+}
+
+Delete Permission:
+
+graphqlCopymutation DeletePermission {
+  deletePermission(id: "123e4567-e89b-12d3-a456-426614174000")  # Replace with actual UUID
+}
+
+Get Role:
+
+graphqlCopyquery GetRole {
+  getRole(id: "123e4567-e89b-12d3-a456-426614174000") {  # Replace with actual UUID
+    id
+    name
+    permissionsIds
+    description
+    version
+    parentOrgId {
+      id  # Assuming Organization type has an id field
+    }
+    roleType
+    createdAt
+    createdBy
+    updatedAt
+    updatedBy
+  }
+}
+
+Get All Roles:
+
+graphqlCopyquery GetAllRoles {
+  allRoles {
+    id
+    name
+    permissionsIds
+    description
+    version
+    roleType
+    createdAt
+    updatedAt
+  }
+}
+
+Get Permission:
+
+graphqlCopyquery GetPermission {
+  getPermission(id: "123e4567-e89b-12d3-a456-426614174000") {  # Replace with actual UUID
+    id
+    name
+    serviceId
+    action
+    createdAt
+    createdBy
+    updatedAt
+    updatedBy
+  }
+}
+
+Get All Permissions:
+
+graphqlCopyquery GetAllPermissions {
+  getAllPermissions {
+    id
+    name
+    serviceId
+    action
+    createdAt
+    updatedAt
+  }
+}

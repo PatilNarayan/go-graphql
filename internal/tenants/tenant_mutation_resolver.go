@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"go_graphql/gql/models"
+	"go_graphql/internal/constants"
 	"go_graphql/internal/dto"
 	"go_graphql/logger"
 	"go_graphql/permit"
@@ -28,8 +29,8 @@ func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 	tenantResource := &dto.TenantResource{
 		ResourceID: uuid.New(),
 		Name:       input.Name,
-		CreatedBy:  input.CreatedBy,
-		UpdatedBy:  input.CreatedBy,
+		CreatedBy:  constants.DefaltCreatedBy, //input.CreatedBy,
+		UpdatedBy:  constants.DefaltCreatedBy, //input.CreatedBy,
 		CreatedAt:  time.Now(),
 	}
 	log.WithField("tenantID", tenantResource.ResourceID).Info("Generated new tenant resource")
@@ -80,7 +81,7 @@ func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 	tenantMetadata := &dto.TenantMetadata{
 		ResourceID: tenantResource.ResourceID.String(),
 		Metadata:   metadataJSON,
-		CreatedBy:  input.CreatedBy,
+		CreatedBy:  constants.DefaltCreatedBy, //input.CreatedBy,
 		CreatedAt:  time.Now(),
 	}
 
@@ -138,7 +139,7 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 		parsedUUID := uuid.MustParse(*input.ParentOrgID)
 		tenantResource.ParentResourceID = &parsedUUID
 	}
-	tenantResource.UpdatedBy = input.UpdatedBy
+	tenantResource.UpdatedBy = constants.DefaltUpdatedBy //input.UpdatedBy
 	tenantResource.UpdatedAt = time.Now()
 
 	pc := permit.NewPermitClient()

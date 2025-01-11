@@ -110,8 +110,8 @@ func TestTenantMutationResolver_CreateTenant(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				input: models.CreateTenantInput{
-					Name:        "Test Tenant",
-					CreatedBy:   "admin",
+					Name: "Test Tenant",
+					// CreatedBy:   "admin",
 					Description: ptr.String("A test tenant"),
 					ContactInfo: &models.ContactInfoInput{
 						Email:       ptr.String("test@example.com"),

@@ -54,7 +54,7 @@ func (r *mutationResolver) DeletePermission(ctx context.Context, id uuid.UUID) (
 }
 
 // UpdatePermission is the resolver for the updatePermission field.
-func (r *mutationResolver) UpdatePermission(ctx context.Context, input *models.UpdatePermission) (*models.Permission, error) {
+func (r *mutationResolver) UpdatePermission(ctx context.Context, id uuid.UUID, input *models.UpdatePermission) (*models.Permission, error) {
 	panic(fmt.Errorf("not implemented: UpdatePermission - updatePermission"))
 }
 

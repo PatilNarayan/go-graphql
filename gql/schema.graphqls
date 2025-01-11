@@ -72,7 +72,7 @@ input CreateTenantInput {
   description: String
   parentOrgId: UUID
   contactInfo: ContactInfoInput
-  createdBy: String!
+  # createdBy: String!
 }
 
 input UpdateTenantInput {
@@ -81,7 +81,7 @@ input UpdateTenantInput {
   description: String
   parentOrgId: String
   contactInfo: ContactInfoInput
-  updatedBy: String!
+  # updatedBy: String!
 }
 
 type Address {
@@ -146,7 +146,7 @@ type Role implements Resource {
   permissionsIds: [String]!
   description: String
   version: String
-  parentOrgId: Organization 
+  parentOrg: Organization 
   roleType: RoleTypeEnum!
   createdAt: String!
   createdBy: String
@@ -159,15 +159,16 @@ input RoleInput {
   description: String
   parentOrgId: UUID!
   version: String!
-  createdBy: String!
-  updatedBy: String
-  roleType: RoleTypeEnum!
+  # createdBy: String!
+  # updatedBy: String
+  # roleType: RoleTypeEnum!
 }
 
 type Permission {
   id: UUID!
   name: String!
   serviceId: String
+  roleId: UUID
   action: String
   createdAt: String
   createdBy: String!
@@ -180,8 +181,8 @@ input CreatePermission {
   roleId: UUID
   serviceId: String
   action: String
-  createdBy: String
-  updatedBy: String!
+  # createdBy: String
+  # updatedBy: String!
 }
 
 input UpdatePermission {
@@ -189,7 +190,7 @@ input UpdatePermission {
   roleId: UUID
   serviceId: String
   action: String
-  updatedBy: String!
+  # updatedBy: String!
 } 
 
 type Query {
@@ -229,7 +230,7 @@ type Mutation {
 
   createPermission(input: CreatePermission) : Permission
   deletePermission(id: UUID!): Boolean!
-  updatePermission(input: UpdatePermission) : Permission
+  updatePermission(id: UUID!, input: UpdatePermission) : Permission
 
   # createClientOrganizationUnit(
   #   input: CreateClientOrganizationUnitInput!

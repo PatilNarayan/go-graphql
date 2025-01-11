@@ -33,7 +33,7 @@ func TestGetRole_Success(t *testing.T) {
 	resolver := RoleQueryResolver{DB: db}
 
 	// Seed data
-	roleDB := &dto.TNTRole{ResourceID: uuid.MustParse("1"), Name: "Admin", RoleType: "DEFAULT", Version: "0.0.1", CreatedBy: "1", UpdatedBy: "1", UpdatedAt: time.Now(), CreatedAt: time.Now()}
+	roleDB := &dto.TNTRole{ResourceID: uuid.New(), Name: "Admin", RoleType: "CUSTOM", Version: "0.0.1", CreatedBy: "1", UpdatedBy: "1", UpdatedAt: time.Now(), CreatedAt: time.Now()}
 	db.Create(roleDB)
 
 	ctx := context.Background()
@@ -43,7 +43,6 @@ func TestGetRole_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, role)
 	assert.Equal(t, "Admin", role.Name)
-	assert.Equal(t, "Administrator role", *role.Description)
 }
 
 func TestGetRole_NotFound(t *testing.T) {

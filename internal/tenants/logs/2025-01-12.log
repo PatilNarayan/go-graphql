@@ -1,0 +1,4 @@
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-12T00:11:33+05:30"}
+{"error":"record not found","level":"error","msg":"tenant resource not found","operation":"UpdateTenant","time":"2025-01-12T00:11:33+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-12T00:11:33+05:30"}
+{"error":"record not found","level":"error","msg":"tenant metadata not found","operation":"UpdateTenant","time":"2025-01-12T00:11:33+05:30"}

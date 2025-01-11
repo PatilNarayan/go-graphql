@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"go_graphql/gql/models"
+	"go_graphql/internal/constants"
 	"go_graphql/internal/dto"
 	"go_graphql/internal/utils"
 
@@ -30,13 +31,11 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Role
 		return nil, errors.New("resource ID is required")
 	} else {
 		if err := utils.ValidateResourceID(input.ParentOrgID); err != nil {
-			return nil, fmt.Errorf("invalid resource ID: %v", err)
+			return nil, fmt.Errorf("invalid ParentOrgID")
 		}
 	}
 
-	role := dto.TNTRole{
-		ResourceID: uuid.New(),
-	}
+	role := dto.TNTRole{}
 	if input.Name != "" {
 		role.Name = input.Name
 	}
@@ -54,14 +53,9 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Role
 	}
 
 	role.CreatedAt = time.Now()
-	role.CreatedBy = input.CreatedBy
-	role.UpdatedBy = input.CreatedBy
-
-	// Save to the database
-	err := r.DB.Create(&role).Error
-	if err != nil {
-		return nil, err
-	}
+	role.CreatedBy = constants.DefaltCreatedBy //input.CreatedBy
+	role.UpdatedBy = constants.DefaltCreatedBy //input.CreatedBy
+	role.RowStatus = 1
 
 	resourceType := dto.Mst_ResourceTypes{}
 	if err := r.DB.Where("name = ?", "Role").First(&resourceType).Error; err != nil {
@@ -74,12 +68,21 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Role
 		ResourceTypeID:   resourceType.ResourceTypeID,
 		Name:             input.Name,
 		RowStatus:        1,
-		CreatedBy:        input.CreatedBy,
-		UpdatedBy:        input.CreatedBy,
+		CreatedBy:        constants.DefaltCreatedBy, // input.CreatedBy,
+		UpdatedBy:        constants.DefaltCreatedBy, // input.CreatedBy,
 		CreatedAt:        time.Now(),
 	}
 
+	tenantResource.TenantID = tenantResource.ResourceID
+
 	if err := r.DB.Create(&tenantResource).Error; err != nil {
+		return nil, err
+	}
+
+	// Save to the database
+	role.ResourceID = tenantResource.ResourceID
+	err := r.DB.Create(&role).Error
+	if err != nil {
 		return nil, err
 	}
 
@@ -90,7 +93,7 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Role
 func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id uuid.UUID, input models.RoleInput) (*models.Role, error) {
 	// Fetch the existing role
 	var role dto.TNTRole
-	if err := r.DB.First(&role, "role_id = ?", id).Error; err != nil {
+	if err := r.DB.First(&role, "resource_id = ?", id).Error; err != nil {
 		return nil, errors.New("role not found")
 	}
 
@@ -109,9 +112,9 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id uuid.UUID, inp
 	// if input.Description != nil {
 	// 	role.Description = *input.Description
 	// }
-	if input.RoleType != "" {
-		role.RoleType = string(input.RoleType)
-	}
+	// if input.RoleType != "" {
+	// 	role.RoleType = string(input.RoleType)
+	// }
 	if input.Version != "" {
 		role.Version = input.Version
 	}
@@ -120,11 +123,13 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id uuid.UUID, inp
 		role.ParentResourceID = &input.ParentOrgID
 	}
 
-	if input.UpdatedBy != nil {
-		role.UpdatedBy = *input.UpdatedBy
-	} else {
-		return nil, errors.New("updatedBy is required")
-	}
+	// if input.UpdatedBy != nil {
+	// 	role.UpdatedBy = *input.UpdatedBy
+	// } else {
+	// 	return nil, errors.New("updatedBy is required")
+	// }
+
+	role.UpdatedBy = constants.DefaltCreatedBy
 
 	role.UpdatedAt = time.Now()
 
@@ -132,7 +137,6 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id uuid.UUID, inp
 	updateData := map[string]interface{}{
 		"name": role.Name,
 		// "description":     role.Description,
-		"role_type":          role.RoleType,
 		"parent_resource_id": role.ParentResourceID,
 		// "permissions_ids": role.PermissionsIDs,
 		"version":    role.Version,
@@ -140,12 +144,12 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id uuid.UUID, inp
 		"updated_at": role.UpdatedAt,
 	}
 
-	if err := r.DB.Model(&dto.TNTRole{}).Where("role_id = ?", id).Updates(updateData).Error; err != nil {
+	if err := r.DB.Model(&dto.TNTRole{}).Where("resource_id = ?", id).Updates(updateData).Error; err != nil {
 		return nil, err
 	}
 
 	var updatedData dto.TNTRole
-	if err := r.DB.First(&updatedData, "role_id = ?", id).Error; err != nil {
+	if err := r.DB.First(&updatedData, "resource_id = ?", id).Error; err != nil {
 		return nil, errors.New("role not found")
 	}
 
@@ -154,18 +158,29 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id uuid.UUID, inp
 
 // DeleteRole handles deleting a role by ID.
 func (r *RoleMutationResolver) DeleteRole(ctx context.Context, id uuid.UUID) (bool, error) {
-	// Delete role assignments
-	// if err := r.DB.Where("role_id = ?", id).Delete(&dto.RoleAssignment{}).Error; err != nil {
-	// 	return false, fmt.Errorf("failed to delete role assignments: %v", err)
-	// }
+
 	var roleDB dto.TNTRole
-	if err := r.DB.First(&roleDB, "role_id = ?", id).Error; err != nil {
+	if err := r.DB.First(&roleDB, "resource_id = ?", id).Error; err != nil {
 		return false, errors.New("role not found")
 	}
 
+	updates := map[string]interface{}{
+		"deleted_at": gorm.DeletedAt{Time: time.Now(), Valid: true},
+		"row_status": 0,
+	}
+
 	// Attempt to delete the role
-	if err := r.DB.Delete(&dto.TNTRole{}, "role_id = ?", id).Error; err != nil {
+	if err := r.DB.Model(&dto.TNTRole{}).Where("resource_id = ?", id).Updates(updates).Error; err != nil {
 		return false, err
 	}
+
+	if err := r.DB.Model(&dto.TenantResource{}).Where("resource_id = ?", id).Updates(updates).Error; err != nil {
+		return false, err
+	}
+
+	if err := r.DB.Model(&dto.TNTPermission{}).Where("role_id = ?", id).Updates(updates).Error; err != nil {
+		return false, err
+	}
+
 	return true, nil
 }

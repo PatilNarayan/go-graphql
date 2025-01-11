@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"go_graphql/gql/models"
+	"go_graphql/internal/constants"
 	"go_graphql/internal/dto"
 	"go_graphql/internal/utils"
 
@@ -20,7 +21,11 @@ type PermissionMutationResolver struct {
 }
 
 func (r *PermissionMutationResolver) DeletePermission(ctx context.Context, id uuid.UUID) (bool, error) {
-	result := r.DB.Delete(&dto.TNTPermission{}, "permission_id = ?", id)
+	updates := map[string]interface{}{
+		"deleted_at": gorm.DeletedAt{Time: time.Now(), Valid: true},
+		"row_status": 0,
+	}
+	result := r.DB.Model(&dto.TNTPermission{}).Where("permission_id = ?", id).Updates(updates)
 	if result.Error != nil {
 		return false, result.Error
 	}
@@ -57,11 +62,11 @@ func (r *PermissionMutationResolver) CreatePermission(ctx context.Context, input
 		PermissionID: uuid.New(),
 		Name:         input.Name,
 		ServiceID:    *input.ServiceID,
-		Action:       *input.Action, // Taking first action from array since DB schema has single action
+		Action:       *input.Action,
 		RowStatus:    1,
 		RoleID:       *input.RoleID,
-		CreatedBy:    input.UpdatedBy, // Using UpdatedBy as CreatedBy since it's required in input
-		UpdatedBy:    input.UpdatedBy,
+		CreatedBy:    constants.DefaltCreatedBy, //input.UpdatedBy,
+		UpdatedBy:    constants.DefaltUpdatedBy, //input.UpdatedBy,
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 	}
@@ -83,7 +88,7 @@ func (r *PermissionMutationResolver) CreatePermission(ctx context.Context, input
 	}, nil
 }
 
-func (r *PermissionMutationResolver) UpdatePermission(ctx context.Context, input *models.UpdatePermission) (*models.Permission, error) {
+func (r *PermissionMutationResolver) UpdatePermission(ctx context.Context, permissionID uuid.UUID, input *models.UpdatePermission) (*models.Permission, error) {
 	if input == nil {
 		return nil, errors.New("input is required")
 	}
@@ -100,9 +105,18 @@ func (r *PermissionMutationResolver) UpdatePermission(ctx context.Context, input
 		return nil, errors.New("action is required")
 	}
 
-	if input.UpdatedBy == "" {
-		return nil, errors.New("updatedBy is required")
+	// Find existing permission
+	var permission dto.TNTPermission
+	if err := r.DB.First(&permission, "permission_id = ?", permissionID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("permission not found")
+		}
+		return nil, err
 	}
+
+	// if input.UpdatedBy == "" {
+	// 	return nil, errors.New("updatedBy is required")
+	// }
 
 	if input.RoleID == nil {
 		return nil, errors.New("role ID is required")
@@ -110,20 +124,12 @@ func (r *PermissionMutationResolver) UpdatePermission(ctx context.Context, input
 		return nil, fmt.Errorf("invalid role ID: %v", err)
 	}
 
-	// Find existing permission
-	var permission dto.TNTPermission
-	if err := r.DB.First(&permission, "name = ?", input.Name).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("permission not found")
-		}
-		return nil, err
-	}
-
 	// Update fields
 	permission.Name = input.Name
 	permission.ServiceID = *input.ServiceID
 	permission.Action = *input.Action
-	permission.UpdatedBy = input.UpdatedBy
+	permission.RoleID = *input.RoleID
+	// permission.UpdatedBy = input.UpdatedBy
 	permission.UpdatedAt = time.Now()
 
 	// Save updates

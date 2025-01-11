@@ -1,0 +1,6 @@
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-11T23:59:04+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-11T23:59:04+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"1e912e84-49a8-415d-a973-bea62ea06838","time":"2025-01-11T23:59:04+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-11T23:59:04+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-11T23:59:04+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"1e912e84-49a8-415d-a973-bea62ea06838","time":"2025-01-11T23:59:04+05:30"}
