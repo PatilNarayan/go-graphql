@@ -21,108 +21,47 @@ func setupTestDB() *gorm.DB {
 	}
 
 	// Auto-migrate tables
-	db.AutoMigrate(&dto.TNTRole{}, &dto.TNTPermission{})
+	db.AutoMigrate(&dto.TNTRole{}, &dto.TNTPermission{}, &dto.TenantResource{}, &dto.Mst_ResourceTypes{})
+
+	// Seed resource type
+	resourceType := dto.Mst_ResourceTypes{
+		ResourceTypeID: uuid.New(),
+		Name:           "Role",
+	}
+	db.Create(&resourceType)
+
 	return db
 }
 
-// TestCreateRole validates the CreateRole function
-func TestRole(t *testing.T) {
-	db := setupTestDB()
-	resolver := &RoleMutationResolver{DB: db}
-	ctx := context.Background()
-
-	// Seed permissions to validate them later
-	permission1 := dto.TNTPermission{PermissionID: "perm_1", Name: "Permission 1"}
-	permission2 := dto.TNTPermission{PermissionID: "perm_2", Name: "Permission 2"}
-	db.Create(&permission1)
-	db.Create(&permission2)
-
-	// Input for the role creation
-	input := models.RoleInput{
-		Name:           "Test Role",
-		Description:    ptrString("Test Role Description"),
-		PermissionsIds: []string{"perm_1", "perm_2"},
-		ResourceID:     ptrString("resource_123"),
-		RoleType:       "CUSTOM",
-		Version:        ptr.String("1.0"),
-		CreatedBy:      "user_123",
-		UpdatedBy:      ptr.String("user_123"),
-	}
-
-	// Call the resolver function
-	role, err := resolver.CreateRole(ctx, input)
-	assert.NoError(t, err)
-	assert.NotNil(t, role)
-	assert.Equal(t, "Test Role", role.Name)
-
-	// Input for the role update
-	Update := models.RoleInput{
-		Name:           "Updated Role",
-		Description:    ptrString("Updated Description"),
-		PermissionsIds: []string{"perm_2"},
-		ResourceID:     ptrString("resource_123"),
-		RoleType:       models.RoleTypeEnumDefault,
-		Version:        ptr.String("1.0"),
-		CreatedBy:      "user_123",
-		UpdatedBy:      ptr.String("user_123"),
-	}
-
-	// Call the resolver function
-	role, err = resolver.UpdateRole(ctx, uuid.MustParse(*role.ResourceID), Update)
-	assert.NoError(t, err)
-	assert.NotNil(t, role)
-	assert.Equal(t, "Updated Role", role.Name)
-	assert.Equal(t, "Updated Description", *role.Description)
-	assert.Equal(t, models.RoleTypeEnumDefault, role.RoleType)
-	assert.Equal(t, "1.0", *role.Version)
-
-	// Call the resolver function
-	// Delete the role
-	flag, err := resolver.DeleteRole(ctx, uuid.MustParse(*role.ResourceID))
-	assert.NoError(t, err)
-	assert.NotNil(t, flag)
-}
-
-func ptrString(s string) *string {
-	return &s
-}
-
 func TestCreateRole(t *testing.T) {
-	// Setup test database and resolver
 	db := setupTestDB()
 	ctx := context.Background()
 	resolver := &RoleMutationResolver{DB: db}
-	// Seed permissions to validate them later
-	permission1 := dto.TNTPermission{PermissionID: "perm_1", Name: "Permission 1"}
-	permission2 := dto.TNTPermission{PermissionID: "perm_2", Name: "Permission 2"}
-	db.Create(&permission1)
-	db.Create(&permission2)
 
 	t.Run("Valid Input", func(t *testing.T) {
+		parentOrgID := uuid.New()
 		input := models.RoleInput{
-			Name:           "Admin",
-			Description:    ptr.String("Administrator role"),
-			ResourceID:     ptr.String("resource_123"),
-			RoleType:       models.RoleTypeEnum("DEFAULT"),
-			PermissionsIds: []string{"perm_1", "perm_2"},
-			Version:        ptr.String("1.0"),
-			CreatedBy:      "user_123",
+			Name:        "Admin Role",
+			Description: ptr.String("Admin Description"),
+			ParentOrgID: parentOrgID,
+			RoleType:    "CUSTOM",
+			Version:     "1.0",
+			CreatedBy:   "test_user",
 		}
 
 		role, err := resolver.CreateRole(ctx, input)
 		assert.NoError(t, err)
 		assert.NotNil(t, role)
-		assert.Equal(t, "Admin", role.Name)
+		assert.Equal(t, input.Name, role.Name)
+		assert.Equal(t, input.Description, role.Description)
+		assert.Equal(t, input.ParentOrgID.String(), role.ParentOrgID)
 	})
 
-	t.Run("Missing Role Name", func(t *testing.T) {
+	t.Run("Missing Required Fields", func(t *testing.T) {
 		input := models.RoleInput{
-			Description:    ptr.String("No name role"),
-			ResourceID:     ptr.String("resource_123"),
-			RoleType:       models.RoleTypeEnum("DEFAULT"),
-			PermissionsIds: []string{"perm_1", "perm_2"},
-			Version:        ptr.String("1.0"),
-			CreatedBy:      "user_123",
+			Description: ptr.String("Missing Name"),
+			ParentOrgID: uuid.New(),
+			CreatedBy:   "test_user",
 		}
 
 		role, err := resolver.CreateRole(ctx, input)
@@ -131,82 +70,64 @@ func TestCreateRole(t *testing.T) {
 		assert.Equal(t, "role name is required", err.Error())
 	})
 
-	t.Run("Invalid Permissions", func(t *testing.T) {
+	t.Run("Missing ParentOrgID", func(t *testing.T) {
 		input := models.RoleInput{
-			Name:           "Admin",
-			Description:    ptr.String("Invalid permissions role"),
-			ResourceID:     ptr.String("resource_123"),
-			RoleType:       models.RoleTypeEnum("DEFAULT"),
-			PermissionsIds: []string{"invalid_perm"},
-			Version:        ptr.String("1.0"),
-			CreatedBy:      "user_123",
+			Name:      "Test Role",
+			CreatedBy: "test_user",
 		}
 
 		role, err := resolver.CreateRole(ctx, input)
 		assert.Error(t, err)
 		assert.Nil(t, role)
-		assert.Contains(t, err.Error(), "invalid permissions")
-	})
-
-	t.Run("JSON Marshal Error", func(t *testing.T) {
-		input := models.RoleInput{
-			Name:           "Admin",
-			Description:    ptr.String("Invalid JSON"),
-			ResourceID:     ptr.String("resource_123"),
-			RoleType:       models.RoleTypeEnum("DEFAULT"),
-			PermissionsIds: []string{"perm_1", string([]byte{0xff})},
-			Version:        ptr.String("1.0"),
-			CreatedBy:      "user_123",
-		}
-
-		role, err := resolver.CreateRole(ctx, input)
-		assert.Error(t, err)
-		assert.Nil(t, role)
+		assert.Equal(t, "resource ID is required", err.Error())
 	})
 }
 
 func TestUpdateRole(t *testing.T) {
-	// Setup test database and resolver
 	db := setupTestDB()
 	ctx := context.Background()
 	resolver := &RoleMutationResolver{DB: db}
 
-	// Seed the database with a role
-	role := &dto.TNTRole{
-		ResourceID: "role_123",
-		Name:       "Old Role",
-		// Description:    "Old Description",
-		// PermissionsIDs: `["perm_1", "perm_2"]`,
-		RoleType:  "DEFAULT",
-		Version:   *ptrString("1.0"),
-		UpdatedBy: "user_123",
+	// Create initial role for testing updates
+	parentOrgID := uuid.New()
+	initialRole := dto.TNTRole{
+		ResourceID:       uuid.New(),
+		ParentResourceID: &parentOrgID,
+		Name:             "Initial Role",
+		RoleType:         "CUSTOM",
+		Version:          "1.0",
+		CreatedBy:        "test_user",
+		UpdatedBy:        "test_user",
 	}
-	db.Create(role)
+	db.Create(&initialRole)
 
-	t.Run("Valid Input", func(t *testing.T) {
+	t.Run("Valid Update", func(t *testing.T) {
+		newParentOrgID := uuid.New()
 		input := models.RoleInput{
-			Name:           "Updated Role",
-			Description:    ptr.String("Updated Description"),
-			RoleType:       models.RoleTypeEnum("DEFAULT"),
-			PermissionsIds: []string{"perm_1", "perm_2"},
-			Version:        ptr.String("2.0"),
-			CreatedBy:      "user_123",
-			UpdatedBy:      ptr.String("user_456"),
+			Name:        "Updated Role",
+			Description: ptr.String("Updated Description"),
+			ParentOrgID: newParentOrgID,
+			RoleType:    "DEFAULT",
+			Version:     "2.0",
+			UpdatedBy:   ptr.String("update_user"),
 		}
 
-		updatedRole, err := resolver.UpdateRole(ctx, uuid.MustParse(role.ResourceID), input)
+		updatedRole, err := resolver.UpdateRole(ctx, initialRole.ResourceID, input)
 		assert.NoError(t, err)
 		assert.NotNil(t, updatedRole)
-		assert.Equal(t, "Updated Role", updatedRole.Name)
+		assert.Equal(t, input.Name, updatedRole.Name)
+		assert.Equal(t, input.RoleType, string(updatedRole.RoleType))
+		assert.Equal(t, input.Version, *updatedRole.Version)
 	})
 
 	t.Run("Role Not Found", func(t *testing.T) {
 		input := models.RoleInput{
-			Name:      "Non-existent Role",
-			UpdatedBy: ptr.String("user_456"),
+			Name:        "Non-existent Role",
+			ParentOrgID: uuid.New(),
+			UpdatedBy:   ptr.String("update_user"),
 		}
 
-		updatedRole, err := resolver.UpdateRole(ctx, uuid.MustParse("non-existent-id"), input)
+		updatedRole, err := resolver.UpdateRole(ctx, uuid.New(), input)
 		assert.Error(t, err)
 		assert.Nil(t, updatedRole)
 		assert.Equal(t, "role not found", err.Error())
@@ -214,73 +135,51 @@ func TestUpdateRole(t *testing.T) {
 
 	t.Run("Missing UpdatedBy", func(t *testing.T) {
 		input := models.RoleInput{
-			Name: "Missing UpdatedBy",
+			Name:        "Test Update",
+			ParentOrgID: uuid.New(),
 		}
 
-		updatedRole, err := resolver.UpdateRole(ctx, uuid.MustParse(role.ResourceID), input)
+		updatedRole, err := resolver.UpdateRole(ctx, initialRole.ResourceID, input)
 		assert.Error(t, err)
 		assert.Nil(t, updatedRole)
 		assert.Equal(t, "updatedBy is required", err.Error())
 	})
-
-	t.Run("Invalid RoleType", func(t *testing.T) {
-		input := models.RoleInput{
-			RoleType:  "invalid_type",
-			UpdatedBy: ptr.String("user_456"),
-		}
-
-		updatedRole, err := resolver.UpdateRole(ctx, uuid.MustParse(role.ResourceID), input)
-		assert.Error(t, err)
-		assert.Nil(t, updatedRole)
-	})
 }
 
 func TestDeleteRole(t *testing.T) {
-	// Setup test database and resolver
 	db := setupTestDB()
 	ctx := context.Background()
 	resolver := &RoleMutationResolver{DB: db}
 
-	// Seed roles and permissions to validate them later
-	role := &dto.TNTRole{
-		ResourceID: "role_123",
-		Name:       "Old Role",
-		// Description:    "Old Description",
-		// PermissionsIDs: `["perm_1", "perm_2"]`,
-		RoleType: "DEFAULT",
-		// ResourceID:     "resource_123",
-		Version:   *ptrString("1.0"),
-		UpdatedBy: "user_123",
+	// Create a role to delete
+	parentOrgID := uuid.New()
+	role := dto.TNTRole{
+		ResourceID:       uuid.New(),
+		ParentResourceID: &parentOrgID,
+		Name:             "Role to Delete",
+		RoleType:         "CUSTOM",
+		Version:          "1.0",
+		CreatedBy:        "test_user",
+		UpdatedBy:        "test_user",
 	}
-	db.Create(role)
+	db.Create(&role)
 
-	t.Run("Valid Role Deletion", func(t *testing.T) {
-		// Test deleting an existing role
-		var roleDB []dto.TNTRole
-		if err := db.Find(&roleDB).Error; err != nil {
-			t.Fatal(err) // errors.New("role not found")
-		}
-
-		roleID := roleDB[0].ResourceID
-
-		success, err := resolver.DeleteRole(ctx, uuid.MustParse(roleID))
+	t.Run("Valid Delete", func(t *testing.T) {
+		success, err := resolver.DeleteRole(ctx, role.ResourceID)
 		assert.NoError(t, err)
 		assert.True(t, success)
 
-		// Ensure the role is deleted from the database
+		// Verify deletion
 		var deletedRole dto.TNTRole
-		db.First(&deletedRole, "role_id = ?", roleID)
-		assert.Equal(t, deletedRole.ResourceID, "") // Role should not exist
+		result := db.First(&deletedRole, "role_id = ?", role.ResourceID)
+		assert.Error(t, result.Error)
+		assert.True(t, result.Error == gorm.ErrRecordNotFound)
 	})
 
-	t.Run("Role Does Not Exist", func(t *testing.T) {
-		// Test deleting a non-existing role
-		roleID := "nonexistent_role"
-
-		success, err := resolver.DeleteRole(ctx, uuid.MustParse(roleID))
+	t.Run("Delete Non-existent Role", func(t *testing.T) {
+		success, err := resolver.DeleteRole(ctx, uuid.New())
 		assert.Error(t, err)
 		assert.False(t, success)
 		assert.Equal(t, "role not found", err.Error())
 	})
-
 }

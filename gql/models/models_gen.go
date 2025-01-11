@@ -92,6 +92,15 @@ type CreateClientOrganizationUnitInput struct {
 	ParentOrgID string  `json:"parentOrgId"`
 }
 
+type CreatePermission struct {
+	Name      string     `json:"name"`
+	RoleID    *uuid.UUID `json:"roleId,omitempty"`
+	ServiceID *string    `json:"serviceId,omitempty"`
+	Action    *string    `json:"action,omitempty"`
+	CreatedBy *string    `json:"createdBy,omitempty"`
+	UpdatedBy string     `json:"updatedBy"`
+}
+
 type CreateRootInput struct {
 	Name        string  `json:"name"`
 	Description *string `json:"description,omitempty"`
@@ -110,7 +119,7 @@ type Permission struct {
 	Name      string    `json:"name"`
 	ServiceID *string   `json:"serviceId,omitempty"`
 	Action    *string   `json:"action,omitempty"`
-	CreatedAt string    `json:"createdAt"`
+	CreatedAt *string   `json:"createdAt,omitempty"`
 	CreatedBy string    `json:"createdBy"`
 	UpdatedAt *string   `json:"updatedAt,omitempty"`
 	UpdatedBy *string   `json:"updatedBy,omitempty"`
@@ -124,7 +133,6 @@ type Role struct {
 	Version        *string      `json:"version,omitempty"`
 	ParentOrgID    Organization `json:"parentOrgId,omitempty"`
 	RoleType       RoleTypeEnum `json:"roleType"`
-	ResourceID     *string      `json:"resourceId,omitempty"`
 	CreatedAt      string       `json:"createdAt"`
 	CreatedBy      *string      `json:"createdBy,omitempty"`
 	UpdatedAt      *string      `json:"updatedAt,omitempty"`
@@ -140,15 +148,13 @@ func (this Role) GetCreatedBy() *string { return this.CreatedBy }
 func (this Role) GetUpdatedBy() *string { return this.UpdatedBy }
 
 type RoleInput struct {
-	Name           string       `json:"name"`
-	Description    *string      `json:"description,omitempty"`
-	ResourceID     *string      `json:"resourceId,omitempty"`
-	ParentOrgID    *string      `json:"parentOrgId,omitempty"`
-	Version        *string      `json:"version,omitempty"`
-	CreatedBy      string       `json:"createdBy"`
-	UpdatedBy      *string      `json:"updatedBy,omitempty"`
-	PermissionsIds []string     `json:"permissionsIds"`
-	RoleType       RoleTypeEnum `json:"roleType"`
+	Name        string       `json:"name"`
+	Description *string      `json:"description,omitempty"`
+	ParentOrgID uuid.UUID    `json:"parentOrgId"`
+	Version     string       `json:"version"`
+	CreatedBy   string       `json:"createdBy"`
+	UpdatedBy   *string      `json:"updatedBy,omitempty"`
+	RoleType    RoleTypeEnum `json:"roleType"`
 }
 
 type Root struct {
@@ -214,6 +220,14 @@ type UpdateClientOrganizationUnitInput struct {
 	Description *string   `json:"description,omitempty"`
 	TenantID    *string   `json:"tenantId,omitempty"`
 	ParentOrgID *string   `json:"parentOrgId,omitempty"`
+}
+
+type UpdatePermission struct {
+	Name      string     `json:"name"`
+	RoleID    *uuid.UUID `json:"roleId,omitempty"`
+	ServiceID *string    `json:"serviceId,omitempty"`
+	Action    *string    `json:"action,omitempty"`
+	UpdatedBy string     `json:"updatedBy"`
 }
 
 type UpdateRootInput struct {

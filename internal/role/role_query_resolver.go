@@ -7,6 +7,7 @@ import (
 	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
 
+	"github.com/google/uuid"
 	"go.uber.org/thriftrw/ptr"
 	"gorm.io/gorm"
 )
@@ -32,7 +33,7 @@ func (r *RoleQueryResolver) AllRoles(ctx context.Context) ([]*models.Role, error
 }
 
 // GetRole resolves a single role by ID.
-func (r *RoleQueryResolver) GetRole(ctx context.Context, id string) (*models.Role, error) {
+func (r *RoleQueryResolver) GetRole(ctx context.Context, id uuid.UUID) (*models.Role, error) {
 	var role dto.TNTRole
 	if err := r.DB.First(&role, "role_id = ?", id).Error; err != nil {
 		return nil, errors.New("role not found")
@@ -44,15 +45,10 @@ func (r *RoleQueryResolver) GetRole(ctx context.Context, id string) (*models.Rol
 func convertRoleToGraphQL(role *dto.TNTRole) *models.Role {
 	var permissions []*string
 
-	// permissionsJSON := []byte(role.PermissionsIDs)
-	// if err := json.Unmarshal(permissionsJSON, &permissions); err != nil {
-	// 	return nil
-	// }
-
 	return &models.Role{
-		// ID:             role.ResourceID,
-		Name: role.Name,
-		// Description:    ptr.String(role.Description),
+		ID:             role.ResourceID,
+		Name:           role.Name,
+		Description:    ptr.String(role.Description),
 		RoleType:       models.RoleTypeEnum(role.RoleType),
 		Version:        &role.Version,
 		CreatedAt:      role.CreatedAt.String(),

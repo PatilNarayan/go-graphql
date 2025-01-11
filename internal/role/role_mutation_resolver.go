@@ -8,6 +8,7 @@ import (
 
 	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
+	"go_graphql/internal/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -25,41 +26,33 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Role
 		return nil, errors.New("role name is required")
 	}
 
-	// Check permissionIds are valid
-	if input.PermissionsIds != nil && len(input.PermissionsIds) > 0 {
-		if err := validatePermissions(r.DB, input.PermissionsIds); err != nil {
-			return nil, fmt.Errorf("invalid permissions: %v", err)
+	if input.ParentOrgID == uuid.Nil {
+		return nil, errors.New("resource ID is required")
+	} else {
+		if err := utils.ValidateResourceID(input.ParentOrgID); err != nil {
+			return nil, fmt.Errorf("invalid resource ID: %v", err)
 		}
 	}
 
-	// Convert PermissionsIDs to JSON
-	// permissionsJSON, err := json.Marshal(input.PermissionsIds)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to convert permissions to JSON: %v", err)
-	// }
-
-	// Create a new role entity
 	role := dto.TNTRole{
-		ResourceID: uuid.New().String(),
+		ResourceID: uuid.New(),
 	}
 	if input.Name != "" {
 		role.Name = input.Name
 	}
-	// if input.Description != nil {
-	// 	role.Description = *input.Description
-	// }
-	if input.ResourceID != nil {
-		role.ResourceID = *input.ResourceID
+	if input.Description != nil {
+		role.Description = *input.Description
 	}
-	if input.RoleType != "" {
-		role.RoleType = string(input.RoleType)
+	if input.ParentOrgID != uuid.Nil {
+		role.ParentResourceID = &input.ParentOrgID
 	}
-	// if input.PermissionsIds != nil {
-	// 	role.PermissionsIDs = string(permissionsJSON)
-	// }
-	if input.Version != nil {
-		role.Version = *input.Version
+
+	role.RoleType = "CUSTOM"
+
+	if input.Version != "" {
+		role.Version = input.Version
 	}
+
 	role.CreatedAt = time.Now()
 	role.CreatedBy = input.CreatedBy
 	role.UpdatedBy = input.CreatedBy
@@ -70,21 +63,25 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Role
 		return nil, err
 	}
 
-	// // Create role assignments
-	// for _, permissionID := range input.PermissionsIds {
-	// 	permissionAssignment := dto.RoleAssignment{
-	// 		RoleAssignmentID: uuid.New().String(),
-	// 		RoleID:           role.RoleID,
-	// 		PermissionID:     permissionID,
-	// 		CreatedAt:        time.Now(),
-	// 		CreatedBy:        input.CreatedBy,
-	// 		UpdatedBy:        input.CreatedBy,
-	// 	}
+	resourceType := dto.Mst_ResourceTypes{}
+	if err := r.DB.Where("name = ?", "Role").First(&resourceType).Error; err != nil {
+		return nil, fmt.Errorf("resource type not found: %w", err)
+	}
 
-	// 	if err := r.DB.Create(&permissionAssignment).Error; err != nil {
-	// 		return nil, err
-	// 	}
-	// }
+	tenantResource := &dto.TenantResource{
+		ResourceID:       uuid.New(),
+		ParentResourceID: &input.ParentOrgID,
+		ResourceTypeID:   resourceType.ResourceTypeID,
+		Name:             input.Name,
+		RowStatus:        1,
+		CreatedBy:        input.CreatedBy,
+		UpdatedBy:        input.CreatedBy,
+		CreatedAt:        time.Now(),
+	}
+
+	if err := r.DB.Create(&tenantResource).Error; err != nil {
+		return nil, err
+	}
 
 	return convertRoleToGraphQL(&role), nil
 }
@@ -97,6 +94,14 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id uuid.UUID, inp
 		return nil, errors.New("role not found")
 	}
 
+	if input.ParentOrgID == uuid.Nil {
+		return nil, errors.New("resource ID is required")
+	} else {
+		if err := utils.ValidateResourceID(input.ParentOrgID); err != nil {
+			return nil, fmt.Errorf("invalid resource ID: %v", err)
+		}
+	}
+
 	// Validate and update fields
 	if input.Name != "" {
 		role.Name = input.Name
@@ -107,12 +112,12 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id uuid.UUID, inp
 	if input.RoleType != "" {
 		role.RoleType = string(input.RoleType)
 	}
-	if input.Version != nil {
-		role.Version = *input.Version
+	if input.Version != "" {
+		role.Version = input.Version
 	}
 
-	if input.ResourceID != nil {
-		role.ResourceID = *input.ResourceID
+	if input.ParentOrgID != uuid.Nil {
+		role.ParentResourceID = &input.ParentOrgID
 	}
 
 	if input.UpdatedBy != nil {
@@ -123,38 +128,12 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id uuid.UUID, inp
 
 	role.UpdatedAt = time.Now()
 
-	// Update PermissionsIDs and RoleAssignments
-	// if input.PermissionsIds != nil {
-	// 	permissionsJSON, err := json.Marshal(input.PermissionsIds)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("failed to convert permissions to JSON: %v", err)
-	// 	}
-	// 	role.PermissionsIDs = string(permissionsJSON)
-
-	// 	// Update role assignments
-	// 	if err := r.DB.Where("role_id = ?", id).Delete(&dto.RoleAssignment{}).Error; err != nil {
-	// 		return nil, fmt.Errorf("failed to clear old role assignments: %v", err)
-	// 	}
-	// 	for _, permissionID := range input.PermissionsIds {
-	// 		permissionAssignment := dto.RoleAssignment{
-	// 			RoleAssignmentID: uuid.New().String(),
-	// 			RoleID:           id,
-	// 			PermissionID:     permissionID,
-	// 			CreatedAt:        time.Now(),
-	// 			CreatedBy:        *input.UpdatedBy,
-	// 			UpdatedBy:        *input.UpdatedBy,
-	// 		}
-	// 		if err := r.DB.Create(&permissionAssignment).Error; err != nil {
-	// 			return nil, fmt.Errorf("failed to create role assignment: %v", err)
-	// 		}
-	// 	}
-	// }
-
 	// Save changes explicitly using UpdateColumns
 	updateData := map[string]interface{}{
 		"name": role.Name,
 		// "description":     role.Description,
-		"role_type": role.RoleType,
+		"role_type":          role.RoleType,
+		"parent_resource_id": role.ParentResourceID,
 		// "permissions_ids": role.PermissionsIDs,
 		"version":    role.Version,
 		"updated_by": role.UpdatedBy,
@@ -189,14 +168,4 @@ func (r *RoleMutationResolver) DeleteRole(ctx context.Context, id uuid.UUID) (bo
 		return false, err
 	}
 	return true, nil
-}
-
-func validatePermissions(db *gorm.DB, permissionIDs []string) error {
-	for _, permissionID := range permissionIDs {
-		var permission dto.TNTPermission
-		if err := db.First(&permission, "permission_id = ?", permissionID).Error; err != nil {
-			return fmt.Errorf("permission %s not found", permissionID)
-		}
-	}
-	return nil
 }

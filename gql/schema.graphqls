@@ -148,7 +148,6 @@ type Role implements Resource {
   version: String
   parentOrgId: Organization 
   roleType: RoleTypeEnum!
-  resourceId: String
   createdAt: String!
   createdBy: String
   updatedAt: String
@@ -158,12 +157,10 @@ type Role implements Resource {
 input RoleInput {
   name: String!
   description: String
-  resourceId: String
-  parentOrgId: String
-  version: String
+  parentOrgId: UUID!
+  version: String!
   createdBy: String!
   updatedBy: String
-  permissionsIds: [String!]!
   roleType: RoleTypeEnum!
 }
 
@@ -172,11 +169,28 @@ type Permission {
   name: String!
   serviceId: String
   action: String
-  createdAt: String!
+  createdAt: String
   createdBy: String!
   updatedAt: String
   updatedBy: String
 }
+
+input CreatePermission {
+  name: String!
+  roleId: UUID
+  serviceId: String
+  action: String
+  createdBy: String
+  updatedBy: String!
+}
+
+input UpdatePermission {
+  name: String!
+  roleId: UUID
+  serviceId: String
+  action: String
+  updatedBy: String!
+} 
 
 type Query {
   # getOrganization(id: UUID!): Organization
@@ -190,8 +204,11 @@ type Query {
   getTenant(id: UUID!): Tenant
   allTenants: [Tenant]
 
-  getRole(id: String!): Role
+  getRole(id: UUID!): Role
   allRoles: [Role!]!
+
+  getAllPermissions:[Permission]
+  getPermission(id: UUID!):Permission
 
   # getClientOrganizationUnit(id: UUID!): ClientOrganizationUnit
   # allClientOrganizationUnits: [ClientOrganizationUnit!]!
@@ -209,6 +226,10 @@ type Mutation {
   createRole(input: RoleInput!): Role!
   updateRole(id: UUID!, input: RoleInput!): Role!
   deleteRole(id: UUID!): Boolean!
+
+  createPermission(input: CreatePermission) : Permission
+  deletePermission(id: UUID!): Boolean!
+  updatePermission(input: UpdatePermission) : Permission
 
   # createClientOrganizationUnit(
   #   input: CreateClientOrganizationUnitInput!

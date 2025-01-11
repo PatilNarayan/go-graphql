@@ -8,6 +8,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var DB *gorm.DB
+
 func InitDB() *gorm.DB {
 	dsn := GetDSN()
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -19,6 +21,8 @@ func InitDB() *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
+
+	DB = db
 
 	return db
 }

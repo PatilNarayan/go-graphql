@@ -5,6 +5,7 @@ import (
 	clientorganizationunit "go_graphql/internal/clientOrganizationUnit"
 	"go_graphql/internal/groups"
 	"go_graphql/internal/organizations"
+	"go_graphql/internal/permission"
 	"go_graphql/internal/role"
 	"go_graphql/internal/tenants"
 
@@ -24,6 +25,7 @@ func (r *Resolver) Query() generated.QueryResolver {
 		GroupQueryResolver:                  &groups.GroupQueryResolver{DB: r.DB},
 		ClientOrganizationUnitQueryResolver: &clientorganizationunit.ClientOrganizationUnitQueryResolver{DB: r.DB},
 		RoleQueryResolver:                   &role.RoleQueryResolver{DB: r.DB},
+		PermissionQueryResolver:             &permission.PermissionQueryResolver{DB: r.DB},
 	}
 }
 
@@ -34,6 +36,7 @@ func (r *Resolver) Mutation() generated.MutationResolver {
 		TenantMutationResolver:       &tenants.TenantMutationResolver{DB: r.DB},
 		GroupMutationResolver:        &groups.GroupMutationResolver{DB: r.DB},
 		RoleMutationResolver:         &role.RoleMutationResolver{DB: r.DB},
+		PermissionMutationResolver:   &permission.PermissionMutationResolver{DB: r.DB},
 	}
 }
 
@@ -59,6 +62,7 @@ type queryResolver struct {
 	*groups.GroupQueryResolver
 	*role.RoleQueryResolver
 	*clientorganizationunit.ClientOrganizationUnitQueryResolver
+	*permission.PermissionQueryResolver
 }
 
 type mutationResolver struct {
@@ -66,4 +70,5 @@ type mutationResolver struct {
 	*tenants.TenantMutationResolver
 	*groups.GroupMutationResolver
 	*role.RoleMutationResolver
+	*permission.PermissionMutationResolver
 }

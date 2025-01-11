@@ -7,6 +7,7 @@ import (
 
 	"go_graphql/internal/dto"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,8 +15,8 @@ func TestRoles(t *testing.T) {
 	db := setupTestDB()
 	resolver := RoleQueryResolver{DB: db}
 
-	db.Create(&dto.TNTRole{ResourceID: "1", Name: "Admin", RoleType: "DEFAULT", Version: "0.0.1", CreatedBy: "1", UpdatedBy: "1", UpdatedAt: time.Now(), CreatedAt: time.Now()})
-	db.Create(&dto.TNTRole{ResourceID: "2", Name: "User", RoleType: "DEFAULT", Version: "0.0.1", CreatedBy: "1", UpdatedBy: "1", UpdatedAt: time.Now(), CreatedAt: time.Now()})
+	db.Create(&dto.TNTRole{ResourceID: uuid.MustParse("1"), Name: "Admin", RoleType: "DEFAULT", Version: "0.0.1", CreatedBy: "1", UpdatedBy: "1", UpdatedAt: time.Now(), CreatedAt: time.Now()})
+	db.Create(&dto.TNTRole{ResourceID: uuid.MustParse("2"), Name: "User", RoleType: "DEFAULT", Version: "0.0.1", CreatedBy: "1", UpdatedBy: "1", UpdatedAt: time.Now(), CreatedAt: time.Now()})
 
 	ctx := context.Background()
 
@@ -32,7 +33,7 @@ func TestGetRole_Success(t *testing.T) {
 	resolver := RoleQueryResolver{DB: db}
 
 	// Seed data
-	roleDB := &dto.TNTRole{ResourceID: "1", Name: "Admin", RoleType: "DEFAULT", Version: "0.0.1", CreatedBy: "1", UpdatedBy: "1", UpdatedAt: time.Now(), CreatedAt: time.Now()}
+	roleDB := &dto.TNTRole{ResourceID: uuid.MustParse("1"), Name: "Admin", RoleType: "DEFAULT", Version: "0.0.1", CreatedBy: "1", UpdatedBy: "1", UpdatedAt: time.Now(), CreatedAt: time.Now()}
 	db.Create(roleDB)
 
 	ctx := context.Background()
@@ -52,7 +53,7 @@ func TestGetRole_NotFound(t *testing.T) {
 	ctx := context.Background()
 
 	// Test
-	role, err := resolver.GetRole(ctx, "non-existent-id")
+	role, err := resolver.GetRole(ctx, uuid.New())
 	assert.Error(t, err)
 	assert.Nil(t, role)
 	assert.Equal(t, "role not found", err.Error())

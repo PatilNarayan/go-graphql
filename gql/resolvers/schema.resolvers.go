@@ -43,6 +43,21 @@ func (r *mutationResolver) DeleteRole(ctx context.Context, id uuid.UUID) (bool, 
 	panic(fmt.Errorf("not implemented: DeleteRole - deleteRole"))
 }
 
+// CreatePermission is the resolver for the createPermission field.
+func (r *mutationResolver) CreatePermission(ctx context.Context, input *models.CreatePermission) (*models.Permission, error) {
+	panic(fmt.Errorf("not implemented: CreatePermission - createPermission"))
+}
+
+// DeletePermission is the resolver for the deletePermission field.
+func (r *mutationResolver) DeletePermission(ctx context.Context, id uuid.UUID) (bool, error) {
+	panic(fmt.Errorf("not implemented: DeletePermission - deletePermission"))
+}
+
+// UpdatePermission is the resolver for the updatePermission field.
+func (r *mutationResolver) UpdatePermission(ctx context.Context, input *models.UpdatePermission) (*models.Permission, error) {
+	panic(fmt.Errorf("not implemented: UpdatePermission - updatePermission"))
+}
+
 // GetTenant is the resolver for the getTenant field.
 func (r *queryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*models.Tenant, error) {
 	panic(fmt.Errorf("not implemented: GetTenant - getTenant"))
@@ -54,13 +69,23 @@ func (r *queryResolver) AllTenants(ctx context.Context) ([]*models.Tenant, error
 }
 
 // GetRole is the resolver for the getRole field.
-func (r *queryResolver) GetRole(ctx context.Context, id string) (*models.Role, error) {
+func (r *queryResolver) GetRole(ctx context.Context, id uuid.UUID) (*models.Role, error) {
 	panic(fmt.Errorf("not implemented: GetRole - getRole"))
 }
 
 // AllRoles is the resolver for the allRoles field.
 func (r *queryResolver) AllRoles(ctx context.Context) ([]*models.Role, error) {
 	panic(fmt.Errorf("not implemented: AllRoles - allRoles"))
+}
+
+// GetAllPermissions is the resolver for the getAllPermissions field.
+func (r *queryResolver) GetAllPermissions(ctx context.Context) ([]*models.Permission, error) {
+	panic(fmt.Errorf("not implemented: GetAllPermissions - getAllPermissions"))
+}
+
+// GetPermission is the resolver for the getPermission field.
+func (r *queryResolver) GetPermission(ctx context.Context, id uuid.UUID) (*models.Permission, error) {
+	panic(fmt.Errorf("not implemented: GetPermission - getPermission"))
 }
 
 // Mutation returns generated.MutationResolver implementation.
