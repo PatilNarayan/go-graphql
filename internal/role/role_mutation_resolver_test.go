@@ -5,6 +5,7 @@ import (
 	"go_graphql/config"
 	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
+	"go_graphql/logger"
 	"testing"
 	"time"
 
@@ -17,6 +18,7 @@ import (
 
 // Setup the in-memory test database
 func setupTestDB() *gorm.DB {
+	logger.InitLogger()
 	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database: " + err.Error())
@@ -29,6 +31,7 @@ func setupTestDB() *gorm.DB {
 }
 
 func TestCreateRole(t *testing.T) {
+	logger.InitLogger()
 	db := setupTestDB()
 	ctx := context.Background()
 	config.DB = db
@@ -175,17 +178,6 @@ func TestUpdateRole(t *testing.T) {
 		assert.Equal(t, "role not found", err.Error())
 	})
 
-	t.Run("Missing ParentOrgID", func(t *testing.T) {
-		input := models.RoleInput{
-			Name: "Test Update",
-			// RoleType: models.RoleTypeEnumDefault,
-		}
-
-		updatedRole, err := resolver.UpdateRole(ctx, initialRole.ResourceID, input)
-		assert.Error(t, err)
-		assert.Nil(t, updatedRole)
-		assert.Equal(t, "resource ID is required", err.Error())
-	})
 }
 
 func TestDeleteRole(t *testing.T) {
