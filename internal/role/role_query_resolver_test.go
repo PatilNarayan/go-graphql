@@ -5,44 +5,87 @@ import (
 	"testing"
 	"time"
 
+	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
-
 func TestRoles(t *testing.T) {
 	db := setupTestDB()
+	ctx := context.Background()
 	resolver := RoleQueryResolver{DB: db}
 
-	db.Create(&dto.TNTRole{ResourceID: uuid.MustParse("1"), Name: "Admin", RoleType: "DEFAULT", Version: "0.0.1", CreatedBy: "1", UpdatedBy: "1", UpdatedAt: time.Now(), CreatedAt: time.Now()})
-	db.Create(&dto.TNTRole{ResourceID: uuid.MustParse("2"), Name: "User", RoleType: "DEFAULT", Version: "0.0.1", CreatedBy: "1", UpdatedBy: "1", UpdatedAt: time.Now(), CreatedAt: time.Now()})
+	// Seed roles
+	role1 := dto.TNTRole{
+		ResourceID: uuid.New(),
+		Name:       "Admin",
+		RoleType:   "DEFAULT",
+		Version:    "1.0",
+		CreatedBy:  "admin",
+		UpdatedBy:  "admin",
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+	role2 := dto.TNTRole{
+		ResourceID: uuid.New(),
+		Name:       "User",
+		RoleType:   "DEFAULT",
+		Version:    "1.0",
+		CreatedBy:  "admin",
+		UpdatedBy:  "admin",
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+	db.Create(&role1)
+	db.Create(&role2)
 
-	ctx := context.Background()
-
-	// Test
+	// Test AllRoles
 	roles, err := resolver.AllRoles(ctx)
 	assert.NoError(t, err)
 	assert.Len(t, roles, 2)
-	assert.Equal(t, "Admin", roles[0].Name)
-	assert.Equal(t, "User", roles[1].Name)
+
+	// Validate returned roles
+	expectedNames := []string{"Admin", "User"}
+	for i, role := range roles {
+		assert.Equal(t, expectedNames[i], role.Name)
+		assert.Equal(t, "DEFAULT", string(role.RoleType))
+	}
 }
 
-func TestGetRole_Success(t *testing.T) {
+func TestGetRole(t *testing.T) {
 	db := setupTestDB()
+	ctx := context.Background()
 	resolver := RoleQueryResolver{DB: db}
 
-	// Seed data
-	roleDB := &dto.TNTRole{ResourceID: uuid.New(), Name: "Admin", RoleType: "CUSTOM", Version: "0.0.1", CreatedBy: "1", UpdatedBy: "1", UpdatedAt: time.Now(), CreatedAt: time.Now()}
-	db.Create(roleDB)
+	// Seed role
+	role := dto.TNTRole{
+		ResourceID: uuid.New(),
+		Name:       "Admin",
+		RoleType:   "CUSTOM",
+		Version:    "1.0",
+		CreatedBy:  "admin",
+		UpdatedBy:  "admin",
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+	db.Create(&role)
 
-	ctx := context.Background()
+	t.Run("Role Exists", func(t *testing.T) {
+		result, err := resolver.GetRole(ctx, role.ResourceID)
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, "Admin", result.Name)
+		assert.Equal(t, models.RoleTypeEnum("CUSTOM"), result.RoleType)
+	})
 
-	// Test
-	role, err := resolver.GetRole(ctx, roleDB.ResourceID)
-	assert.NoError(t, err)
-	assert.NotNil(t, role)
-	assert.Equal(t, "Admin", role.Name)
+	t.Run("Role Not Found", func(t *testing.T) {
+		randomID := uuid.New()
+		result, err := resolver.GetRole(ctx, randomID)
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, "role not found", err.Error())
+	})
 }
 
 func TestGetRole_NotFound(t *testing.T) {

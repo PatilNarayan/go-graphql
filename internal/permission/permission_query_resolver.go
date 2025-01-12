@@ -33,7 +33,7 @@ func (r *PermissionQueryResolver) GetAllPermissions(ctx context.Context) ([]*mod
 			ID:        permission.PermissionID,
 			Name:      permission.Name,
 			ServiceID: &permission.ServiceID,
-			RoleID:    &permission.RoleID,
+			// RoleID:    &permission.RoleID,
 			Action:    &permission.Action,
 			CreatedAt: ptr.String(permission.CreatedAt.Format(time.RFC3339)),
 			// CreatedBy: permission.CreatedBy,
@@ -62,10 +62,10 @@ func (r *PermissionQueryResolver) GetPermission(ctx context.Context, id uuid.UUI
 		Name:      permission.Name,
 		ServiceID: &permission.ServiceID,
 		Action:    &permission.Action,
-		RoleID:    &permission.RoleID,
+		// RoleID:    &permission.RoleID,
 		CreatedAt: ptr.String(permission.CreatedAt.Format(time.RFC3339)),
-		// CreatedBy: permission.CreatedBy,
+		CreatedBy: permission.CreatedBy,
 		UpdatedAt: ptr.String(permission.UpdatedAt.Format(time.RFC3339)),
-		// UpdatedBy: &permission.UpdatedBy,
+		UpdatedBy: &permission.UpdatedBy,
 	}, nil
 }

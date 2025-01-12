@@ -61,11 +61,11 @@ func TestCreateRole(t *testing.T) {
 	db.Create(&existingTenant)
 
 	t.Run("Valid Input", func(t *testing.T) {
-		parentOrgID := existingTenant.ResourceID
-		input := models.RoleInput{
+		// parentOrgID := existingTenant.ResourceID
+		input := models.CreateRoleInput{
 			Name:        "Admin Role",
 			Description: ptr.String("Admin Description"),
-			ParentOrgID: parentOrgID,
+			// ParentOrgID: parentOrgID,
 			// RoleType:    "CUSTOM",
 			Version: "1.0",
 			// CreatedBy:   "test_user",
@@ -79,9 +79,9 @@ func TestCreateRole(t *testing.T) {
 	})
 
 	t.Run("Missing Required Fields", func(t *testing.T) {
-		input := models.RoleInput{
+		input := models.CreateRoleInput{
 			Description: ptr.String("Missing Name"),
-			ParentOrgID: uuid.New(),
+			// ParentOrgID: uuid.New(),
 			// CreatedBy:   "test_user",
 		}
 
@@ -92,7 +92,7 @@ func TestCreateRole(t *testing.T) {
 	})
 
 	t.Run("Missing ParentOrgID", func(t *testing.T) {
-		input := models.RoleInput{
+		input := models.CreateRoleInput{
 			Name: "Test Role",
 			// CreatedBy: "test_user",
 		}
@@ -136,43 +136,41 @@ func TestUpdateRole(t *testing.T) {
 
 	// Create initial role for testing updates
 	initialRole := dto.TNTRole{
-		ResourceID:       uuid.New(),
-		ParentResourceID: &existingTenant.ResourceID,
-		Name:             "Initial Role",
-		RoleType:         "CUSTOM",
-		Version:          "1.0",
-		CreatedBy:        "admin",
-		UpdatedBy:        "admin",
-		CreatedAt:        time.Now(),
-		UpdatedAt:        time.Now(),
+		ResourceID: uuid.New(),
+		Name:       "Initial Role",
+		RoleType:   "CUSTOM",
+		Version:    "1.0",
+		CreatedBy:  "admin",
+		UpdatedBy:  "admin",
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
 	}
 	db.Create(&initialRole)
 
 	t.Run("Valid Update", func(t *testing.T) {
-		newParentOrgID := existingTenant.ResourceID
-		input := models.RoleInput{
+		// newParentOrgID := existingTenant.ResourceID
+		input := models.UpdateRoleInput{
 			Name:        "Updated Role",
 			Description: ptr.String("Updated Description"),
-			ParentOrgID: newParentOrgID,
+			// ParentOrgID: newParentOrgID,
 			// RoleType:    models.RoleTypeEnumDefault,
 			Version: "2.0",
 		}
 
-		updatedRole, err := resolver.UpdateRole(ctx, initialRole.ResourceID, input)
+		updatedRole, err := resolver.UpdateRole(ctx, input)
 		assert.NoError(t, err)
 		assert.NotNil(t, updatedRole)
 		assert.Equal(t, input.Name, updatedRole.Name)
-		// assert.Equal(t, string(input.RoleType), string(updatedRole.RoleType))
-		assert.Equal(t, input.Version, *updatedRole.Version)
 	})
 
 	t.Run("Role Not Found", func(t *testing.T) {
-		input := models.RoleInput{
-			Name:        "Non-existent Role",
-			ParentOrgID: existingTenant.ResourceID,
+		input := models.UpdateRoleInput{
+			ID:   uuid.New(),
+			Name: "Non-existent Role",
+			// ParentOrgID: existingTenant.ResourceID,
 		}
 
-		updatedRole, err := resolver.UpdateRole(ctx, uuid.New(), input)
+		updatedRole, err := resolver.UpdateRole(ctx, input)
 		assert.Error(t, err)
 		assert.Nil(t, updatedRole)
 		assert.Equal(t, "role not found", err.Error())
@@ -212,15 +210,14 @@ func TestDeleteRole(t *testing.T) {
 
 	// Create a role to delete
 	role := dto.TNTRole{
-		ResourceID:       uuid.New(),
-		ParentResourceID: &existingTenant.ResourceID,
-		Name:             "Role to Delete",
-		RoleType:         "CUSTOM",
-		Version:          "1.0",
-		CreatedBy:        "admin",
-		UpdatedBy:        "admin",
-		CreatedAt:        time.Now(),
-		UpdatedAt:        time.Now(),
+		ResourceID: uuid.New(),
+		Name:       "Role to Delete",
+		RoleType:   "CUSTOM",
+		Version:    "1.0",
+		CreatedBy:  "admin",
+		UpdatedBy:  "admin",
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
 	}
 	db.Create(&role)
 

@@ -143,32 +143,46 @@ enum RoleTypeEnum {
 type Role implements Resource {
   id: UUID!
   name: String!
-  permissionsIds: [String]!
+  version: String!
   description: String
-  version: String
-  parentOrg: Organization 
+  permissions: [Permission!]!
   roleType: RoleTypeEnum!
+  assignableScope: Resource!
   createdAt: String!
   createdBy: String
   updatedAt: String
   updatedBy: String
 }
 
-input RoleInput {
+input CreateRoleInput {
   name: String!
-  description: String
-  parentOrgId: UUID!
   version: String!
+  description: String
+  permissions: [String!]!
+  roleType: RoleTypeEnum!
+  assignableScopeRef: UUID!
   # createdBy: String!
   # updatedBy: String
-  # roleType: RoleTypeEnum!
 }
+
+input UpdateRoleInput {
+  id: UUID!
+  name: String!
+  version: String!
+  description: String
+  permissions: [String!]!
+  roleType: RoleTypeEnum!
+  assignableScopeRef: UUID!
+  # createdBy: String!
+  # updatedBy: String
+}
+
 
 type Permission {
   id: UUID!
   name: String!
   serviceId: String
-  roleId: UUID
+  # roleId: UUID
   action: String
   createdAt: String
   createdBy: String!
@@ -178,7 +192,7 @@ type Permission {
 
 input CreatePermission {
   name: String!
-  roleId: UUID
+  # roleId: UUID
   serviceId: String
   action: String
   # createdBy: String
@@ -186,13 +200,42 @@ input CreatePermission {
 }
 
 input UpdatePermission {
+  id: UUID!
   name: String!
-  roleId: UUID
+  # roleId: UUID
   serviceId: String
   action: String
   # updatedBy: String!
 } 
 
+# type Role implements Resource {
+#   id: String!
+#   name: String!
+#   version: String!
+#   description: String
+#   permissions: [Permission!]!
+#   roleType: RoleTypeEnum!
+#   assignableScope: Resource!
+# }
+
+# input CreateRoleInput {
+#   name: String!
+#   version: String!
+#   description: String
+#   permissions: [String!]!
+#   roleType: RoleTypeEnum!
+#   assignableScopeRef: String!
+# }
+
+# input UpdateRoleInput {
+#   id: String!
+#   name: String
+#   version: String!
+#   description: String
+#   permissions: [String!]
+#   roleType: RoleTypeEnum
+#   scopeId: String
+# }
 type Query {
   # getOrganization(id: UUID!): Organization
   # allOrganizations: [Organization!]!
@@ -207,6 +250,7 @@ type Query {
 
   getRole(id: UUID!): Role
   allRoles: [Role!]!
+  getAllRolesForTenant(assignableScopeRef: UUID!): [Role!]!
 
   getAllPermissions:[Permission]
   getPermission(id: UUID!):Permission
@@ -224,13 +268,13 @@ type Mutation {
   updateTenant(input: UpdateTenantInput!): Tenant!
   deleteTenant(id: UUID!): Boolean!
 
-  createRole(input: RoleInput!): Role!
-  updateRole(id: UUID!, input: RoleInput!): Role!
+  createRole(input: CreateRoleInput!): Role!
+  updateRole(input: UpdateRoleInput!): Role!
   deleteRole(id: UUID!): Boolean!
 
   createPermission(input: CreatePermission) : Permission
   deletePermission(id: UUID!): Boolean!
-  updatePermission(id: UUID!, input: UpdatePermission) : Permission
+  updatePermission(input: UpdatePermission) : Permission
 
   # createClientOrganizationUnit(
   #   input: CreateClientOrganizationUnitInput!

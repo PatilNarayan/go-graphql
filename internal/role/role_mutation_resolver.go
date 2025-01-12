@@ -22,7 +22,7 @@ type RoleMutationResolver struct {
 }
 
 // CreateRole handles creating a new role.
-func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.RoleInput) (*models.Role, error) {
+func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.CreateRoleInput) (*models.Role, error) {
 	logger.Log.Info("Starting CreateRole")
 
 	// Validate input
@@ -31,14 +31,25 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Role
 		return nil, errors.New("role name is required")
 	}
 
-	if input.ParentOrgID == uuid.Nil {
-		logger.Log.Warn("ParentOrgID is required")
-		return nil, errors.New("resource ID is required")
+	if input.AssignableScopeRef == uuid.Nil {
+		logger.Log.Warn("Tenant ID is required")
+		return nil, errors.New("Tenant ID is required")
 	} else {
-		if err := utils.ValidateResourceID(input.ParentOrgID); err != nil {
-			logger.AddContext(err).Error("Invalid ParentOrgID")
-			return nil, fmt.Errorf("invalid ParentOrgID")
+		if err := utils.ValidateResourceID(input.AssignableScopeRef); err != nil {
+			logger.AddContext(err).Error("Invalid TenantID")
+			return nil, fmt.Errorf("invalid TenantID: %w", err)
 		}
+	}
+
+	// check if role already exists
+	var roleExists dto.TNTRole
+	if err := r.DB.Where("name = ? AND row_status = 1 AND role_type = ? AND resource_id = ? AND deleted_at IS NULL", input.Name, dto.RoleTypeEnum(input.RoleType), input.AssignableScopeRef).First(&roleExists).Error; err == nil {
+		logger.AddContext(err).Error("Role already exists")
+		return nil, fmt.Errorf("role already exists")
+	}
+
+	if err := CheckPermissions(input.Permissions); err != nil {
+		return nil, err
 	}
 
 	role := dto.TNTRole{}
@@ -46,8 +57,8 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Role
 	if input.Description != nil {
 		role.Description = *input.Description
 	}
-	role.ParentResourceID = &input.ParentOrgID
-	role.RoleType = "CUSTOM"
+
+	role.RoleType = dto.RoleTypeEnum(input.RoleType)
 	role.Version = input.Version
 	role.CreatedAt = time.Now()
 	role.CreatedBy = constants.DefaltCreatedBy
@@ -64,14 +75,14 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Role
 	logger.Log.Info("Creating tenant resource")
 	tenantResource := &dto.TenantResource{
 		ResourceID:       uuid.New(),
-		ParentResourceID: &input.ParentOrgID,
+		ParentResourceID: &input.AssignableScopeRef,
 		ResourceTypeID:   resourceType.ResourceTypeID,
 		Name:             input.Name,
 		RowStatus:        1,
 		CreatedBy:        constants.DefaltCreatedBy,
 		UpdatedBy:        constants.DefaltCreatedBy,
 		CreatedAt:        time.Now(),
-		TenantID:         uuid.New(),
+		TenantID:         &input.AssignableScopeRef,
 	}
 
 	if err := r.DB.Create(&tenantResource).Error; err != nil {
@@ -86,16 +97,31 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Role
 		return nil, err
 	}
 
+	for _, permissionID := range input.Permissions {
+		tx := r.DB.Create(&dto.TNTRolePermission{
+			ID:           uuid.New(),
+			RoleID:       role.ResourceID,
+			PermissionID: uuid.MustParse(permissionID),
+			RowStatus:    1,
+			CreatedBy:    constants.DefaltCreatedBy,
+			UpdatedBy:    constants.DefaltCreatedBy,
+		})
+
+		if tx.Error != nil {
+			logger.AddContext(tx.Error).Error("Failed to save role permission")
+			return nil, tx.Error
+		}
+	}
 	logger.Log.Info("Role created successfully")
 	return convertRoleToGraphQL(&role), nil
 }
 
 // UpdateRole handles updating an existing role.
-func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id uuid.UUID, input models.RoleInput) (*models.Role, error) {
-	logger.Log.Infof("Starting UpdateRole for ID: %s", id)
+func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.UpdateRoleInput) (*models.Role, error) {
+	logger.Log.Infof("Starting UpdateRole for ID: %s", input.ID)
 
 	var role dto.TNTRole
-	if err := r.DB.First(&role, "resource_id = ?", id).Error; err != nil {
+	if err := r.DB.First(&role, "resource_id = ?", input.ID).Error; err != nil {
 		logger.AddContext(err).Warn("Role not found")
 		return nil, errors.New("role not found")
 	}
@@ -104,26 +130,101 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, id uuid.UUID, inp
 	if input.Name != "" {
 		role.Name = input.Name
 	}
-	role.Version = input.Version
-	role.ParentResourceID = &input.ParentOrgID
-	role.UpdatedBy = constants.DefaltCreatedBy
-	role.UpdatedAt = time.Now()
 
-	logger.Log.Infof("Updating role in database for ID: %s", id)
-	updateData := map[string]interface{}{
-		"name":               role.Name,
-		"parent_resource_id": role.ParentResourceID,
-		"version":            role.Version,
-		"updated_by":         role.UpdatedBy,
-		"updated_at":         role.UpdatedAt,
+	if input.AssignableScopeRef == uuid.Nil {
+		logger.Log.Warn("Tenant ID is required")
+		return nil, errors.New("Tenant ID is required")
+	} else {
+		if err := utils.ValidateResourceID(input.AssignableScopeRef); err != nil {
+			logger.AddContext(err).Error("Invalid TenantID")
+			return nil, fmt.Errorf("invalid TenantID")
+		}
 	}
 
-	if err := r.DB.Model(&dto.TNTRole{}).Where("resource_id = ?", id).Updates(updateData).Error; err != nil {
+	if err := CheckPermissions(input.Permissions); err != nil {
+		return nil, err
+	}
+
+	// check if role already exists
+	var roleExists dto.TNTRole
+	if input.Name != role.Name && input.Name != "" {
+		if err := r.DB.Where("name = ? AND row_status = 1 AND role_type = ? AND resource_id = ? AND deleted_at IS NULL", input.Name, dto.RoleTypeEnum(input.RoleType), input.AssignableScopeRef).First(&roleExists).Error; err == nil {
+			logger.AddContext(err).Error("Role already exists")
+			return nil, fmt.Errorf("role already exists")
+		}
+	}
+
+	logger.Log.Infof("Updating role in database for ID: %s", input.ID)
+	updateData := map[string]interface{}{
+		"version":    input.Version,
+		"role_type":  dto.RoleTypeEnum(input.RoleType),
+		"updated_by": constants.DefaltCreatedBy,
+		"updated_at": time.Now(),
+	}
+	if input.Name != "" {
+		updateData["name"] = input.Name
+	}
+	if input.Description != nil {
+		updateData["description"] = *input.Description
+	}
+
+	if err := r.DB.Model(&role).Updates(updateData).Error; err != nil {
 		logger.AddContext(err).Error("Failed to update role")
 		return nil, err
 	}
 
-	logger.Log.Infof("Role updated successfully for ID: %s", id)
+	var pdata []dto.TNTRolePermission
+	if err := r.DB.Where("role_id = ?", input.ID).Find(&pdata).Error; err != nil {
+		logger.AddContext(err).Error("Failed to fetch role permissions")
+		return nil, err
+	}
+	for _, pid := range input.Permissions {
+		exists := false
+		for _, p := range pdata {
+			if p.PermissionID.String() == pid {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			tx := r.DB.Create(&dto.TNTRolePermission{
+				ID:           uuid.New(),
+				RoleID:       input.ID,
+				PermissionID: uuid.MustParse(pid),
+				RowStatus:    1,
+				CreatedBy:    constants.DefaltCreatedBy,
+				UpdatedBy:    constants.DefaltCreatedBy,
+			})
+
+			if tx.Error != nil {
+				logger.AddContext(tx.Error).Error("Failed to save role permission")
+				return nil, tx.Error
+			}
+
+		}
+	}
+	removeIDs := make([]uuid.UUID, 0)
+	for _, p := range pdata {
+		exists := false
+		for _, pid := range input.Permissions {
+			if p.PermissionID.String() == pid {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			removeIDs = append(removeIDs, p.ID)
+		}
+	}
+
+	for _, id := range removeIDs {
+		if err := r.DB.Model(&dto.TNTRolePermission{}).Where("role_permission_id = ?", id).Updates(utils.UpdateDeletedMap()).Error; err != nil {
+			logger.AddContext(err).Error("Failed to delete role")
+			return nil, fmt.Errorf("failed to delete role: %w", err)
+		}
+	}
+
+	logger.Log.Infof("Role updated successfully for ID: %s", input.ID)
 	return convertRoleToGraphQL(&role), nil
 }
 
@@ -148,6 +249,27 @@ func (r *RoleMutationResolver) DeleteRole(ctx context.Context, id uuid.UUID) (bo
 		return false, err
 	}
 
+	if err := r.DB.Model(&dto.TNTRolePermission{}).Where("role_id = ?", id).Updates(utils.UpdateDeletedMap()).Error; err != nil {
+		logger.AddContext(err).Error("Failed to delete role")
+		return false, fmt.Errorf("failed to delete role: %w", err)
+	}
+
+	if err := r.DB.Model(&dto.TenantResource{}).Where("resource_id = ?", id).Updates(utils.UpdateDeletedMap()).Error; err != nil {
+		logger.AddContext(err).Error("Failed to delete role")
+		return false, fmt.Errorf("failed to delete role: %w", err)
+	}
+
 	logger.Log.Infof("Role deleted successfully for ID: %s", id)
 	return true, nil
+}
+
+func CheckPermissions(permissionsIds []string) error {
+	//validate permissionIds
+	for _, permissionID := range permissionsIds {
+		if err := utils.ValidatePermissionID(permissionID); err != nil {
+			logger.AddContext(err).Error("Invalid permission ID")
+			return fmt.Errorf("invalid permission ID: %w", err)
+		}
+	}
+	return nil
 }

@@ -29,12 +29,12 @@ func (r *mutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID) (bool
 }
 
 // CreateRole is the resolver for the createRole field.
-func (r *mutationResolver) CreateRole(ctx context.Context, input models.RoleInput) (*models.Role, error) {
+func (r *mutationResolver) CreateRole(ctx context.Context, input models.CreateRoleInput) (*models.Role, error) {
 	panic(fmt.Errorf("not implemented: CreateRole - createRole"))
 }
 
 // UpdateRole is the resolver for the updateRole field.
-func (r *mutationResolver) UpdateRole(ctx context.Context, id uuid.UUID, input models.RoleInput) (*models.Role, error) {
+func (r *mutationResolver) UpdateRole(ctx context.Context, input models.UpdateRoleInput) (*models.Role, error) {
 	panic(fmt.Errorf("not implemented: UpdateRole - updateRole"))
 }
 
@@ -54,7 +54,7 @@ func (r *mutationResolver) DeletePermission(ctx context.Context, id uuid.UUID) (
 }
 
 // UpdatePermission is the resolver for the updatePermission field.
-func (r *mutationResolver) UpdatePermission(ctx context.Context, id uuid.UUID, input *models.UpdatePermission) (*models.Permission, error) {
+func (r *mutationResolver) UpdatePermission(ctx context.Context, input *models.UpdatePermission) (*models.Permission, error) {
 	panic(fmt.Errorf("not implemented: UpdatePermission - updatePermission"))
 }
 
@@ -76,6 +76,11 @@ func (r *queryResolver) GetRole(ctx context.Context, id uuid.UUID) (*models.Role
 // AllRoles is the resolver for the allRoles field.
 func (r *queryResolver) AllRoles(ctx context.Context) ([]*models.Role, error) {
 	panic(fmt.Errorf("not implemented: AllRoles - allRoles"))
+}
+
+// GetAllRolesForTenant is the resolver for the getAllRolesForTenant field.
+func (r *queryResolver) GetAllRolesForTenant(ctx context.Context, assignableScopeRef uuid.UUID) ([]*models.Role, error) {
+	panic(fmt.Errorf("not implemented: GetAllRolesForTenant - getAllRolesForTenant"))
 }
 
 // GetAllPermissions is the resolver for the getAllPermissions field.

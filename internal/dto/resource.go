@@ -13,7 +13,7 @@ type TenantResource struct {
 	ParentResourceID *uuid.UUID     `gorm:"type:char(36);column:parent_resource_id" json:"parent_resource_id"`
 	ResourceTypeID   uuid.UUID      `gorm:"type:char(36);not null;column:resource_type_id" json:"resource_type_id"` // foreign key to resource_type
 	Name             string         `gorm:"size:45;not null;column:name" json:"name"`
-	TenantID         uuid.UUID      `gorm:"type:char(36);not null;column:tenant_id" json:"tenant_id"`
+	TenantID         *uuid.UUID     `gorm:"type:char(36);column:tenant_id" json:"tenant_id"`
 	RowStatus        int            `gorm:"default:1;column:row_status" json:"row_status"`
 	CreatedBy        string         `gorm:"size:45;column:created_by" json:"created_by"`
 	UpdatedBy        string         `gorm:"size:45;column:updated_by" json:"updated_by"`

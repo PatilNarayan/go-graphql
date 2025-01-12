@@ -9,7 +9,6 @@ import (
 	"go_graphql/gql/models"
 	"go_graphql/internal/constants"
 	"go_graphql/internal/dto"
-	"go_graphql/internal/utils"
 	"go_graphql/logger"
 
 	"github.com/google/uuid"
@@ -51,15 +50,15 @@ func (r *PermissionMutationResolver) CreatePermission(ctx context.Context, input
 		return nil, errors.New("input is required")
 	}
 
-	if input.RoleID == nil {
-		logger.Log.Error("Role ID is required for creating permission")
-		return nil, errors.New("role ID is required")
-	} else {
-		if err := utils.ValidateRoleID(*input.RoleID); err != nil {
-			logger.AddContext(err).Error("Invalid role ID")
-			return nil, fmt.Errorf("invalid role ID: %v", err)
-		}
-	}
+	// if input.RoleID == nil {
+	// 	logger.Log.Error("Role ID is required for creating permission")
+	// 	return nil, errors.New("role ID is required")
+	// } else {
+	// 	if err := utils.ValidateRoleID(*input.RoleID); err != nil {
+	// 		logger.AddContext(err).Error("Invalid role ID")
+	// 		return nil, fmt.Errorf("invalid role ID: %v", err)
+	// 	}
+	// }
 
 	if input.ServiceID == nil {
 		logger.Log.Error("Service ID is required for creating permission")
@@ -71,17 +70,27 @@ func (r *PermissionMutationResolver) CreatePermission(ctx context.Context, input
 		return nil, errors.New("action is required")
 	}
 
+	if input.Name == "" {
+		logger.Log.Error("Name is required for creating permission")
+		return nil, errors.New("name is required")
+	} else {
+		if err := r.DB.Where("name = ?", input.Name).First(&dto.TNTPermission{}).Error; err == nil {
+			logger.Log.Errorf("Permission with name %s already exists", input.Name)
+			return nil, fmt.Errorf("permission with name %s already exists", input.Name)
+		}
+	}
+
 	permission := &dto.TNTPermission{
 		PermissionID: uuid.New(),
 		Name:         input.Name,
 		ServiceID:    *input.ServiceID,
 		Action:       *input.Action,
 		RowStatus:    1,
-		RoleID:       *input.RoleID,
-		CreatedBy:    constants.DefaltCreatedBy,
-		UpdatedBy:    constants.DefaltUpdatedBy,
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		// RoleID:       *input.RoleID,
+		CreatedBy: constants.DefaltCreatedBy,
+		UpdatedBy: constants.DefaltUpdatedBy,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	if err := r.DB.Create(permission).Error; err != nil {
@@ -94,7 +103,8 @@ func (r *PermissionMutationResolver) CreatePermission(ctx context.Context, input
 	return convertToGraphQLPermission(permission), nil
 }
 
-func (r *PermissionMutationResolver) UpdatePermission(ctx context.Context, permissionID uuid.UUID, input *models.UpdatePermission) (*models.Permission, error) {
+func (r *PermissionMutationResolver) UpdatePermission(ctx context.Context, input *models.UpdatePermission) (*models.Permission, error) {
+	permissionID := input.ID
 	logger.Log.Infof("Starting update for permission with ID: %s", permissionID)
 
 	if input == nil {
@@ -105,6 +115,11 @@ func (r *PermissionMutationResolver) UpdatePermission(ctx context.Context, permi
 	if input.Name == "" {
 		logger.Log.Error("Name is required for updating permission")
 		return nil, errors.New("name is required")
+	} else {
+		if err := r.DB.Where("name = ?", input.Name).First(&dto.TNTPermission{}).Error; err == nil {
+			logger.Log.Errorf("Permission with name %s already exists", input.Name)
+			return nil, fmt.Errorf("permission with name %s already exists", input.Name)
+		}
 	}
 
 	if input.ServiceID == nil {
@@ -127,18 +142,18 @@ func (r *PermissionMutationResolver) UpdatePermission(ctx context.Context, permi
 		return nil, err
 	}
 
-	if input.RoleID == nil {
-		logger.Log.Error("Role ID is required for updating permission")
-		return nil, errors.New("role ID is required")
-	} else if err := utils.ValidateRoleID(*input.RoleID); err != nil {
-		logger.AddContext(err).Error("Invalid role ID")
-		return nil, fmt.Errorf("invalid role ID: %v", err)
-	}
+	// if input.RoleID == nil {
+	// 	logger.Log.Error("Role ID is required for updating permission")
+	// 	return nil, errors.New("role ID is required")
+	// } else if err := utils.ValidateRoleID(*input.RoleID); err != nil {
+	// 	logger.AddContext(err).Error("Invalid role ID")
+	// 	return nil, fmt.Errorf("invalid role ID: %v", err)
+	// }
 
 	permission.Name = input.Name
 	permission.ServiceID = *input.ServiceID
 	permission.Action = *input.Action
-	permission.RoleID = *input.RoleID
+	// permission.RoleID = *input.RoleID
 	permission.UpdatedAt = time.Now()
 
 	if err := r.DB.Save(&permission).Error; err != nil {
