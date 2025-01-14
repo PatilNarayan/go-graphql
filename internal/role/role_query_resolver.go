@@ -37,6 +37,17 @@ func (r *RoleQueryResolver) AllRoles(ctx context.Context) ([]*models.Role, error
 		result = append(result, convertedRole)
 	}
 
+	var mstroles []dto.MstRole
+	if err := r.DB.Find(&mstroles).Error; err != nil {
+		logger.AddContext(err).Error("Failed to fetch roles from the database")
+		return nil, err
+	}
+
+	for _, role := range mstroles {
+		convertedRole := convertMSTRoleToGraphQL(&role)
+		result = append(result, convertedRole)
+	}
+
 	logger.Log.Infof("Fetched %d roles", len(result))
 	return result, nil
 }
@@ -97,6 +108,17 @@ func (r *RoleQueryResolver) GetAllRolesForTenant(ctx context.Context, assignable
 		result = append(result, convertedRole)
 	}
 
+	var mstroles []dto.MstRole
+	if err := r.DB.Find(&mstroles).Error; err != nil {
+		logger.AddContext(err).Error("Failed to fetch roles from the database")
+		return nil, err
+	}
+
+	for _, role := range mstroles {
+		convertedRole := convertMSTRoleToGraphQL(&role)
+		result = append(result, convertedRole)
+	}
+
 	logger.Log.Infof("Fetched %d roles for tenant with ID: %s", len(result), assignableScopeRef)
 	return result, nil
 }
@@ -123,12 +145,12 @@ func convertRoleToGraphQL(role *dto.TNTRole) *models.Role {
 		return nil
 	}
 
-	mstPermissions, err := GetMSTRolePermission()
-	if err != nil {
-		logger.AddContext(err).Error("Failed to fetch role permissions")
-		return nil
-	}
-	permissions = append(permissions, mstPermissions...)
+	// mstPermissions, err := GetMSTRolePermission()
+	// if err != nil {
+	// 	logger.AddContext(err).Error("Failed to fetch role permissions")
+	// 	return nil
+	// }
+	// permissions = append(permissions, mstPermissions...)
 	res.Permissions = permissions
 
 	var childResource, ParentResource dto.TenantResource
@@ -196,11 +218,11 @@ func GetRolePermissions(id uuid.UUID) ([]*models.Permission, error) {
 	return result, nil
 }
 
-func GetMSTRolePermission() ([]*models.Permission, error) {
+func GetMSTRolePermission(id uuid.UUID) ([]*models.Permission, error) {
 	logger.Log.Infof("Fetching All role permissions")
 
 	var rolePermissions []dto.MstRolePermission
-	if err := config.DB.Find(&rolePermissions).Error; err != nil {
+	if err := config.DB.Where("role_id = ?", id).Find(&rolePermissions).Error; err != nil {
 		logger.AddContext(err).Error("Failed to fetch role permissions from the database")
 		return nil, err
 	}
@@ -236,4 +258,56 @@ func GetMSTRolePermission() ([]*models.Permission, error) {
 
 	logger.Log.Infof("Fetched %d role permissions", len(result))
 	return result, nil
+}
+
+func convertMSTRoleToGraphQL(role *dto.MstRole) *models.Role {
+	logger.Log.Infof("Converting role to GraphQL model for Role ID: %s", role.RoleID)
+
+	res := &models.Role{
+		ID:          role.RoleID,
+		Name:        role.Name,
+		Description: ptr.String(role.Description),
+		RoleType:    models.RoleTypeEnumDefault,
+		Version:     role.Version,
+		CreatedAt:   role.CreatedAt.String(),
+		UpdatedAt:   ptr.String(role.UpdatedAt.String()),
+		UpdatedBy:   &role.UpdatedBy,
+		CreatedBy:   &role.CreatedBy,
+	}
+
+	permissions, err := GetMSTRolePermission(role.RoleID)
+	if err != nil {
+		logger.AddContext(err).Error("Failed to fetch role permissions")
+		return nil
+	}
+
+	// mstPermissions, err := GetMSTRolePermission()
+	// if err != nil {
+	// 	logger.AddContext(err).Error("Failed to fetch role permissions")
+	// 	return nil
+	// }
+	// permissions = append(permissions, mstPermissions...)
+	res.Permissions = permissions
+
+	// var childResource, ParentResource dto.TenantResource
+	// if err := config.DB.Where(&dto.TenantResource{ResourceID: role.RoleID}).First(&childResource).Error; err != nil {
+	// 	logger.AddContext(err).Error("Failed to fetch parent resource")
+	// 	return nil
+	// }
+	// if err := config.DB.Where(&dto.TenantResource{ResourceID: *childResource.TenantID}).First(&ParentResource).Error; err != nil {
+	// 	logger.AddContext(err).Error("Failed to fetch parent resource")
+	// 	return nil
+	// }
+
+	// res.AssignableScope = &models.Root{
+	// 	ID:        ParentResource.ResourceID,
+	// 	Name:      ParentResource.Name,
+	// 	CreatedAt: ParentResource.CreatedAt.String(),
+	// 	UpdatedAt: ptr.String(ParentResource.UpdatedAt.String()),
+	// 	CreatedBy: &ParentResource.CreatedBy,
+	// 	UpdatedBy: &ParentResource.UpdatedBy,
+	// }
+
+	logger.Log.Infof("Successfully converted Role ID: %s to GraphQL model", role.RoleID)
+	return res
 }
