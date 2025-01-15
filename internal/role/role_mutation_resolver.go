@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"go_graphql/config"
 	"go_graphql/gql/models"
 	"go_graphql/internal/constants"
 	"go_graphql/internal/dto"
@@ -272,4 +273,121 @@ func CheckPermissions(permissionsIds []string) error {
 		}
 	}
 	return nil
+}
+
+func CreateMstRole(tenantID uuid.UUID) error {
+	var mstRole []*dto.MstRole
+
+	if err := config.DB.Find(&mstRole).Error; err != nil {
+		logger.AddContext(err).Error("Failed to fetch roles from the database")
+		return err
+	}
+
+	var mstRolePermissions []*dto.MstRolePermission
+	if err := config.DB.Find(&mstRolePermissions).Error; err != nil {
+		logger.AddContext(err).Error("Failed to fetch role permissions from the database")
+		return err
+	}
+	resourceType := dto.Mst_ResourceTypes{}
+	if err := config.DB.Where("name = ?", "Role").First(&resourceType).Error; err != nil {
+		logger.AddContext(err).Error("Resource type not found")
+		return fmt.Errorf("resource type not found: %w", err)
+	}
+
+	ResDefaultPermissions, err := AddDefaultPermissions()
+	if err != nil {
+		return err
+	}
+
+	for _, mrole := range mstRole {
+		tenantResource := &dto.TenantResource{
+			ResourceID:       uuid.New(),
+			ParentResourceID: &tenantID,
+			ResourceTypeID:   resourceType.ResourceTypeID,
+			Name:             mrole.Name,
+			RowStatus:        1,
+			CreatedBy:        constants.DefaltCreatedBy,
+			UpdatedBy:        constants.DefaltCreatedBy,
+			CreatedAt:        time.Now(),
+			TenantID:         &tenantID,
+		}
+
+		if err := config.DB.Save(tenantResource).Error; err != nil {
+			logger.AddContext(err).Error("Failed to save role")
+			return err
+		}
+
+		role := dto.TNTRole{
+			ResourceID:  tenantResource.ResourceID,
+			Name:        mrole.Name,
+			Description: mrole.Description,
+			RoleType:    dto.RoleTypeEnumDefault,
+			Version:     mrole.Version,
+			CreatedAt:   mrole.CreatedAt,
+			CreatedBy:   mrole.CreatedBy,
+			UpdatedBy:   mrole.UpdatedBy,
+			UpdatedAt:   mrole.UpdatedAt,
+			RowStatus:   mrole.RowStatus,
+		}
+
+		if err := config.DB.Save(&role).Error; err != nil {
+			logger.AddContext(err).Error("Failed to save role")
+			return err
+		}
+
+		for _, permissionID := range mstRolePermissions {
+			if permissionID.RoleID != mrole.RoleID {
+				continue
+			}
+			tx := config.DB.Create(&dto.TNTRolePermission{
+				ID:           uuid.New(),
+				RoleID:       role.ResourceID,
+				PermissionID: ResDefaultPermissions[permissionID.PermissionID],
+				RowStatus:    1,
+				CreatedBy:    constants.DefaltCreatedBy,
+				UpdatedBy:    constants.DefaltCreatedBy,
+			})
+
+			if tx.Error != nil {
+				logger.AddContext(tx.Error).Error("Failed to save role permission")
+				return tx.Error
+			}
+		}
+	}
+
+	return nil
+
+}
+
+func AddDefaultPermissions() (map[uuid.UUID]uuid.UUID, error) {
+	var mstPermissions []*dto.MstPermission
+
+	if err := config.DB.Find(&mstPermissions).Error; err != nil {
+		logger.AddContext(err).Error("Failed to fetch permissions from the database")
+		return nil, err
+	}
+
+	res := make(map[uuid.UUID]uuid.UUID)
+	for _, mpermission := range mstPermissions {
+		permission := &dto.TNTPermission{
+			PermissionID: uuid.New(),
+			Name:         mpermission.Name,
+			ServiceID:    mpermission.ServiceID,
+			Action:       mpermission.Action,
+			RowStatus:    1,
+			// RoleID:       *input.RoleID,
+			CreatedBy: constants.DefaltCreatedBy,
+			UpdatedBy: constants.DefaltUpdatedBy,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+
+		res[mpermission.PermissionID] = permission.PermissionID
+		if err := config.DB.Create(permission).Error; err != nil {
+			logger.AddContext(err).Error("Failed to create permission")
+			return nil, err
+		}
+	}
+
+	return res, nil
 }

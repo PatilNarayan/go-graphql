@@ -37,16 +37,16 @@ func (r *RoleQueryResolver) AllRoles(ctx context.Context) ([]*models.Role, error
 		result = append(result, convertedRole)
 	}
 
-	var mstroles []dto.MstRole
-	if err := r.DB.Find(&mstroles).Error; err != nil {
-		logger.AddContext(err).Error("Failed to fetch roles from the database")
-		return nil, err
-	}
+	// var mstroles []dto.MstRole
+	// if err := r.DB.Find(&mstroles).Error; err != nil {
+	// 	logger.AddContext(err).Error("Failed to fetch roles from the database")
+	// 	return nil, err
+	// }
 
-	for _, role := range mstroles {
-		convertedRole := convertMSTRoleToGraphQL(&role)
-		result = append(result, convertedRole)
-	}
+	// for _, role := range mstroles {
+	// 	convertedRole := convertMSTRoleToGraphQL(&role)
+	// 	result = append(result, convertedRole)
+	// }
 
 	logger.Log.Infof("Fetched %d roles", len(result))
 	return result, nil
@@ -108,16 +108,16 @@ func (r *RoleQueryResolver) GetAllRolesForTenant(ctx context.Context, assignable
 		result = append(result, convertedRole)
 	}
 
-	var mstroles []dto.MstRole
-	if err := r.DB.Find(&mstroles).Error; err != nil {
-		logger.AddContext(err).Error("Failed to fetch roles from the database")
-		return nil, err
-	}
+	// var mstroles []dto.MstRole
+	// if err := r.DB.Find(&mstroles).Error; err != nil {
+	// 	logger.AddContext(err).Error("Failed to fetch roles from the database")
+	// 	return nil, err
+	// }
 
-	for _, role := range mstroles {
-		convertedRole := convertMSTRoleToGraphQL(&role)
-		result = append(result, convertedRole)
-	}
+	// for _, role := range mstroles {
+	// 	convertedRole := convertMSTRoleToGraphQL(&role)
+	// 	result = append(result, convertedRole)
+	// }
 
 	logger.Log.Infof("Fetched %d roles for tenant with ID: %s", len(result), assignableScopeRef)
 	return result, nil

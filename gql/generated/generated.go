@@ -999,7 +999,7 @@ type Role implements Resource {
   description: String
   permissions: [Permission!]!
   roleType: RoleTypeEnum!
-  assignableScope: Resource
+  assignableScope: Resource!
   createdAt: String!
   createdBy: String
   updatedAt: String
@@ -4272,11 +4272,14 @@ func (ec *executionContext) _Role_assignableScope(ctx context.Context, field gra
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(models.Resource)
 	fc.Result = res
-	return ec.marshalOResource2go_graphqlᚋgqlᚋmodelsᚐResource(ctx, field.Selections, res)
+	return ec.marshalNResource2go_graphqlᚋgqlᚋmodelsᚐResource(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Role_assignableScope(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8220,6 +8223,9 @@ func (ec *executionContext) _Role(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "assignableScope":
 			out.Values[i] = ec._Role_assignableScope(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createdAt":
 			out.Values[i] = ec._Role_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -8789,6 +8795,16 @@ func (ec *executionContext) marshalNPermission2ᚖgo_graphqlᚋgqlᚋmodelsᚐPe
 	return ec._Permission(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNResource2go_graphqlᚋgqlᚋmodelsᚐResource(ctx context.Context, sel ast.SelectionSet, v models.Resource) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Resource(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNRole2go_graphqlᚋgqlᚋmodelsᚐRole(ctx context.Context, sel ast.SelectionSet, v models.Role) graphql.Marshaler {
 	return ec._Role(ctx, sel, &v)
 }
@@ -9313,13 +9329,6 @@ func (ec *executionContext) marshalOPermission2ᚖgo_graphqlᚋgqlᚋmodelsᚐPe
 		return graphql.Null
 	}
 	return ec._Permission(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOResource2go_graphqlᚋgqlᚋmodelsᚐResource(ctx context.Context, sel ast.SelectionSet, v models.Resource) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Resource(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalORole2ᚖgo_graphqlᚋgqlᚋmodelsᚐRole(ctx context.Context, sel ast.SelectionSet, v *models.Role) graphql.Marshaler {

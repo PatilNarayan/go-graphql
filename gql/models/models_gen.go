@@ -137,7 +137,7 @@ type Role struct {
 	Description     *string       `json:"description,omitempty"`
 	Permissions     []*Permission `json:"permissions"`
 	RoleType        RoleTypeEnum  `json:"roleType"`
-	AssignableScope Resource      `json:"assignableScope,omitempty"`
+	AssignableScope Resource      `json:"assignableScope"`
 	CreatedAt       string        `json:"createdAt"`
 	CreatedBy       *string       `json:"createdBy,omitempty"`
 	UpdatedAt       *string       `json:"updatedAt,omitempty"`

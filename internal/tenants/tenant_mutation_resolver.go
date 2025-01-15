@@ -8,6 +8,7 @@ import (
 	"go_graphql/gql/models"
 	"go_graphql/internal/constants"
 	"go_graphql/internal/dto"
+	"go_graphql/internal/role"
 	"go_graphql/logger"
 	"go_graphql/permit"
 	"time"
@@ -90,6 +91,13 @@ func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 		return nil, fmt.Errorf("failed to create tenant metadata: %w", err)
 	}
 	log.Info("Tenant metadata created successfully")
+
+	err = role.CreateMstRole(tenantResource.ResourceID)
+	if err != nil {
+		log.WithError(err).Error("Failed to create role")
+		return nil, fmt.Errorf("failed to create role: %w", err)
+	}
+	log.Info("Role created successfully")
 
 	result := &models.Tenant{
 		ID:          tenantResource.ResourceID,

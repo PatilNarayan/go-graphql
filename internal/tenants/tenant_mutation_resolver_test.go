@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"go_graphql/config"
 	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
 	"go_graphql/logger"
@@ -42,8 +43,10 @@ func TestTenantMutationResolver_CreateTenant(t *testing.T) {
 		t.Fatalf("failed to connect to database: %v", err)
 	}
 
+	config.DB = db
+
 	// Migrate the required schema
-	err = db.AutoMigrate(&dto.TenantResource{}, &dto.TenantMetadata{}, &dto.Mst_ResourceTypes{})
+	err = db.AutoMigrate(&dto.TenantResource{}, &dto.TenantMetadata{}, &dto.Mst_ResourceTypes{}, &dto.TNTRole{}, &dto.TNTPermission{}, &dto.TNTRolePermission{}, &dto.MstRole{}, &dto.MstPermission{}, &dto.MstRolePermission{})
 	if err != nil {
 		t.Fatalf("failed to migrate database: %v", err)
 	}
@@ -81,6 +84,19 @@ func TestTenantMutationResolver_CreateTenant(t *testing.T) {
 		UpdatedAt:      time.Now(),
 	}
 	db.Create(&mstResType1)
+
+	// Seed initial data
+	mstResType := dto.Mst_ResourceTypes{
+		ResourceTypeID: uuid.New(),
+		ServiceID:      uuid.New(),
+		Name:           "Role",
+		RowStatus:      1,
+		CreatedBy:      "admin",
+		UpdatedBy:      "admin",
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+	db.Create(&mstResType)
 
 	parentOrg := dto.TenantResource{
 		ResourceID:     uuid.New(),
