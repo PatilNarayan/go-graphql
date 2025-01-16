@@ -1,10 +1,14 @@
 -- Insert dummy data into mst_roles
+TRUNCATE mst_roles;
+TRUNCATE mst_role_permissions;
+TRUNCATE mst_permissions;
+
 INSERT INTO mst_roles (
-    role_id, name, version, row_status, created_by, updated_by, created_at, updated_at
+    role_id, name, version,resource_type_id, row_status, created_by, updated_by, created_at, updated_at
 ) VALUES
-    ('bfe2d3a4-fc1a-4b7d-b4a3-4e8f44fba0f1', 'Admin', 'v1', 1, 'system', 'system', NOW(), NOW()),
-    ('a8e7f2d6-3d2f-49f6-bcf1-1d0b7a70fcd2', 'Editor', 'v1', 1, 'system', 'system', NOW(), NOW()),
-    ('d0f1e7b9-cf2d-4d6a-9e1f-7b2a4a6d9c3e', 'Viewer', 'v1', 1, 'system', 'system', NOW(), NOW());
+    ('bfe2d3a4-fc1a-4b7d-b4a3-4e8f44fba0f1', 'Admin', 'v1','550e8400-e29b-41d4-a716-446655440003', 1, 'system', 'system', NOW(), NOW()),
+    ('a8e7f2d6-3d2f-49f6-bcf1-1d0b7a70fcd2', 'Editor', 'v1','550e8400-e29b-41d4-a716-446655440003', 1, 'system', 'system', NOW(), NOW()),
+    ('d0f1e7b9-cf2d-4d6a-9e1f-7b2a4a6d9c3e', 'Viewer', 'v1','550e8400-e29b-41d4-a716-446655440003', 1, 'system', 'system', NOW(), NOW());
 
 -- Insert dummy data into mst_permissions
 INSERT INTO mst_permissions (

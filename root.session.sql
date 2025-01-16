@@ -74,6 +74,26 @@ INSERT INTO mst_resource_types (
     'system_admin',
     '2024-01-01 12:00:00',
     '2024-01-01 12:00:00'
+),
+(
+    '550e8400-e29b-41d4-a716-446655440005',
+    'f1b2c3d4-e5f6-4747-8899-aabbccddeeff',
+    'Account',
+    1,
+    'system_admin',
+    'system_admin',
+    '2024-01-01 12:30:00',
+    '2024-01-01 12:30:00'
+),
+(
+    '550e8400-e29b-41d4-a716-446655440006',
+    'g1b2c3d4-e5f6-4747-8899-aabbccddeeff',
+    'Client Organization Unit',
+    1,
+    'system_admin',
+    'system_admin',
+    '2024-01-01 13:00:00',
+    '2024-01-01 13:00:00'
 );
 
 -- Create indexes for better performance

@@ -51,7 +51,7 @@ type TenantMetadata struct {
 	UpdatedBy  string          `gorm:"size:45" json:"updated_by"`
 	CreatedAt  time.Time       `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt  time.Time       `gorm:"autoUpdateTime" json:"updated_at"`
-	DeletedAt  gorm.DeletedAt  `gorm:"index" json:"-"` // Soft delete
+	// DeletedAt  gorm.DeletedAt  `gorm:"index" json:"-"` // Soft delete
 }
 
 // BeforeCreate hook to generate UUID before saving

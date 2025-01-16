@@ -222,7 +222,7 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 	tenantMetadata.UpdatedAt = time.Now()
 
 	// Save updated TenantMetadata to the database
-	if err := r.DB.Save(&tenantMetadata).Error; err != nil {
+	if err := r.DB.Where(&dto.TenantMetadata{ResourceID: tenantResource.ResourceID.String()}).UpdateColumns(&tenantMetadata).Error; err != nil {
 		log.WithError(err).Error("failed to update tenant metadata")
 		return nil, fmt.Errorf("failed to update tenant metadata: %w", err)
 	}
@@ -266,7 +266,7 @@ func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID)
 
 	// Update TenantMetadata with both DeletedAt and RowStatus
 	updates := map[string]interface{}{
-		"deleted_at": gorm.DeletedAt{Time: time.Now(), Valid: true},
+		// "deleted_at": gorm.DeletedAt{Time: time.Now(), Valid: true},
 		"row_status": 0,
 	}
 	if err := tx.Model(&dto.TenantMetadata{}).Where("resource_id = ?", id.String()).Updates(updates).Error; err != nil {

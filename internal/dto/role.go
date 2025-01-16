@@ -15,17 +15,18 @@ const (
 )
 
 type TNTRole struct {
-	ResourceID  uuid.UUID      `json:"resourceId" gorm:"type:char(36);primaryKey;column:resource_id" db:"resource_id"`
-	RoleType    RoleTypeEnum   `json:"roleType" gorm:"column:role_type" db:"role_type"`
-	Name        string         `json:"name" gorm:"column:name;size:255" db:"name"`
-	Version     string         `json:"version" gorm:"column:version;size:100" db:"version"`
-	Description string         `json:"description" gorm:"column:description;type:text" db:"description"`
-	RowStatus   int            `json:"rowStatus" gorm:"column:row_status" db:"row_status"`
-	CreatedBy   string         `json:"createdBy" gorm:"column:created_by;size:36" db:"created_by"`
-	UpdatedBy   string         `json:"updatedBy" gorm:"column:updated_by;size:36" db:"updated_by"`
-	CreatedAt   time.Time      `json:"createdAt" gorm:"column:created_at;autoCreateTime" db:"created_at"`
-	UpdatedAt   time.Time      `json:"updatedAt" gorm:"column:updated_at;autoUpdateTime" db:"updated_at"`
-	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"` // Soft delete
+	ResourceID     uuid.UUID      `json:"resourceId" gorm:"type:char(36);primaryKey;column:resource_id" db:"resource_id"`
+	RoleType       RoleTypeEnum   `json:"roleType" gorm:"column:role_type" db:"role_type"`
+	Name           string         `json:"name" gorm:"column:name;size:255" db:"name"`
+	Version        string         `json:"version" gorm:"column:version;size:100" db:"version"`
+	ResourceTypeID uuid.UUID      `json:"resourceTypeId" gorm:"type:char(36);not null;column:resource_type_id" db:"resource_type_id"`
+	Description    string         `json:"description" gorm:"column:description;type:text" db:"description"`
+	RowStatus      int            `json:"rowStatus" gorm:"column:row_status" db:"row_status"`
+	CreatedBy      string         `json:"createdBy" gorm:"column:created_by;size:36" db:"created_by"`
+	UpdatedBy      string         `json:"updatedBy" gorm:"column:updated_by;size:36" db:"updated_by"`
+	CreatedAt      time.Time      `json:"createdAt" gorm:"column:created_at;autoCreateTime" db:"created_at"`
+	UpdatedAt      time.Time      `json:"updatedAt" gorm:"column:updated_at;autoUpdateTime" db:"updated_at"`
+	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"` // Soft delete
 }
 
 // TableName overrides the default table name
@@ -70,16 +71,17 @@ func (TNTRolePermission) TableName() string {
 }
 
 type MstRole struct {
-	RoleID      uuid.UUID      `json:"roleId" gorm:"type:char(36);primaryKey;column:role_id" db:"role_id"`
-	Name        string         `json:"name" gorm:"column:name;size:255" db:"name"`
-	Version     string         `json:"version" gorm:"column:version;size:100" db:"version"`
-	Description string         `json:"description" gorm:"column:description;type:text" db:"description"`
-	RowStatus   int            `json:"rowStatus" gorm:"column:row_status" db:"row_status"`
-	CreatedBy   string         `json:"createdBy" gorm:"column:created_by;size:36" db:"created_by"`
-	UpdatedBy   string         `json:"updatedBy" gorm:"column:updated_by;size:36" db:"updated_by"`
-	CreatedAt   time.Time      `json:"createdAt" gorm:"column:created_at;autoCreateTime" db:"created_at"`
-	UpdatedAt   time.Time      `json:"updatedAt" gorm:"column:updated_at;autoUpdateTime" db:"updated_at"`
-	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"` // Soft delete
+	RoleID         uuid.UUID      `json:"roleId" gorm:"type:char(36);primaryKey;column:role_id" db:"role_id"`
+	Name           string         `json:"name" gorm:"column:name;size:255" db:"name"`
+	Version        string         `json:"version" gorm:"column:version;size:100" db:"version"`
+	ResourceTypeID uuid.UUID      `json:"resourceTypeId" gorm:"type:char(36);not null;column:resource_type_id" db:"resource_type_id"`
+	Description    string         `json:"description" gorm:"column:description;type:text" db:"description"`
+	RowStatus      int            `json:"rowStatus" gorm:"column:row_status" db:"row_status"`
+	CreatedBy      string         `json:"createdBy" gorm:"column:created_by;size:36" db:"created_by"`
+	UpdatedBy      string         `json:"updatedBy" gorm:"column:updated_by;size:36" db:"updated_by"`
+	CreatedAt      time.Time      `json:"createdAt" gorm:"column:created_at;autoCreateTime" db:"created_at"`
+	UpdatedAt      time.Time      `json:"updatedAt" gorm:"column:updated_at;autoUpdateTime" db:"updated_at"`
+	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"` // Soft delete
 }
 
 func (MstRole) TableName() string {

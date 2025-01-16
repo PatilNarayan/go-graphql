@@ -318,16 +318,17 @@ func CreateMstRole(tenantID uuid.UUID) error {
 		}
 
 		role := dto.TNTRole{
-			ResourceID:  tenantResource.ResourceID,
-			Name:        mrole.Name,
-			Description: mrole.Description,
-			RoleType:    dto.RoleTypeEnumDefault,
-			Version:     mrole.Version,
-			CreatedAt:   mrole.CreatedAt,
-			CreatedBy:   mrole.CreatedBy,
-			UpdatedBy:   mrole.UpdatedBy,
-			UpdatedAt:   mrole.UpdatedAt,
-			RowStatus:   mrole.RowStatus,
+			ResourceID:     tenantResource.ResourceID,
+			Name:           mrole.Name,
+			Description:    mrole.Description,
+			RoleType:       dto.RoleTypeEnumDefault,
+			ResourceTypeID: resourceType.ResourceTypeID,
+			Version:        mrole.Version,
+			CreatedAt:      mrole.CreatedAt,
+			CreatedBy:      mrole.CreatedBy,
+			UpdatedBy:      mrole.UpdatedBy,
+			UpdatedAt:      mrole.UpdatedAt,
+			RowStatus:      mrole.RowStatus,
 		}
 
 		if err := config.DB.Save(&role).Error; err != nil {

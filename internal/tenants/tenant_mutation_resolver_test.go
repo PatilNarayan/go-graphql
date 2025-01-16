@@ -331,7 +331,7 @@ func TestTenantMutationResolver_DeleteTenant(t *testing.T) {
 			})},
 			args: args{
 				ctx: context.Background(),
-				id:  tenantID,
+				id:  uuid.New(),
 			},
 			want:    false,
 			wantErr: true,
