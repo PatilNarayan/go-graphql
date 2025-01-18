@@ -115,7 +115,7 @@ type CreateRootInput struct {
 type CreateTenantInput struct {
 	Name        string            `json:"name"`
 	Description *string           `json:"description,omitempty"`
-	ParentOrgID *uuid.UUID        `json:"parentOrgId,omitempty"`
+	ParentOrgID uuid.UUID         `json:"parentOrgId"`
 	ContactInfo *ContactInfoInput `json:"contactInfo,omitempty"`
 }
 
@@ -180,7 +180,7 @@ type Tenant struct {
 	ID          uuid.UUID    `json:"id"`
 	Name        string       `json:"name"`
 	Description *string      `json:"description,omitempty"`
-	ParentOrg   Organization `json:"parentOrg,omitempty"`
+	ParentOrg   Organization `json:"parentOrg"`
 	ContactInfo *ContactInfo `json:"contactInfo,omitempty"`
 	CreatedAt   string       `json:"createdAt"`
 	UpdatedAt   *string      `json:"updatedAt,omitempty"`
@@ -244,7 +244,7 @@ type UpdateTenantInput struct {
 	ID          uuid.UUID         `json:"id"`
 	Name        *string           `json:"name,omitempty"`
 	Description *string           `json:"description,omitempty"`
-	ParentOrgID *string           `json:"parentOrgId,omitempty"`
+	ParentOrgID uuid.UUID         `json:"parentOrgId"`
 	ContactInfo *ContactInfoInput `json:"contactInfo,omitempty"`
 }
 

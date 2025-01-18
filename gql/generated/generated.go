@@ -899,7 +899,7 @@ type Tenant implements Resource & Organization {
   id: UUID!
   name: String!
   description: String
-  parentOrg: Organization
+  parentOrg: Organization! 
   contactInfo: ContactInfo
   createdAt: String!
   updatedAt: String
@@ -922,7 +922,7 @@ input ContactInfoInput {
 input CreateTenantInput {
   name: String!
   description: String
-  parentOrgId: UUID
+  parentOrgId: UUID!
   contactInfo: ContactInfoInput
   # createdBy: String!
 }
@@ -931,7 +931,7 @@ input UpdateTenantInput {
   id: UUID!
   name: String
   description: String
-  parentOrgId: String
+  parentOrgId: UUID!
   contactInfo: ContactInfoInput
   # updatedBy: String!
 }
@@ -4949,11 +4949,14 @@ func (ec *executionContext) _Tenant_parentOrg(ctx context.Context, field graphql
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(models.Organization)
 	fc.Result = res
-	return ec.marshalOOrganization2go_graphqlᚋgqlᚋmodelsᚐOrganization(ctx, field.Selections, res)
+	return ec.marshalNOrganization2go_graphqlᚋgqlᚋmodelsᚐOrganization(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Tenant_parentOrg(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7269,7 +7272,7 @@ func (ec *executionContext) unmarshalInputCreateTenantInput(ctx context.Context,
 			it.Description = data
 		case "parentOrgId":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentOrgId"))
-			data, err := ec.unmarshalOUUID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7592,7 +7595,7 @@ func (ec *executionContext) unmarshalInputUpdateTenantInput(ctx context.Context,
 			it.Description = data
 		case "parentOrgId":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentOrgId"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8344,6 +8347,9 @@ func (ec *executionContext) _Tenant(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = ec._Tenant_description(ctx, field, obj)
 		case "parentOrg":
 			out.Values[i] = ec._Tenant_parentOrg(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "contactInfo":
 			out.Values[i] = ec._Tenant_contactInfo(ctx, field, obj)
 		case "createdAt":
@@ -9400,22 +9406,6 @@ func (ec *executionContext) marshalOTenant2ᚖgo_graphqlᚋgqlᚋmodelsᚐTenant
 		return graphql.Null
 	}
 	return ec._Tenant(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOUUID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, v interface{}) (*uuid.UUID, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalUUID(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOUUID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, sel ast.SelectionSet, v *uuid.UUID) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalUUID(*v)
-	return res
 }
 
 func (ec *executionContext) unmarshalOUpdatePermission2ᚖgo_graphqlᚋgqlᚋmodelsᚐUpdatePermission(ctx context.Context, v interface{}) (*models.UpdatePermission, error) {

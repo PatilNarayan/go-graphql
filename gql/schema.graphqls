@@ -47,7 +47,7 @@ type Tenant implements Resource & Organization {
   id: UUID!
   name: String!
   description: String
-  parentOrg: Organization
+  parentOrg: Organization! 
   contactInfo: ContactInfo
   createdAt: String!
   updatedAt: String
@@ -70,7 +70,7 @@ input ContactInfoInput {
 input CreateTenantInput {
   name: String!
   description: String
-  parentOrgId: UUID
+  parentOrgId: UUID!
   contactInfo: ContactInfoInput
   # createdBy: String!
 }
@@ -79,7 +79,7 @@ input UpdateTenantInput {
   id: UUID!
   name: String
   description: String
-  parentOrgId: String
+  parentOrgId: UUID!
   contactInfo: ContactInfoInput
   # updatedBy: String!
 }
