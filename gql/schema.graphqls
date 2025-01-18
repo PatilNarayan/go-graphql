@@ -250,7 +250,7 @@ type Query {
 
   getRole(id: UUID!): Role
   allRoles: [Role!]!
-  getAllRolesForTenant(assignableScopeRef: UUID!): [Role!]!
+  getAllRolesForAssignableScopeRef(id: UUID!): [Role!]!
 
   getAllPermissions:[Permission]
   getPermission(id: UUID!):Permission

@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -54,6 +55,9 @@ func (pc *PermitClient) sendRequest(ctx context.Context, method, endpoint string
 			body = bytes.NewBuffer(jsonData)
 		}
 
+		if strings.Contains(endpoint, "roles") {
+			pc.BaseURL = strings.Replace(pc.BaseURL, "facts", "schema", 1)
+		}
 		// Create HTTP request
 		req, err := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s/%s", pc.BaseURL, endpoint), body)
 		if err != nil {

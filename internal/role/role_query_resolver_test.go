@@ -200,7 +200,7 @@ func TestGetRole(t *testing.T) {
 	})
 }
 
-func TestGetAllRolesForTenant(t *testing.T) {
+func TestGetGetAllRolesForAssignableScopeRef(t *testing.T) {
 	db := setupTestDB()
 	ctx := context.Background()
 	config.DB = db
@@ -292,7 +292,7 @@ func TestGetAllRolesForTenant(t *testing.T) {
 	db.Create(&mstRole)
 
 	t.Run("Successfully get all roles for tenant", func(t *testing.T) {
-		roles, err := resolver.GetAllRolesForTenant(ctx, tenantID)
+		roles, err := resolver.GetAllRolesForAssignableScopeRef(ctx, tenantID)
 		assert.NoError(t, err)
 		assert.NotNil(t, roles)
 		assert.Equal(t, 4, len(roles)) // 3 TNT roles + 1 MST role
@@ -311,14 +311,14 @@ func TestGetAllRolesForTenant(t *testing.T) {
 	})
 
 	t.Run("Invalid tenant ID", func(t *testing.T) {
-		roles, err := resolver.GetAllRolesForTenant(ctx, uuid.Nil)
+		roles, err := resolver.GetAllRolesForAssignableScopeRef(ctx, uuid.Nil)
 		assert.Error(t, err)
 		assert.Nil(t, roles)
 		assert.Equal(t, "assignableScopeRef cannot be nil", err.Error())
 	})
 
 	t.Run("Tenant not found", func(t *testing.T) {
-		roles, err := resolver.GetAllRolesForTenant(ctx, uuid.New())
+		roles, err := resolver.GetAllRolesForAssignableScopeRef(ctx, uuid.New())
 		assert.Error(t, err)
 		assert.Nil(t, roles)
 		assert.Contains(t, err.Error(), "invalid TenantID")

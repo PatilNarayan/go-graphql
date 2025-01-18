@@ -97,13 +97,13 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AllRoles             func(childComplexity int) int
-		AllTenants           func(childComplexity int) int
-		GetAllPermissions    func(childComplexity int) int
-		GetAllRolesForTenant func(childComplexity int, assignableScopeRef uuid.UUID) int
-		GetPermission        func(childComplexity int, id uuid.UUID) int
-		GetRole              func(childComplexity int, id uuid.UUID) int
-		GetTenant            func(childComplexity int, id uuid.UUID) int
+		AllRoles                         func(childComplexity int) int
+		AllTenants                       func(childComplexity int) int
+		GetAllPermissions                func(childComplexity int) int
+		GetAllRolesForAssignableScopeRef func(childComplexity int, id uuid.UUID) int
+		GetPermission                    func(childComplexity int, id uuid.UUID) int
+		GetRole                          func(childComplexity int, id uuid.UUID) int
+		GetTenant                        func(childComplexity int, id uuid.UUID) int
 	}
 
 	Role struct {
@@ -160,7 +160,7 @@ type QueryResolver interface {
 	AllTenants(ctx context.Context) ([]*models.Tenant, error)
 	GetRole(ctx context.Context, id uuid.UUID) (*models.Role, error)
 	AllRoles(ctx context.Context) ([]*models.Role, error)
-	GetAllRolesForTenant(ctx context.Context, assignableScopeRef uuid.UUID) ([]*models.Role, error)
+	GetAllRolesForAssignableScopeRef(ctx context.Context, id uuid.UUID) ([]*models.Role, error)
 	GetAllPermissions(ctx context.Context) ([]*models.Permission, error)
 	GetPermission(ctx context.Context, id uuid.UUID) (*models.Permission, error)
 }
@@ -488,17 +488,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetAllPermissions(childComplexity), true
 
-	case "Query.getAllRolesForTenant":
-		if e.complexity.Query.GetAllRolesForTenant == nil {
+	case "Query.getAllRolesForAssignableScopeRef":
+		if e.complexity.Query.GetAllRolesForAssignableScopeRef == nil {
 			break
 		}
 
-		args, err := ec.field_Query_getAllRolesForTenant_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_getAllRolesForAssignableScopeRef_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.GetAllRolesForTenant(childComplexity, args["assignableScopeRef"].(uuid.UUID)), true
+		return e.complexity.Query.GetAllRolesForAssignableScopeRef(childComplexity, args["id"].(uuid.UUID)), true
 
 	case "Query.getPermission":
 		if e.complexity.Query.GetPermission == nil {
@@ -1102,7 +1102,7 @@ type Query {
 
   getRole(id: UUID!): Role
   allRoles: [Role!]!
-  getAllRolesForTenant(assignableScopeRef: UUID!): [Role!]!
+  getAllRolesForAssignableScopeRef(id: UUID!): [Role!]!
 
   getAllPermissions:[Permission]
   getPermission(id: UUID!):Permission
@@ -1464,31 +1464,31 @@ func (ec *executionContext) field_Query___type_argsName(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Query_getAllRolesForTenant_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_getAllRolesForAssignableScopeRef_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	arg0, err := ec.field_Query_getAllRolesForTenant_argsAssignableScopeRef(ctx, rawArgs)
+	arg0, err := ec.field_Query_getAllRolesForAssignableScopeRef_argsID(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["assignableScopeRef"] = arg0
+	args["id"] = arg0
 	return args, nil
 }
-func (ec *executionContext) field_Query_getAllRolesForTenant_argsAssignableScopeRef(
+func (ec *executionContext) field_Query_getAllRolesForAssignableScopeRef_argsID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
 ) (uuid.UUID, error) {
 	// We won't call the directive if the argument is null.
 	// Set call_argument_directives_with_null to true to call directives
 	// even if the argument is null.
-	_, ok := rawArgs["assignableScopeRef"]
+	_, ok := rawArgs["id"]
 	if !ok {
 		var zeroVal uuid.UUID
 		return zeroVal, nil
 	}
 
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("assignableScopeRef"))
-	if tmp, ok := rawArgs["assignableScopeRef"]; ok {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
 		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
 	}
 
@@ -3635,8 +3635,8 @@ func (ec *executionContext) fieldContext_Query_allRoles(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getAllRolesForTenant(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getAllRolesForTenant(ctx, field)
+func (ec *executionContext) _Query_getAllRolesForAssignableScopeRef(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getAllRolesForAssignableScopeRef(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3649,7 +3649,7 @@ func (ec *executionContext) _Query_getAllRolesForTenant(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAllRolesForTenant(rctx, fc.Args["assignableScopeRef"].(uuid.UUID))
+		return ec.resolvers.Query().GetAllRolesForAssignableScopeRef(rctx, fc.Args["id"].(uuid.UUID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3666,7 +3666,7 @@ func (ec *executionContext) _Query_getAllRolesForTenant(ctx context.Context, fie
 	return ec.marshalNRole2ᚕᚖgo_graphqlᚋgqlᚋmodelsᚐRoleᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getAllRolesForTenant(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_getAllRolesForAssignableScopeRef(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -3707,7 +3707,7 @@ func (ec *executionContext) fieldContext_Query_getAllRolesForTenant(ctx context.
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getAllRolesForTenant_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_getAllRolesForAssignableScopeRef_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -8092,7 +8092,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "getAllRolesForTenant":
+		case "getAllRolesForAssignableScopeRef":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -8101,7 +8101,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getAllRolesForTenant(ctx, field)
+				res = ec._Query_getAllRolesForAssignableScopeRef(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

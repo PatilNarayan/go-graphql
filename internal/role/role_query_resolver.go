@@ -66,33 +66,33 @@ func (r *RoleQueryResolver) GetRole(ctx context.Context, id uuid.UUID) (*models.
 	return convertRoleToGraphQL(&role), nil
 }
 
-func (r *RoleQueryResolver) GetAllRolesForTenant(ctx context.Context, assignableScopeRef uuid.UUID) ([]*models.Role, error) {
+func (r *RoleQueryResolver) GetAllRolesForAssignableScopeRef(ctx context.Context, assignableScopeRef uuid.UUID) ([]*models.Role, error) {
 	logger.Log.Infof("Fetching all roles for tenant with ID: %s", assignableScopeRef)
 
 	if assignableScopeRef == uuid.Nil {
 		return nil, fmt.Errorf("assignableScopeRef cannot be nil")
 	}
 
-	if err := utils.ValidateTenantID(assignableScopeRef); err != nil {
-		return nil, fmt.Errorf("invalid TenantID")
+	if err := utils.ValidateResourceID(assignableScopeRef); err != nil {
+		return nil, fmt.Errorf("invalid assignableScopeRef: %w", err)
 	}
 
-	resourceType := dto.Mst_ResourceTypes{}
-	if err := config.DB.Where("name = ?", "Role").First(&resourceType).Error; err != nil {
-		logger.AddContext(err).Error("Resource type not found")
-		return nil, fmt.Errorf("resource type not found: %w", err)
+	resourceIds, err := utils.GetResourceTypeIDs([]string{"Role"})
+	if err != nil {
+		return nil, err
 	}
-	var tenantResource []dto.TenantResource
-	if err := r.DB.Where("tenant_id = ? AND row_status = 1 AND resource_type_id = ?", assignableScopeRef, resourceType.ResourceTypeID).Find(&tenantResource).Error; err != nil {
+
+	var assignableResource []dto.TenantResource
+	if err := r.DB.Where("parent_resource_id = ? AND row_status = 1 AND resource_type_id IN (?)", assignableScopeRef, resourceIds).Find(&assignableResource).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch tenant resource: %w", err)
 	}
 
-	if len(tenantResource) == 0 {
-		return nil, fmt.Errorf("tenant resource not found")
+	if len(assignableResource) == 0 {
+		return nil, fmt.Errorf("assignableScopeRef %s does not exist", assignableScopeRef)
 	}
 
-	roleIds := make([]uuid.UUID, len(tenantResource))
-	for i, resource := range tenantResource {
+	roleIds := make([]uuid.UUID, len(assignableResource))
+	for i, resource := range assignableResource {
 		roleIds[i] = resource.ResourceID
 	}
 

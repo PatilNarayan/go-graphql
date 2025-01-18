@@ -12,6 +12,7 @@ import (
 	"go_graphql/internal/dto"
 	"go_graphql/internal/utils"
 	"go_graphql/logger"
+	"go_graphql/permit"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -30,15 +31,20 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 	if input.Name == "" {
 		logger.Log.Warn("Role name is required")
 		return nil, errors.New("role name is required")
+	} else {
+		if err := utils.ValidateName(input.Name); err != nil {
+			logger.AddContext(err).Error("Invalid role name")
+			return nil, fmt.Errorf("invalid role name: %w", err)
+		}
 	}
 
 	if input.AssignableScopeRef == uuid.Nil {
-		logger.Log.Warn("Tenant ID is required")
-		return nil, errors.New("Tenant ID is required")
+		logger.Log.Warn("Account ID / Client ID is required")
+		return nil, errors.New("account ID / client ID is required")
 	} else {
 		if err := utils.ValidateResourceID(input.AssignableScopeRef); err != nil {
-			logger.AddContext(err).Error("Invalid TenantID")
-			return nil, fmt.Errorf("invalid TenantID: %w", err)
+			logger.AddContext(err).Error("invalid account ID / client ID")
+			return nil, fmt.Errorf("invalid account ID / client ID: %w", err)
 		}
 	}
 
@@ -50,6 +56,23 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 	}
 
 	if err := CheckPermissions(input.Permissions); err != nil {
+		return nil, err
+	}
+
+	var assignableScopeRef dto.TenantResource
+	if err := r.DB.Where("resource_id = ? AND row_status = 1", input.AssignableScopeRef).First(&assignableScopeRef).Error; err != nil {
+		logger.AddContext(err).Error("Invalid TenantID")
+		return nil, fmt.Errorf("invalid TenantID")
+	}
+
+	//create role in permit
+	pc := permit.NewPermitClient()
+	_, err := pc.APIExecute(ctx, "POST", fmt.Sprintf("resources/%s/roles", assignableScopeRef.Name), map[string]interface{}{
+		"name": input.Name,
+		"key":  input.Name,
+	})
+
+	if err != nil {
 		return nil, err
 	}
 

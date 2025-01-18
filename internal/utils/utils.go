@@ -6,6 +6,7 @@ import (
 	"go_graphql/config"
 	"go_graphql/internal/dto"
 	"go_graphql/logger"
+	"regexp"
 	"time"
 
 	"github.com/google/uuid"
@@ -21,8 +22,16 @@ func StringValue(s *string) string {
 
 func ValidateResourceID(resourceID uuid.UUID) error {
 	// Check if the resource ID exists in the database
+
+	resourceIds, err := GetResourceTypeIDs([]string{"Account", "Client"})
+	if err != nil {
+		return err
+	}
+
 	var count int64
-	if err := config.DB.Model(&dto.TenantResource{}).Where("resource_id = ?", resourceID).Count(&count).Error; err != nil {
+	if err := config.DB.Model(&dto.TenantResource{}).
+		Where("resource_id = ? AND row_status = 1 AND resource_type_id IN (?)", resourceID, resourceIds).
+		Count(&count).Error; err != nil {
 		return err
 	}
 	if count == 0 {
@@ -76,6 +85,32 @@ func ValidateTenantID(tenantID uuid.UUID) error {
 	}
 	if count == 0 {
 		return errors.New("resource ID does not exist")
+	}
+	return nil
+}
+func GetResourceTypeIDs(resourceName []string) ([]string, error) {
+	resourceType := []dto.Mst_ResourceTypes{}
+	if err := config.DB.Where("name in (?)", resourceName).Find(&resourceType).Error; err != nil {
+		logger.AddContext(err).Error("Resource type not found")
+		return nil, err
+	}
+	var resourceIds []string
+	for _, resource := range resourceType {
+		resourceIds = append(resourceIds, resource.ResourceTypeID.String())
+	}
+
+	return resourceIds, nil
+}
+
+// ValidateName validates that the input string matches the regex "^[A-Za-z0-9\\-_]+$".
+func ValidateName(name string) error {
+	// Define the regex pattern
+	pattern := `^[A-Za-z0-9\-_]+$`
+	// Compile the regex
+	re := regexp.MustCompile(pattern)
+	// Check if the name matches the regex
+	if !re.MatchString(name) {
+		return errors.New("invalid name: must contain only alphanumeric characters, hyphens, or underscores")
 	}
 	return nil
 }
