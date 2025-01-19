@@ -8,6 +8,7 @@ import (
 	"go_graphql/gql/models"
 	"go_graphql/internal/constants"
 	"go_graphql/internal/dto"
+	"go_graphql/internal/role"
 	"go_graphql/internal/utils"
 	"go_graphql/logger"
 	"go_graphql/permit"
@@ -103,12 +104,12 @@ func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 	}
 	log.Info("Tenant metadata created successfully")
 
-	// err = role.CreateMstRole(tenantResource.ResourceID)
-	// if err != nil {
-	// 	log.WithError(err).Error("Failed to create role")
-	// 	return nil, fmt.Errorf("failed to create role: %w", err)
-	// }
-	// log.Info("Role created successfully")
+	err = role.CreateMstRole(tenantResource.ResourceID)
+	if err != nil {
+		log.WithError(err).Error("Failed to create role")
+		return nil, fmt.Errorf("failed to create role: %w", err)
+	}
+	log.Info("Role created successfully")
 
 	tq := &TenantQueryResolver{DB: r.DB}
 	return tq.GetTenant(ctx, tenantResource.ResourceID)
@@ -279,6 +280,12 @@ func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID)
 	}
 
 	log.Info("Deleted tenant resource")
+
+	if err := role.DeleteDefaultRole(id); err != nil {
+		tx.Rollback()
+		log.WithError(err).Error("failed to delete default role")
+		return false, fmt.Errorf("failed to delete default role: %w", err)
+	}
 
 	if err := tx.Commit().Error; err != nil {
 		log.WithError(err).Error("failed to commit transaction")

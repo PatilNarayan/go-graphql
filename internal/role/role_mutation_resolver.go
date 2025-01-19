@@ -415,3 +415,67 @@ func AddDefaultPermissions() (map[uuid.UUID]uuid.UUID, error) {
 
 	return res, nil
 }
+
+func DeleteDefaultRole(tenantID uuid.UUID) error {
+	// Find resource type for Role
+	resourceType := dto.Mst_ResourceTypes{}
+	if err := config.DB.Where("name = ?", "Role").First(&resourceType).Error; err != nil {
+		logger.AddContext(err).Error("Resource type not found")
+		return fmt.Errorf("resource type not found: %w", err)
+	}
+
+	// Start a transaction
+	tx := config.DB.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	var roleResources []dto.TenantResource
+	if err := tx.Where("tenant_id = ? AND resource_type_id = ?", tenantID, resourceType.ResourceTypeID).Find(&roleResources).Error; err != nil {
+		tx.Rollback()
+		logger.AddContext(err).Error("Failed to fetch role resources")
+		return err
+	}
+
+	// Update row status in tenant_resources table
+	if err := tx.Model(&dto.TenantResource{}).
+		Where("tenant_id = ? AND resource_type_id = ?", tenantID, resourceType.ResourceTypeID).
+		Update("row_status", 0).Error; err != nil {
+		tx.Rollback()
+		logger.AddContext(err).Error("Failed to update tenant resources")
+		return err
+	}
+
+	roleIDs := make([]uuid.UUID, len(roleResources))
+	for i, roleResource := range roleResources {
+		roleIDs[i] = roleResource.ResourceID
+
+	}
+
+	// Update row status in tnt_roles table
+	if err := tx.Model(&dto.TNTRole{}).
+		Where("resource_id IN ?", roleIDs).
+		Update("row_status", 0).Error; err != nil {
+		tx.Rollback()
+		logger.AddContext(err).Error("Failed to update roles")
+		return err
+	}
+
+	// Update row status in tnt_role_permissions table
+	if err := tx.Model(&dto.TNTRolePermission{}).
+		Where("role_id IN ?", roleIDs).
+		Update("row_status", 0).Error; err != nil {
+		tx.Rollback()
+		logger.AddContext(err).Error("Failed to update role permissions")
+		return err
+	}
+
+	// Commit the transaction
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		logger.AddContext(err).Error("Failed to commit transaction")
+		return err
+	}
+
+	return nil
+}
