@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"go.uber.org/thriftrw/ptr"
 	"gorm.io/gorm"
 )
 
@@ -111,26 +110,9 @@ func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 	// }
 	// log.Info("Role created successfully")
 
-	result := &models.Tenant{
-		ID:          tenantResource.ResourceID,
-		Name:        tenantResource.Name,
-		Description: input.Description,
-		ContactInfo: &models.ContactInfo{
-			Email:       input.ContactInfo.Email,
-			PhoneNumber: input.ContactInfo.PhoneNumber,
-			Address: &models.Address{
-				Street:  input.ContactInfo.Address.Street,
-				City:    input.ContactInfo.Address.City,
-				State:   input.ContactInfo.Address.State,
-				ZipCode: input.ContactInfo.Address.ZipCode,
-				Country: input.ContactInfo.Address.Country,
-			},
-		},
-		CreatedAt: tenantResource.CreatedAt.String(),
-		CreatedBy: &tenantResource.CreatedBy,
-	}
-	log.WithField("tenantID", result.ID).Info("Tenant creation completed successfully")
-	return result, nil
+	tq := &TenantQueryResolver{DB: r.DB}
+	return tq.GetTenant(ctx, tenantResource.ResourceID)
+
 }
 
 // UpdateTenant resolver for updating a Tenant
@@ -248,25 +230,8 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 		return nil, fmt.Errorf("failed to update tenant metadata: %w", err)
 	}
 
-	// Return the updated Tenant object
-	return &models.Tenant{
-		ID:          tenantResource.ResourceID,
-		Name:        tenantResource.Name,
-		Description: ptr.String(metadata["description"].(string)),
-		ContactInfo: &models.ContactInfo{
-			Email:       ptr.String(metadata["contactInfo"].(map[string]interface{})["email"].(string)),
-			PhoneNumber: ptr.String(metadata["contactInfo"].(map[string]interface{})["phoneNumber"].(string)),
-			Address: &models.Address{
-				Street:  ptr.String(metadata["contactInfo"].(map[string]interface{})["address"].(map[string]interface{})["street"].(string)),
-				City:    ptr.String(metadata["contactInfo"].(map[string]interface{})["address"].(map[string]interface{})["city"].(string)),
-				State:   ptr.String(metadata["contactInfo"].(map[string]interface{})["address"].(map[string]interface{})["state"].(string)),
-				ZipCode: ptr.String(metadata["contactInfo"].(map[string]interface{})["address"].(map[string]interface{})["zipCode"].(string)),
-				Country: ptr.String(metadata["contactInfo"].(map[string]interface{})["address"].(map[string]interface{})["country"].(string)),
-			},
-		},
-		UpdatedAt: ptr.String(tenantResource.UpdatedAt.String()),
-		UpdatedBy: &tenantResource.UpdatedBy,
-	}, nil
+	tq := &TenantQueryResolver{DB: r.DB}
+	return tq.GetTenant(ctx, tenantResource.ResourceID)
 }
 
 func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID) (bool, error) {
