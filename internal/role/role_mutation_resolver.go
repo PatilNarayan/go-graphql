@@ -39,12 +39,12 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 	}
 
 	if input.AssignableScopeRef == uuid.Nil {
-		logger.Log.Warn("Account ID / Client ID is required")
-		return nil, errors.New("account ID / client ID is required")
+		logger.Log.Warn("Resource ID is required")
+		return nil, errors.New("resource ID is required")
 	} else {
 		if err := utils.ValidateResourceID(input.AssignableScopeRef); err != nil {
-			logger.AddContext(err).Error("invalid account ID / client ID")
-			return nil, fmt.Errorf("invalid account ID / client ID: %w", err)
+			logger.AddContext(err).Error("invalid resource ID")
+			return nil, fmt.Errorf("invalid resource ID: %w", err)
 		}
 	}
 

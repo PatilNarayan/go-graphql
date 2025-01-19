@@ -23,14 +23,15 @@ func StringValue(s *string) string {
 func ValidateResourceID(resourceID uuid.UUID) error {
 	// Check if the resource ID exists in the database
 
-	resourceIds, err := GetResourceTypeIDs([]string{"Account", "Client"})
-	if err != nil {
-		return err
-	}
+	// resourceIds, err := GetResourceTypeIDs([]string{"Account", "Client"})
+	// if err != nil {
+	// 	return err
+	// }
 
 	var count int64
 	if err := config.DB.Model(&dto.TenantResource{}).
-		Where("resource_id = ? AND row_status = 1 AND resource_type_id IN (?)", resourceID, resourceIds).
+		// Where("resource_id = ? AND row_status = 1 AND resource_type_id IN (?)", resourceID, resourceIds).
+		Where("resource_id = ? AND row_status = 1", resourceID).
 		Count(&count).Error; err != nil {
 		return err
 	}

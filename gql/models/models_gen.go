@@ -32,12 +32,54 @@ type Resource interface {
 	GetUpdatedBy() *string
 }
 
+type Account struct {
+	ID          uuid.UUID    `json:"id"`
+	Name        string       `json:"name"`
+	CreatedAt   string       `json:"createdAt"`
+	UpdatedAt   *string      `json:"updatedAt,omitempty"`
+	CreatedBy   *string      `json:"createdBy,omitempty"`
+	UpdatedBy   *string      `json:"updatedBy,omitempty"`
+	Description *string      `json:"description,omitempty"`
+	ParentOrg   Organization `json:"parentOrg,omitempty"`
+	BillingInfo *BillingInfo `json:"billingInfo,omitempty"`
+}
+
+func (Account) IsResource()                {}
+func (this Account) GetID() uuid.UUID      { return this.ID }
+func (this Account) GetName() string       { return this.Name }
+func (this Account) GetCreatedAt() string  { return this.CreatedAt }
+func (this Account) GetUpdatedAt() *string { return this.UpdatedAt }
+func (this Account) GetCreatedBy() *string { return this.CreatedBy }
+func (this Account) GetUpdatedBy() *string { return this.UpdatedBy }
+
+func (Account) IsOrganization() {}
+
+func (this Account) GetDescription() *string    { return this.Description }
+func (this Account) GetParentOrg() Organization { return this.ParentOrg }
+
 type Address struct {
 	Street  *string `json:"street,omitempty"`
 	City    *string `json:"city,omitempty"`
 	State   *string `json:"state,omitempty"`
 	ZipCode *string `json:"zipCode,omitempty"`
 	Country *string `json:"country,omitempty"`
+}
+
+type BillingAddress struct {
+	Street  string `json:"street"`
+	City    string `json:"city"`
+	State   string `json:"state"`
+	Zipcode string `json:"zipcode"`
+	Country string `json:"country"`
+}
+
+type BillingInfo struct {
+	ID               uuid.UUID       `json:"id"`
+	CreditCardNumber string          `json:"creditCardNumber"`
+	CreditCardType   string          `json:"creditCardType"`
+	ExpirationDate   string          `json:"expirationDate"`
+	Cvv              string          `json:"cvv"`
+	BillingAddress   *BillingAddress `json:"billingAddress"`
 }
 
 type ClientOrganizationUnit struct {
@@ -77,12 +119,36 @@ type ContactInfoInput struct {
 	Address     *CreateAddressInput `json:"address,omitempty"`
 }
 
+type CreateAccountInput struct {
+	Name        string                  `json:"name"`
+	Description *string                 `json:"description,omitempty"`
+	TenantID    uuid.UUID               `json:"tenantId"`
+	ParentID    uuid.UUID               `json:"parentId"`
+	BillingInfo *CreateBillingInfoInput `json:"billingInfo,omitempty"`
+}
+
 type CreateAddressInput struct {
 	Street  *string `json:"street,omitempty"`
 	City    *string `json:"city,omitempty"`
 	State   *string `json:"state,omitempty"`
 	ZipCode *string `json:"zipCode,omitempty"`
 	Country *string `json:"country,omitempty"`
+}
+
+type CreateBillingAddressInput struct {
+	Street  string `json:"street"`
+	City    string `json:"city"`
+	State   string `json:"state"`
+	Zipcode string `json:"zipcode"`
+	Country string `json:"country"`
+}
+
+type CreateBillingInfoInput struct {
+	CreditCardNumber string                     `json:"creditCardNumber"`
+	CreditCardType   string                     `json:"creditCardType"`
+	ExpirationDate   string                     `json:"expirationDate"`
+	Cvv              string                     `json:"cvv"`
+	BillingAddress   *CreateBillingAddressInput `json:"billingAddress"`
 }
 
 type CreateClientOrganizationUnitInput struct {
@@ -93,9 +159,9 @@ type CreateClientOrganizationUnitInput struct {
 }
 
 type CreatePermission struct {
-	Name      string  `json:"name"`
-	ServiceID *string `json:"serviceId,omitempty"`
-	Action    *string `json:"action,omitempty"`
+	Name      string    `json:"name"`
+	ServiceID uuid.UUID `json:"serviceId"`
+	Action    string    `json:"action"`
 }
 
 type CreateRoleInput struct {
@@ -115,7 +181,7 @@ type CreateRootInput struct {
 type CreateTenantInput struct {
 	Name        string            `json:"name"`
 	Description *string           `json:"description,omitempty"`
-	ParentOrgID uuid.UUID         `json:"parentOrgId"`
+	ParentOrgID string            `json:"parentOrgId"`
 	ContactInfo *ContactInfoInput `json:"contactInfo,omitempty"`
 }
 
@@ -201,12 +267,39 @@ func (Tenant) IsOrganization() {}
 func (this Tenant) GetDescription() *string    { return this.Description }
 func (this Tenant) GetParentOrg() Organization { return this.ParentOrg }
 
+type UpdateAccountInput struct {
+	ID          uuid.UUID               `json:"id"`
+	Name        *string                 `json:"name,omitempty"`
+	Description *string                 `json:"description,omitempty"`
+	TenantID    *uuid.UUID              `json:"tenantId,omitempty"`
+	ParentID    *uuid.UUID              `json:"parentId,omitempty"`
+	BillingInfo *UpdateBillingInfoInput `json:"billingInfo,omitempty"`
+}
+
 type UpdateAddressInput struct {
 	Street  *string `json:"street,omitempty"`
 	City    *string `json:"city,omitempty"`
 	State   *string `json:"state,omitempty"`
 	ZipCode *string `json:"zipCode,omitempty"`
 	Country *string `json:"country,omitempty"`
+}
+
+type UpdateBillingAddressInput struct {
+	BillingInfoID uuid.UUID `json:"billingInfoId"`
+	Street        *string   `json:"street,omitempty"`
+	City          *string   `json:"city,omitempty"`
+	State         *string   `json:"state,omitempty"`
+	Zipcode       *string   `json:"zipcode,omitempty"`
+	Country       *string   `json:"country,omitempty"`
+}
+
+type UpdateBillingInfoInput struct {
+	ID               uuid.UUID                  `json:"id"`
+	CreditCardNumber string                     `json:"creditCardNumber"`
+	CreditCardType   string                     `json:"creditCardType"`
+	ExpirationDate   string                     `json:"expirationDate"`
+	Cvv              string                     `json:"cvv"`
+	BillingAddress   *UpdateBillingAddressInput `json:"billingAddress"`
 }
 
 type UpdateClientOrganizationUnitInput struct {
@@ -218,10 +311,10 @@ type UpdateClientOrganizationUnitInput struct {
 }
 
 type UpdatePermission struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	ServiceID *string   `json:"serviceId,omitempty"`
-	Action    *string   `json:"action,omitempty"`
+	ID        uuid.UUID  `json:"id"`
+	Name      string     `json:"name"`
+	ServiceID *uuid.UUID `json:"serviceId,omitempty"`
+	Action    *string    `json:"action,omitempty"`
 }
 
 type UpdateRoleInput struct {
@@ -244,7 +337,7 @@ type UpdateTenantInput struct {
 	ID          uuid.UUID         `json:"id"`
 	Name        *string           `json:"name,omitempty"`
 	Description *string           `json:"description,omitempty"`
-	ParentOrgID uuid.UUID         `json:"parentOrgId"`
+	ParentOrgID *string           `json:"parentOrgId,omitempty"`
 	ContactInfo *ContactInfoInput `json:"contactInfo,omitempty"`
 }
 

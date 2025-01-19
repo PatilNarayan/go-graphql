@@ -60,12 +60,12 @@ func (r *PermissionMutationResolver) CreatePermission(ctx context.Context, input
 	// 	}
 	// }
 
-	if input.ServiceID == nil {
+	if input.ServiceID == uuid.Nil {
 		logger.Log.Error("Service ID is required for creating permission")
 		return nil, errors.New("service ID is required")
 	}
 
-	if input.Action == nil {
+	if input.Action == "" {
 		logger.Log.Error("Action is required for creating permission")
 		return nil, errors.New("action is required")
 	}
@@ -83,8 +83,8 @@ func (r *PermissionMutationResolver) CreatePermission(ctx context.Context, input
 	permission := &dto.TNTPermission{
 		PermissionID: uuid.New(),
 		Name:         input.Name,
-		ServiceID:    *input.ServiceID,
-		Action:       *input.Action,
+		ServiceID:    input.ServiceID.String(),
+		Action:       input.Action,
 		RowStatus:    1,
 		// RoleID:       *input.RoleID,
 		CreatedBy: constants.DefaltCreatedBy,
@@ -151,7 +151,7 @@ func (r *PermissionMutationResolver) UpdatePermission(ctx context.Context, input
 	// }
 
 	permission.Name = input.Name
-	permission.ServiceID = *input.ServiceID
+	permission.ServiceID = input.ServiceID.String()
 	permission.Action = *input.Action
 	// permission.RoleID = *input.RoleID
 	permission.UpdatedAt = time.Now()

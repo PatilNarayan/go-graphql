@@ -22,8 +22,16 @@ type RoleQueryResolver struct {
 }
 
 // Roles resolves the list of all roles.
-func (r *RoleQueryResolver) AllRoles(ctx context.Context) ([]*models.Role, error) {
+func (r *RoleQueryResolver) AllRoles(ctx context.Context, id uuid.UUID) ([]*models.Role, error) {
 	logger.Log.Info("Fetching all roles")
+
+	if id != uuid.Nil {
+		res, err := r.GetAllRolesForAssignableScopeRef(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		return res, nil
+	}
 
 	var roles []dto.TNTRole
 	if err := r.DB.Find(&roles).Error; err != nil {

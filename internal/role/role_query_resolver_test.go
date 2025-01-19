@@ -90,7 +90,7 @@ func TestAllRoles(t *testing.T) {
 	db.Create(&mstRole)
 
 	t.Run("Successfully fetch all roles", func(t *testing.T) {
-		roles, err := resolver.AllRoles(ctx)
+		roles, err := resolver.AllRoles(ctx, uuid.Nil)
 		assert.NoError(t, err)
 		assert.NotNil(t, roles)
 		assert.Equal(t, 2, len(roles)) // 1 TNT role + 1 MST role

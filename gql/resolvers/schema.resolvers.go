@@ -74,13 +74,8 @@ func (r *queryResolver) GetRole(ctx context.Context, id uuid.UUID) (*models.Role
 }
 
 // AllRoles is the resolver for the allRoles field.
-func (r *queryResolver) AllRoles(ctx context.Context) ([]*models.Role, error) {
+func (r *queryResolver) AllRoles(ctx context.Context, id uuid.UUID) ([]*models.Role, error) {
 	panic(fmt.Errorf("not implemented: AllRoles - allRoles"))
-}
-
-// GetAllRolesForAssignableScopeRef is the resolver for the getAllRolesForAssignableScopeRef field.
-func (r *queryResolver) GetAllRolesForAssignableScopeRef(ctx context.Context, id uuid.UUID) ([]*models.Role, error) {
-	panic(fmt.Errorf("not implemented: GetAllRolesForAssignableScopeRef - getAllRolesForAssignableScopeRef"))
 }
 
 // GetAllPermissions is the resolver for the getAllPermissions field.
@@ -101,3 +96,15 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func (r *queryResolver) GetAllRolesForAssignableScopeRef(ctx context.Context, id uuid.UUID) ([]*models.Role, error) {
+	panic(fmt.Errorf("not implemented: GetAllRolesForAssignableScopeRef - getAllRolesForAssignableScopeRef"))
+}
+*/

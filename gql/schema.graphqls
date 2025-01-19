@@ -1,6 +1,7 @@
 scalar Date
 scalar UUID
 
+
 interface Resource {
   id: UUID!
   name: String!
@@ -9,6 +10,7 @@ interface Resource {
   createdBy: String
   updatedBy: String
 }
+
 
 interface Organization {
   id: UUID!
@@ -21,6 +23,7 @@ interface Organization {
   updatedBy: String
 }
 
+
 type Root implements Resource & Organization {
   id: UUID!
   name: String!
@@ -32,10 +35,12 @@ type Root implements Resource & Organization {
   updatedBy: String
 }
 
+
 input CreateRootInput {
   name: String!
   description: String
 }
+
 
 input UpdateRootInput {
   id: UUID!
@@ -43,11 +48,101 @@ input UpdateRootInput {
   description: String
 }
 
+
+type Account implements Resource & Organization {
+  id: UUID!
+  name: String!
+  createdAt: String!
+  updatedAt: String
+  createdBy: String
+  updatedBy: String
+  description: String
+  parentOrg : Organization
+  billingInfo: BillingInfo
+}
+
+
+input CreateAccountInput {
+  name: String!
+  description: String
+  tenantId: UUID!
+  parentId: UUID!
+  billingInfo: CreateBillingInfoInput
+}
+
+
+input UpdateAccountInput {
+  id: UUID!
+  name: String
+  description: String
+  tenantId: UUID
+  parentId: UUID
+  billingInfo: UpdateBillingInfoInput
+}
+
+
+type BillingInfo {
+  id: UUID!
+  creditCardNumber: String!
+  creditCardType: String!
+  expirationDate: String!
+  cvv: String!
+  billingAddress: BillingAddress!
+}
+
+
+input CreateBillingInfoInput {
+  creditCardNumber: String!
+  creditCardType: String!
+  expirationDate: String!
+  cvv: String!
+  billingAddress: CreateBillingAddressInput!
+}
+
+
+input UpdateBillingInfoInput {
+  id: UUID!
+  creditCardNumber: String!
+  creditCardType: String!
+  expirationDate: String!
+  cvv: String!
+  billingAddress: UpdateBillingAddressInput!
+}
+
+
+type BillingAddress {
+  street: String!
+  city: String!
+  state: String!
+  zipcode: String!
+  country: String!
+}
+
+
+input CreateBillingAddressInput {
+  street: String!
+  city: String!
+  state: String!
+  zipcode: String!
+  country: String!
+}
+
+
+input UpdateBillingAddressInput {
+  billingInfoId: UUID!  
+  street: String
+  city: String
+  state: String
+  zipcode: String
+  country: String
+}
+
+
 type Tenant implements Resource & Organization {
   id: UUID!
   name: String!
   description: String
-  parentOrg: Organization! 
+  parentOrg: Organization!
   contactInfo: ContactInfo
   createdAt: String!
   updatedAt: String
@@ -55,11 +150,13 @@ type Tenant implements Resource & Organization {
   updatedBy: String
 }
 
+
 type ContactInfo {
   email: String
   phoneNumber: String
   address: Address
 }
+
 
 input ContactInfoInput {
   email: String
@@ -67,23 +164,23 @@ input ContactInfoInput {
   address: CreateAddressInput
 }
 
+
 input CreateTenantInput {
   name: String!
   description: String
-  parentOrgId: UUID!
+  parentOrgId: String!
   contactInfo: ContactInfoInput
-  # createdBy: String!
 }
+
 
 input UpdateTenantInput {
   id: UUID!
   name: String
   description: String
-  parentOrgId: UUID!
+  parentOrgId: String
   contactInfo: ContactInfoInput
-  # updatedBy: String!
+ 
 }
-
 type Address {
   street: String
   city: String
@@ -91,6 +188,7 @@ type Address {
   zipCode: String
   country: String
 }
+
 
 input CreateAddressInput {
   street: String
@@ -100,6 +198,7 @@ input CreateAddressInput {
   country: String
 }
 
+
 input UpdateAddressInput {
   street: String
   city: String
@@ -107,6 +206,7 @@ input UpdateAddressInput {
   zipCode: String
   country: String
 }
+
 
 type ClientOrganizationUnit implements Resource & Organization {
   id: UUID!
@@ -120,12 +220,14 @@ type ClientOrganizationUnit implements Resource & Organization {
   updatedBy: String
 }
 
+
 input CreateClientOrganizationUnitInput {
   name: String!
   description: String
   tenantId: String!
   parentOrgId: String!
 }
+
 
 input UpdateClientOrganizationUnitInput {
   id: UUID!
@@ -135,10 +237,12 @@ input UpdateClientOrganizationUnitInput {
   parentOrgId: String
 }
 
+
 enum RoleTypeEnum {
   DEFAULT
   CUSTOM
 }
+
 
 type Role implements Resource {
   id: UUID!
@@ -154,6 +258,7 @@ type Role implements Resource {
   updatedBy: String
 }
 
+
 input CreateRoleInput {
   name: String!
   version: String!
@@ -161,9 +266,10 @@ input CreateRoleInput {
   permissions: [String!]!
   roleType: RoleTypeEnum!
   assignableScopeRef: UUID!
-  # createdBy: String!
-  # updatedBy: String
+
+
 }
+
 
 input UpdateRoleInput {
   id: UUID!
@@ -173,16 +279,15 @@ input UpdateRoleInput {
   permissions: [String!]!
   roleType: RoleTypeEnum!
   assignableScopeRef: UUID!
-  # createdBy: String!
-  # updatedBy: String
+ 
 }
+
 
 
 type Permission {
   id: UUID!
   name: String!
   serviceId: String
-  # roleId: UUID
   action: String
   createdAt: String
   createdBy: String!
@@ -190,91 +295,77 @@ type Permission {
   updatedBy: String
 }
 
+
 input CreatePermission {
   name: String!
-  # roleId: UUID
-  serviceId: String
-  action: String
-  # createdBy: String
-  # updatedBy: String!
+  serviceId: UUID!
+  action: String!
+
+
 }
+
 
 input UpdatePermission {
   id: UUID!
   name: String!
-  # roleId: UUID
-  serviceId: String
+  serviceId: UUID
   action: String
-  # updatedBy: String!
+  
 } 
 
-# type Role implements Resource {
-#   id: String!
-#   name: String!
-#   version: String!
-#   description: String
-#   permissions: [Permission!]!
-#   roleType: RoleTypeEnum!
-#   assignableScope: Resource!
-# }
-
-# input CreateRoleInput {
-#   name: String!
-#   version: String!
-#   description: String
-#   permissions: [String!]!
-#   roleType: RoleTypeEnum!
-#   assignableScopeRef: String!
-# }
-
-# input UpdateRoleInput {
-#   id: String!
-#   name: String
-#   version: String!
-#   description: String
-#   permissions: [String!]
-#   roleType: RoleTypeEnum
-#   scopeId: String
-# }
 type Query {
   # getOrganization(id: UUID!): Organization
   # allOrganizations: [Organization!]!
 
+
   # getResource(id: UUID!): Resource
   # allResources: [Resource!]!
 
+
   # getRoot(id: UUID!): Root
+
 
   getTenant(id: UUID!): Tenant
   allTenants: [Tenant]
 
+
   getRole(id: UUID!): Role
-  allRoles: [Role!]!
-  getAllRolesForAssignableScopeRef(id: UUID!): [Role!]!
+  allRoles(id: UUID!): [Role!]!
+
 
   getAllPermissions:[Permission]
   getPermission(id: UUID!):Permission
 
+
   # getClientOrganizationUnit(id: UUID!): ClientOrganizationUnit
   # allClientOrganizationUnits: [ClientOrganizationUnit!]!
+
+
+  # getAccount(id: UUID!): Account
+  # allAccounts: [Account!]!
 }
+
 
 type Mutation {
   # createRoot(input: CreateRootInput!): Root!
   # updateRoot(input: UpdateRootInput!): Root!
   # deleteRoot(id: UUID!): Boolean!
 
+
   createTenant(input: CreateTenantInput!): Tenant!
   updateTenant(input: UpdateTenantInput!): Tenant!
   deleteTenant(id: UUID!): Boolean!
+
 
   createRole(input: CreateRoleInput!): Role!
   updateRole(input: UpdateRoleInput!): Role!
   deleteRole(id: UUID!): Boolean!
 
+
   createPermission(input: CreatePermission) : Permission
   deletePermission(id: UUID!): Boolean!
   updatePermission(input: UpdatePermission) : Permission
+
 
   # createClientOrganizationUnit(
   #   input: CreateClientOrganizationUnitInput!
@@ -283,4 +374,9 @@ type Mutation {
   #   input: UpdateClientOrganizationUnitInput!
   # ): ClientOrganizationUnit!
   # deleteClientOrganizationUnit(id: UUID!): Boolean!
+
+
+  # createAccount(input: CreateAccountInput!): Account!
+  # updateAccount(input: UpdateAccountInput!): Account!
+  # deleteAccount(id: UUID!): Boolean!
 }

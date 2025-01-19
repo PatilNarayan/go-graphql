@@ -43,7 +43,7 @@ func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 	}
 	tenantResource.ResourceTypeID = resourceType.ResourceTypeID
 
-	if input.ParentOrgID != uuid.Nil {
+	if input.ParentOrgID != "" {
 		// Validate ParentOrgID
 		resourceTypeId, err := utils.GetResourceTypeIDs([]string{"Root"})
 		if err != nil {
@@ -58,7 +58,8 @@ func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 			log.WithError(err).Error("Failed to find parent organization")
 			return nil, fmt.Errorf("parent organization not found: %w", err)
 		}
-		tenantResource.ParentResourceID = &input.ParentOrgID
+		pid := uuid.MustParse(input.ParentOrgID)
+		tenantResource.ParentResourceID = &pid
 		log.WithField("parentOrgID", input.ParentOrgID).Info("Parent organization validated")
 	} else {
 		return nil, errors.New("parent organization ID is required")
@@ -148,7 +149,7 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 	if input.Name != nil && *input.Name != "" {
 		tenantResource.Name = *input.Name
 	}
-	if input.ParentOrgID != uuid.Nil {
+	if input.ParentOrgID != nil {
 		resourceTypeId, err := utils.GetResourceTypeIDs([]string{"Root"})
 		if err != nil {
 			log.WithError(err).Error("Failed to get resource type IDs")
