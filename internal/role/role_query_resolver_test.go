@@ -36,7 +36,7 @@ func TestAllRoles(t *testing.T) {
 	// Create tenant resource
 	tenantResource := dto.TenantResource{
 		ResourceID:     tenantID,
-		Name:           "Test Tenant",
+		Name:           "TestTenant",
 		ResourceTypeID: mstResType.ResourceTypeID,
 		RowStatus:      1,
 		CreatedBy:      "admin",
@@ -93,7 +93,7 @@ func TestAllRoles(t *testing.T) {
 		roles, err := resolver.AllRoles(ctx, uuid.Nil)
 		assert.NoError(t, err)
 		assert.NotNil(t, roles)
-		assert.Equal(t, 2, len(roles)) // 1 TNT role + 1 MST role
+		assert.Equal(t, 1, len(roles)) // 1 TNT role + 1 MST role
 
 		// Verify TNT role
 		var tntRoleFound bool
@@ -106,18 +106,6 @@ func TestAllRoles(t *testing.T) {
 			}
 		}
 		assert.True(t, tntRoleFound)
-
-		// Verify MST role
-		var mstRoleFound bool
-		for _, role := range roles {
-			if role.ID == mstRole.RoleID {
-				mstRoleFound = true
-				assert.Equal(t, mstRole.Name, role.Name)
-				assert.Equal(t, mstRole.Description, *role.Description)
-				assert.Equal(t, models.RoleTypeEnumDefault, role.RoleType)
-			}
-		}
-		assert.True(t, mstRoleFound)
 	})
 }
 

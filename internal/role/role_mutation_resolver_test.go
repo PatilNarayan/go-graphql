@@ -6,11 +6,14 @@ import (
 	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
 	"go_graphql/logger"
+	"net/http"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/glebarez/sqlite"
 	"github.com/google/uuid"
+	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/thriftrw/ptr"
 	"gorm.io/gorm"
@@ -30,12 +33,44 @@ func setupTestDB() *gorm.DB {
 	return db
 }
 
+func TestMain(m *testing.M) {
+	logger.InitLogger()
+	//set environment variables
+	os.Setenv("PERMIT_PROJECT", "test")
+	os.Setenv("PERMIT_ENV", "test")
+	os.Setenv("PERMIT_TOKEN", "test")
+	os.Setenv("PERMIT_PDP_ENDPOINT", "https://localhost:8080")
+
+	m.Run()
+}
+
 func TestCreateRole(t *testing.T) {
 	logger.InitLogger()
 	db := setupTestDB()
 	ctx := context.Background()
 	config.DB = db
 	resolver := &RoleMutationResolver{DB: db}
+
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	// Default responder for unmatched requests
+	httpmock.RegisterNoResponder(httpmock.NewStringResponder(500, `{"error": "unmocked request"}`))
+
+	// Register the mock responder for the API endpoint
+	httpmock.RegisterResponder("POST", "https://localhost:8080/v2/schema/test/test/resources/Existing%20Tenant/roles",
+		func(req *http.Request) (*http.Response, error) {
+			resp := httpmock.NewStringResponse(200, `
+				{
+					"key": "Role_123",
+					"name": "Role",
+					"status": "success"
+				}
+				`)
+			resp.Header.Add("Content-Type", "application/json")
+			return resp, nil
+		},
+	)
 
 	// Seed initial data
 	mstResType := dto.Mst_ResourceTypes{
@@ -64,7 +99,7 @@ func TestCreateRole(t *testing.T) {
 
 	t.Run("Valid Input", func(t *testing.T) {
 		input := models.CreateRoleInput{
-			Name:               "Admin Role",
+			Name:               "AdminRole",
 			Description:        ptr.String("Admin Description"),
 			AssignableScopeRef: tenantID,
 			RoleType:           "CUSTOM",
@@ -99,14 +134,14 @@ func TestCreateRole(t *testing.T) {
 
 	t.Run("Missing Tenant ID", func(t *testing.T) {
 		input := models.CreateRoleInput{
-			Name:        "Test Role",
+			Name:        "TestRole",
 			Permissions: []string{},
 		}
 
 		role, err := resolver.CreateRole(ctx, input)
 		assert.Error(t, err)
 		assert.Nil(t, role)
-		assert.Equal(t, "Tenant ID is required", err.Error())
+		assert.Equal(t, "resource ID is required", err.Error())
 	})
 
 }
