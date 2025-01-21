@@ -54,11 +54,8 @@ func TestCreateRole(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	// Default responder for unmatched requests
-	httpmock.RegisterNoResponder(httpmock.NewStringResponder(500, `{"error": "unmocked request"}`))
-
 	// Register the mock responder for the API endpoint
-	httpmock.RegisterResponder("POST", "https://localhost:8080/v2/schema/test/test/resources/Existing%20Tenant/roles",
+	httpmock.RegisterResponder("POST", "https://localhost:8080/v2/schema/test/test/roles",
 		func(req *http.Request) (*http.Response, error) {
 			resp := httpmock.NewStringResponse(200, `
 				{
@@ -203,7 +200,7 @@ func TestUpdateRole(t *testing.T) {
 
 	role := dto.TNTRole{
 		ResourceID: roleID,
-		Name:       "Existing Role",
+		Name:       "ExistingRole",
 		RoleType:   "CUSTOM",
 		Version:    "1.0",
 		CreatedBy:  "admin",
@@ -212,6 +209,40 @@ func TestUpdateRole(t *testing.T) {
 		UpdatedAt:  time.Now(),
 	}
 	db.Create(&role)
+
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	// Register the mock responder for the API endpoint
+	httpmock.RegisterResponder("GET", "https://localhost:8080/v2/schema/test/test/roles",
+		func(req *http.Request) (*http.Response, error) {
+			resp := httpmock.NewStringResponse(200, `
+				[
+					{
+						"id": "12345678-1234-1234-1234-123456789012",
+						"name": "ExistingRole"
+					}						
+				]
+				`)
+			resp.Header.Add("Content-Type", "application/json")
+			return resp, nil
+		},
+	)
+	// Register the mock responder for the API endpoint
+	httpmock.RegisterResponder("PATCH", "https://localhost:8080/v2/schema/test/test/roles/12345678-1234-1234-1234-123456789012",
+		func(req *http.Request) (*http.Response, error) {
+			resp := httpmock.NewStringResponse(200, `
+				[
+					{
+						"id": "12345678-1234-1234-1234-123456789012",
+						"name": "ExistingRole"
+					}						
+				]
+				`)
+			resp.Header.Add("Content-Type", "application/json")
+			return resp, nil
+		},
+	)
 	t.Run("Valid Update", func(t *testing.T) {
 		input := models.UpdateRoleInput{
 			ID:                 roleID,
@@ -292,6 +323,41 @@ func TestDeleteRole(t *testing.T) {
 	db.Create(&mstResType)
 	db.Create(&mstResTypeTenant)
 
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	// Register the mock responder for the API endpoint
+	httpmock.RegisterResponder("GET", "https://localhost:8080/v2/schema/test/test/roles",
+		func(req *http.Request) (*http.Response, error) {
+			resp := httpmock.NewStringResponse(200, `
+				[
+					{
+						"id": "12345678-1234-1234-1234-123456789012",
+						"name": "ExistingRole"
+					}						
+				]
+				`)
+			resp.Header.Add("Content-Type", "application/json")
+			return resp, nil
+		},
+	)
+
+	// Register the mock responder for the API endpoint
+	httpmock.RegisterResponder("DELETE", "https://localhost:8080/v2/schema/test/test/roles/12345678-1234-1234-1234-123456789012",
+		func(req *http.Request) (*http.Response, error) {
+			resp := httpmock.NewStringResponse(200, `
+				[
+					{
+						"id": "12345678-1234-1234-1234-123456789012",
+						"name": "ExistingRole"
+					}						
+				]
+				`)
+			resp.Header.Add("Content-Type", "application/json")
+			return resp, nil
+		},
+	)
+
 	tenantID := uuid.New()
 	existingTenant := dto.TenantResource{
 		ResourceID:     tenantID,
@@ -319,7 +385,7 @@ func TestDeleteRole(t *testing.T) {
 
 	role := dto.TNTRole{
 		ResourceID: roleID,
-		Name:       "Existing Role",
+		Name:       "ExistingRole",
 		RoleType:   "CUSTOM",
 		Version:    "1.0",
 		CreatedBy:  "admin",

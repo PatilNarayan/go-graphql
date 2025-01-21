@@ -40,8 +40,8 @@ func NewPermitClient() *PermitClient {
 }
 
 // sendRequest sends an HTTP request and handles retries.
-func (pc *PermitClient) sendRequest(ctx context.Context, method, endpoint string, payload interface{}) (map[string]interface{}, error) {
-	var result map[string]interface{}
+func (pc *PermitClient) sendRequest(ctx context.Context, method, endpoint string, payload interface{}) (interface{}, error) {
+	var result interface{}
 
 	operation := func() error {
 		// Serialize payload to JSON
@@ -142,6 +142,6 @@ func (pc *PermitClient) sendRequest(ctx context.Context, method, endpoint string
 // 	return pc.sendRequest(ctx, "PATCH", fmt.Sprintf("tenants/%s", tenantID), map[string]interface{}{"name": tenantName})
 // }
 
-func (pc *PermitClient) APIExecute(ctx context.Context, method, endpoint string, payload interface{}) (map[string]interface{}, error) {
+func (pc *PermitClient) APIExecute(ctx context.Context, method, endpoint string, payload interface{}) (interface{}, error) {
 	return pc.sendRequest(ctx, method, endpoint, payload)
 }

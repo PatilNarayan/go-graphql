@@ -115,3 +115,16 @@ func ValidateName(name string) error {
 	}
 	return nil
 }
+
+func GetPermissionAction(permissionsIds []string) ([]string, error) {
+	var actions []string
+	//validate permissionIds
+	for _, permissionID := range permissionsIds {
+		var data dto.TNTPermission
+		if err := config.DB.Model(&dto.TNTPermission{}).Where("permission_id = ?", permissionID).First(&data).Error; err != nil {
+			return nil, err
+		}
+		actions = append(actions, data.Action)
+	}
+	return actions, nil
+}

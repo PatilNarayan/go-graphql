@@ -65,12 +65,33 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 		return nil, fmt.Errorf("invalid TenantID")
 	}
 
-	//create role in permit
-	pc := permit.NewPermitClient()
-	_, err := pc.APIExecute(ctx, "POST", fmt.Sprintf("resources/%s/roles", assignableScopeRef.Name), map[string]interface{}{
+	permitMap := make(map[string]interface{})
+
+	permitMap = map[string]interface{}{
 		"name": input.Name,
 		"key":  input.Name,
-	})
+	}
+
+	if input.Description != nil {
+		permitMap["description"] = *input.Description
+	}
+
+	// if input.Permissions != nil {
+	// 	actions, err := utils.GetPermissionAction(input.Permissions)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	permissions := make([]string, 0)
+	// 	for _, action := range actions {
+	// 		action = "document:" + action
+	// 		permissions = append(permissions, action)
+	// 	}
+	// 	permitMap["permissions"] = permissions
+	// }
+
+	//create role in permit
+	pc := permit.NewPermitClient()
+	_, err := pc.APIExecute(ctx, "POST", "roles", permitMap)
 
 	if err != nil {
 		return nil, err
@@ -145,10 +166,13 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 	logger.Log.Infof("Starting UpdateRole for ID: %s", input.ID)
 
 	var role dto.TNTRole
+	var oldROleName string
 	if err := r.DB.First(&role, "resource_id = ?", input.ID).Error; err != nil {
 		logger.AddContext(err).Warn("Role not found")
 		return nil, errors.New("role not found")
 	}
+
+	oldROleName = role.Name
 
 	// Update fields
 	if input.Name != "" {
@@ -176,6 +200,49 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 			logger.AddContext(err).Error("Role already exists")
 			return nil, fmt.Errorf("role already exists")
 		}
+	}
+
+	permitMap := make(map[string]interface{})
+
+	permitMap = map[string]interface{}{
+		"name": input.Name,
+	}
+
+	if input.Description != nil {
+		permitMap["description"] = *input.Description
+	}
+
+	// if input.Permissions != nil {
+	// 	actions, err := utils.GetPermissionAction(input.Permissions)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	permissions := make([]string, len(actions))
+	// 	for _, action := range actions {
+	// 		action = "document:" + action
+	// 		permissions = append(permissions, action)
+	// 	}
+	// 	permitMap["permissions"] = permissions
+	// }
+
+	//create role in permit
+	pc := permit.NewPermitClient()
+	var id interface{}
+	if data, err := pc.APIExecute(ctx, "GET", "roles", nil); err != nil {
+		return nil, err
+	} else {
+		data := data.([]interface{})
+		for _, v := range data {
+			v := v.(map[string]interface{})
+			if v["name"] == oldROleName {
+				id = v["id"]
+				break
+			}
+		}
+	}
+
+	if _, err := pc.APIExecute(ctx, "PATCH", fmt.Sprintf("roles/%s", id), permitMap); err != nil {
+		return nil, err
 	}
 
 	logger.Log.Infof("Updating role in database for ID: %s", input.ID)
@@ -263,8 +330,27 @@ func (r *RoleMutationResolver) DeleteRole(ctx context.Context, id uuid.UUID) (bo
 	}
 
 	updates := map[string]interface{}{
-		"deleted_at": gorm.DeletedAt{Time: time.Now(), Valid: true},
+		// "deleted_at": gorm.DeletedAt{Time: time.Now(), Valid: true},
 		"row_status": 0,
+	}
+
+	pc := permit.NewPermitClient()
+	var pid interface{}
+	if data, err := pc.APIExecute(ctx, "GET", "roles", nil); err != nil {
+		return false, err
+	} else {
+		data := data.([]interface{})
+		for _, v := range data {
+			v := v.(map[string]interface{})
+			if v["name"] == roleDB.Name {
+				pid = v["id"]
+				break
+			}
+		}
+	}
+
+	if _, err := pc.APIExecute(ctx, "DELETE", fmt.Sprintf("roles/%s", pid), nil); err != nil {
+		return false, err
 	}
 
 	logger.Log.Infof("Marking role as deleted for ID: %s", id)
