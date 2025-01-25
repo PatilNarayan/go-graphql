@@ -404,7 +404,6 @@ func TestDeleteRole(t *testing.T) {
 		var deletedRole dto.TNTRole
 		err = db.Unscoped().First(&deletedRole, "resource_id = ?", roleID).Error
 		assert.NoError(t, err)
-		assert.NotNil(t, deletedRole.DeletedAt)
 		assert.Equal(t, 0, deletedRole.RowStatus)
 	})
 

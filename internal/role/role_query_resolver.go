@@ -161,18 +161,19 @@ func convertRoleToGraphQL(role *dto.TNTRole) *models.Role {
 	// permissions = append(permissions, mstPermissions...)
 	res.Permissions = permissions
 
-	var childResource, ParentResource dto.TenantResource
+	var childResource dto.TenantResource
 	if err := config.DB.Where(&dto.TenantResource{ResourceID: role.ResourceID}).First(&childResource).Error; err != nil {
 		logger.AddContext(err).Error("Failed to fetch parent resource")
 		return nil
 	}
-	if err := config.DB.Where(&dto.TenantResource{ResourceID: *childResource.TenantID}).First(&ParentResource).Error; err != nil {
+	var ParentResource dto.Mst_ResourceTypes
+	if err := config.DB.Where(&dto.Mst_ResourceTypes{ResourceTypeID: *childResource.ParentResourceID}).First(&ParentResource).Error; err != nil {
 		logger.AddContext(err).Error("Failed to fetch parent resource")
 		return nil
 	}
 
 	res.AssignableScope = &models.Root{
-		ID:        ParentResource.ResourceID,
+		ID:        ParentResource.ResourceTypeID,
 		Name:      ParentResource.Name,
 		CreatedAt: ParentResource.CreatedAt.String(),
 		UpdatedAt: ptr.String(ParentResource.UpdatedAt.String()),
