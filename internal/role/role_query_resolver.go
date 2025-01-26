@@ -34,7 +34,7 @@ func (r *RoleQueryResolver) AllRoles(ctx context.Context, id uuid.UUID) ([]*mode
 	}
 
 	var roles []dto.TNTRole
-	if err := r.DB.Find(&roles).Error; err != nil {
+	if err := r.DB.Where("row_status = ?", 1).Find(&roles).Error; err != nil {
 		logger.AddContext(err).Error("Failed to fetch roles from the database")
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (r *RoleQueryResolver) GetRole(ctx context.Context, id uuid.UUID) (*models.
 	logger.Log.Infof("Fetching role with ID: %s", id)
 
 	var role dto.TNTRole
-	if err := r.DB.First(&role, "resource_id = ?", id).Error; err != nil {
+	if err := r.DB.First(&role, "resource_id = ? AND row_status = 1", id).Error; err != nil {
 		logger.AddContext(err).Warnf("Role with ID %s not found", id)
 		return nil, errors.New("role not found")
 	}
@@ -105,7 +105,7 @@ func (r *RoleQueryResolver) GetAllRolesForAssignableScopeRef(ctx context.Context
 	}
 
 	var roles []dto.TNTRole
-	if err := r.DB.Where("resource_id IN (?)", roleIds).Find(&roles).Error; err != nil {
+	if err := r.DB.Where("resource_id IN (?) AND row_status = 1", roleIds).Find(&roles).Error; err != nil {
 		logger.AddContext(err).Error("Failed to fetch roles from the database")
 		return nil, fmt.Errorf("failed to fetch roles: %w", err)
 	}
@@ -162,12 +162,12 @@ func convertRoleToGraphQL(role *dto.TNTRole) *models.Role {
 	res.Permissions = permissions
 
 	var childResource dto.TenantResource
-	if err := config.DB.Where(&dto.TenantResource{ResourceID: role.ResourceID}).First(&childResource).Error; err != nil {
+	if err := config.DB.Where(&dto.TenantResource{ResourceID: role.ResourceID, RowStatus: 1}).First(&childResource).Error; err != nil {
 		logger.AddContext(err).Error("Failed to fetch parent resource")
 		return nil
 	}
 	var ParentResource dto.Mst_ResourceTypes
-	if err := config.DB.Where(&dto.Mst_ResourceTypes{ResourceTypeID: *childResource.ParentResourceID}).First(&ParentResource).Error; err != nil {
+	if err := config.DB.Where(&dto.Mst_ResourceTypes{ResourceTypeID: *childResource.ParentResourceID, RowStatus: 1}).First(&ParentResource).Error; err != nil {
 		logger.AddContext(err).Error("Failed to fetch parent resource")
 		return nil
 	}
@@ -189,7 +189,7 @@ func GetRolePermissions(id uuid.UUID) ([]*models.Permission, error) {
 	logger.Log.Infof("Fetching role permissions for role ID: %s", id)
 
 	var rolePermissions []dto.TNTRolePermission
-	if err := config.DB.Where("role_id = ?", id).Find(&rolePermissions).Error; err != nil {
+	if err := config.DB.Where("role_id = ? AND row_status = 1", id).Find(&rolePermissions).Error; err != nil {
 		logger.AddContext(err).Error("Failed to fetch role permissions from the database")
 		return nil, err
 	}
@@ -204,7 +204,7 @@ func GetRolePermissions(id uuid.UUID) ([]*models.Permission, error) {
 	}
 
 	var permissions []dto.TNTPermission
-	if err := config.DB.Where("permission_id in (?)", permissionIDs).Find(&permissions).Error; err != nil {
+	if err := config.DB.Where("permission_id in (?) AND row_status = 1", permissionIDs).Find(&permissions).Error; err != nil {
 		logger.AddContext(err).Error("Failed to fetch permissions from the database")
 		return nil, err
 	}
@@ -231,7 +231,7 @@ func GetMSTRolePermission(id uuid.UUID) ([]*models.Permission, error) {
 	logger.Log.Infof("Fetching All role permissions")
 
 	var rolePermissions []dto.MstRolePermission
-	if err := config.DB.Where("role_id = ?", id).Find(&rolePermissions).Error; err != nil {
+	if err := config.DB.Where("role_id = ? AND row_status = 1", id).Find(&rolePermissions).Error; err != nil {
 		logger.AddContext(err).Error("Failed to fetch role permissions from the database")
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func GetMSTRolePermission(id uuid.UUID) ([]*models.Permission, error) {
 	}
 
 	var permissions []dto.MstPermission
-	if err := config.DB.Where("permission_id in (?)", permissionIDs).Find(&permissions).Error; err != nil {
+	if err := config.DB.Where("permission_id in (?) AND row_status = 1", permissionIDs).Find(&permissions).Error; err != nil {
 		logger.AddContext(err).Error("Failed to fetch permissions from the database")
 		return nil, err
 	}

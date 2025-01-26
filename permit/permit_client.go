@@ -55,7 +55,7 @@ func (pc *PermitClient) sendRequest(ctx context.Context, method, endpoint string
 			body = bytes.NewBuffer(jsonData)
 		}
 
-		if strings.Contains(endpoint, "roles") {
+		if strings.Contains(endpoint, "roles") || strings.Contains(endpoint, "resources") {
 			pc.BaseURL = strings.Replace(pc.BaseURL, "facts", "schema", 1)
 		}
 		// Create HTTP request
@@ -64,6 +64,9 @@ func (pc *PermitClient) sendRequest(ctx context.Context, method, endpoint string
 			log.Printf("Failed to create HTTP request: %v", err)
 			return backoff.Permanent(err)
 		}
+
+		//add log url
+		log.Printf("permit request URL: %s", req.URL.String())
 
 		// Add headers
 		for key, value := range pc.Headers {
