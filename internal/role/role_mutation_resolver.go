@@ -172,6 +172,12 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 			return nil, tx.Error
 		}
 	}
+	if len(input.Permissions) > 0 {
+		err = SetPermission(ctx, role.Name, assignableScopeRef.Name, permission)
+		if err != nil {
+			return nil, err
+		}
+	}
 	logger.Log.Info("Role created successfully")
 	return convertRoleToGraphQL(&role), nil
 }
@@ -414,7 +420,12 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 			return nil, fmt.Errorf("failed to delete role: %w", err)
 		}
 	}
-	logger.Log.Infof("Role updated successfully for ID: %s", input.ID)
+	if len(input.Permissions) > 0 {
+		err = SetPermission(ctx, role.Name, assignableScopeRef.Name, newPermissions)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	logger.Log.Infof("Role updated successfully for ID: %s", input.ID)
 	return convertRoleToGraphQL(&role), nil
@@ -686,6 +697,21 @@ func DeleteDefaultRole(tenantID uuid.UUID) error {
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
 		logger.AddContext(err).Error("Failed to commit transaction")
+		return err
+	}
+
+	return nil
+}
+
+func SetPermission(ctx context.Context, roleName, assinableScopeName string, permissionAction []string) error {
+	pc := permit.NewPermitClient()
+
+	update := map[string]interface{}{
+		"permissions": permissionAction,
+	}
+
+	_, err := pc.APIExecute(ctx, "POST", fmt.Sprintf("resources/%s/roles/%s/permissions", assinableScopeName, roleName), update)
+	if err != nil {
 		return err
 	}
 

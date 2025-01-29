@@ -147,6 +147,12 @@ func convertRoleToGraphQL(role *dto.TNTRole) *models.Role {
 		CreatedBy:   &role.CreatedBy,
 	}
 
+	if res.RoleType == "D" {
+		res.RoleType = models.RoleTypeEnumDefault
+	} else if res.RoleType == "C" {
+		res.RoleType = models.RoleTypeEnumCustom
+	}
+
 	permissions, err := GetRolePermissions(role.ResourceID)
 	if err != nil {
 		logger.AddContext(err).Error("Failed to fetch role permissions")
