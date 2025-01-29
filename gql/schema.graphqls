@@ -1,7 +1,6 @@
 scalar Date
 scalar UUID
 
-
 interface Resource {
   id: UUID!
   name: String!
@@ -10,7 +9,6 @@ interface Resource {
   createdBy: String
   updatedBy: String
 }
-
 
 interface Organization {
   id: UUID!
@@ -23,7 +21,6 @@ interface Organization {
   updatedBy: String
 }
 
-
 type Root implements Resource & Organization {
   id: UUID!
   name: String!
@@ -35,19 +32,16 @@ type Root implements Resource & Organization {
   updatedBy: String
 }
 
-
 input CreateRootInput {
   name: String!
   description: String
 }
-
 
 input UpdateRootInput {
   id: UUID!
   name: String
   description: String
 }
-
 
 type Account implements Resource & Organization {
   id: UUID!
@@ -61,7 +55,6 @@ type Account implements Resource & Organization {
   billingInfo: BillingInfo
 }
 
-
 input CreateAccountInput {
   name: String!
   description: String
@@ -69,7 +62,6 @@ input CreateAccountInput {
   parentId: UUID!
   billingInfo: CreateBillingInfoInput
 }
-
 
 input UpdateAccountInput {
   id: UUID!
@@ -80,7 +72,6 @@ input UpdateAccountInput {
   billingInfo: UpdateBillingInfoInput
 }
 
-
 type BillingInfo {
   id: UUID!
   creditCardNumber: String!
@@ -90,7 +81,6 @@ type BillingInfo {
   billingAddress: BillingAddress!
 }
 
-
 input CreateBillingInfoInput {
   creditCardNumber: String!
   creditCardType: String!
@@ -98,7 +88,6 @@ input CreateBillingInfoInput {
   cvv: String!
   billingAddress: CreateBillingAddressInput!
 }
-
 
 input UpdateBillingInfoInput {
   id: UUID!
@@ -109,7 +98,6 @@ input UpdateBillingInfoInput {
   billingAddress: UpdateBillingAddressInput!
 }
 
-
 type BillingAddress {
   street: String!
   city: String!
@@ -117,7 +105,6 @@ type BillingAddress {
   zipcode: String!
   country: String!
 }
-
 
 input CreateBillingAddressInput {
   street: String!
@@ -127,7 +114,6 @@ input CreateBillingAddressInput {
   country: String!
 }
 
-
 input UpdateBillingAddressInput {
   billingInfoId: UUID!  
   street: String
@@ -136,7 +122,6 @@ input UpdateBillingAddressInput {
   zipcode: String
   country: String
 }
-
 
 type Tenant implements Resource & Organization {
   id: UUID!
@@ -150,13 +135,11 @@ type Tenant implements Resource & Organization {
   updatedBy: String
 }
 
-
 type ContactInfo {
   email: String
   phoneNumber: String
   address: Address
 }
-
 
 input ContactInfoInput {
   email: String
@@ -164,14 +147,12 @@ input ContactInfoInput {
   address: CreateAddressInput
 }
 
-
 input CreateTenantInput {
   name: String!
   description: String
   parentOrgId: String!
   contactInfo: ContactInfoInput
 }
-
 
 input UpdateTenantInput {
   id: UUID!
@@ -181,6 +162,7 @@ input UpdateTenantInput {
   contactInfo: ContactInfoInput
  
 }
+
 type Address {
   street: String
   city: String
@@ -188,7 +170,6 @@ type Address {
   zipCode: String
   country: String
 }
-
 
 input CreateAddressInput {
   street: String
@@ -198,7 +179,6 @@ input CreateAddressInput {
   country: String
 }
 
-
 input UpdateAddressInput {
   street: String
   city: String
@@ -206,7 +186,6 @@ input UpdateAddressInput {
   zipCode: String
   country: String
 }
-
 
 type ClientOrganizationUnit implements Resource & Organization {
   id: UUID!
@@ -220,14 +199,12 @@ type ClientOrganizationUnit implements Resource & Organization {
   updatedBy: String
 }
 
-
 input CreateClientOrganizationUnitInput {
   name: String!
   description: String
   tenantId: String!
   parentOrgId: String!
 }
-
 
 input UpdateClientOrganizationUnitInput {
   id: UUID!
@@ -237,12 +214,10 @@ input UpdateClientOrganizationUnitInput {
   parentOrgId: String
 }
 
-
 enum RoleTypeEnum {
   DEFAULT
   CUSTOM
 }
-
 
 type Role implements Resource {
   id: UUID!
@@ -258,7 +233,6 @@ type Role implements Resource {
   updatedBy: String
 }
 
-
 input CreateRoleInput {
   name: String!
   version: String!
@@ -266,8 +240,8 @@ input CreateRoleInput {
   permissions: [String!]!
   roleType: RoleTypeEnum!
   assignableScopeRef: UUID!
-}
 
+}
 
 input UpdateRoleInput {
   id: UUID!
@@ -277,7 +251,9 @@ input UpdateRoleInput {
   permissions: [String!]!
   roleType: RoleTypeEnum!
   assignableScopeRef: UUID!
+ 
 }
+
 
 type Permission {
   id: UUID!
@@ -294,69 +270,59 @@ input CreatePermission {
   name: String!
   serviceId: UUID!
   action: String!
-}
 
+}
 
 input UpdatePermission {
   id: UUID!
   name: String!
   serviceId: UUID
   action: String
+  
 } 
+
 
 type Query {
   # getOrganization(id: UUID!): Organization
   # allOrganizations: [Organization!]!
 
-
   # getResource(id: UUID!): Resource
   # allResources: [Resource!]!
 
-
   # getRoot(id: UUID!): Root
-
 
   getTenant(id: UUID!): Tenant
   allTenants: [Tenant]
 
-
   getRole(id: UUID!): Role
-  allRoles(id: UUID!): [Role!]!
-
+  allRoles(id: UUID): [Role!]!
 
   getAllPermissions:[Permission]
-  getPermission(id: UUID):Permission
+  getPermission(id: UUID!):Permission
 
-
-  # getClientOrganizationUnit(id: UUID!): ClientOrganizationUnit
-  # allClientOrganizationUnits: [ClientOrganizationUnit!]!
-
+  getClientOrganizationUnit(id: UUID!): ClientOrganizationUnit
+  allClientOrganizationUnits: [ClientOrganizationUnit!]!
 
   # getAccount(id: UUID!): Account
   # allAccounts: [Account!]!
 }
-
 
 type Mutation {
   # createRoot(input: CreateRootInput!): Root!
   # updateRoot(input: UpdateRootInput!): Root!
   # deleteRoot(id: UUID!): Boolean!
 
-
   createTenant(input: CreateTenantInput!): Tenant!
   updateTenant(input: UpdateTenantInput!): Tenant!
   deleteTenant(id: UUID!): Boolean!
-
 
   createRole(input: CreateRoleInput!): Role!
   updateRole(input: UpdateRoleInput!): Role!
   deleteRole(id: UUID!): Boolean!
 
-
   createPermission(input: CreatePermission) : Permission
   deletePermission(id: UUID!): Boolean!
   updatePermission(input: UpdatePermission) : Permission
-
 
   # createClientOrganizationUnit(
   #   input: CreateClientOrganizationUnitInput!
@@ -365,7 +331,6 @@ type Mutation {
   #   input: UpdateClientOrganizationUnitInput!
   # ): ClientOrganizationUnit!
   # deleteClientOrganizationUnit(id: UUID!): Boolean!
-
 
   # createAccount(input: CreateAccountInput!): Account!
   # updateAccount(input: UpdateAccountInput!): Account!

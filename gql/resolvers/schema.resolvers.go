@@ -74,7 +74,7 @@ func (r *queryResolver) GetRole(ctx context.Context, id uuid.UUID) (*models.Role
 }
 
 // AllRoles is the resolver for the allRoles field.
-func (r *queryResolver) AllRoles(ctx context.Context, id uuid.UUID) ([]*models.Role, error) {
+func (r *queryResolver) AllRoles(ctx context.Context, id *uuid.UUID) ([]*models.Role, error) {
 	panic(fmt.Errorf("not implemented: AllRoles - allRoles"))
 }
 
@@ -84,8 +84,18 @@ func (r *queryResolver) GetAllPermissions(ctx context.Context) ([]*models.Permis
 }
 
 // GetPermission is the resolver for the getPermission field.
-func (r *queryResolver) GetPermission(ctx context.Context, id *uuid.UUID) (*models.Permission, error) {
+func (r *queryResolver) GetPermission(ctx context.Context, id uuid.UUID) (*models.Permission, error) {
 	panic(fmt.Errorf("not implemented: GetPermission - getPermission"))
+}
+
+// GetClientOrganizationUnit is the resolver for the getClientOrganizationUnit field.
+func (r *queryResolver) GetClientOrganizationUnit(ctx context.Context, id uuid.UUID) (*models.ClientOrganizationUnit, error) {
+	panic(fmt.Errorf("not implemented: GetClientOrganizationUnit - getClientOrganizationUnit"))
+}
+
+// AllClientOrganizationUnits is the resolver for the allClientOrganizationUnits field.
+func (r *queryResolver) AllClientOrganizationUnits(ctx context.Context) ([]*models.ClientOrganizationUnit, error) {
+	panic(fmt.Errorf("not implemented: AllClientOrganizationUnits - allClientOrganizationUnits"))
 }
 
 // Mutation returns generated.MutationResolver implementation.
