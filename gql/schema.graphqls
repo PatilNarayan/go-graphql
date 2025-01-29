@@ -266,8 +266,6 @@ input CreateRoleInput {
   permissions: [String!]!
   roleType: RoleTypeEnum!
   assignableScopeRef: UUID!
-
-
 }
 
 
@@ -279,10 +277,7 @@ input UpdateRoleInput {
   permissions: [String!]!
   roleType: RoleTypeEnum!
   assignableScopeRef: UUID!
- 
 }
-
-
 
 type Permission {
   id: UUID!
@@ -295,13 +290,10 @@ type Permission {
   updatedBy: String
 }
 
-
 input CreatePermission {
   name: String!
   serviceId: UUID!
   action: String!
-
-
 }
 
 
@@ -310,7 +302,6 @@ input UpdatePermission {
   name: String!
   serviceId: UUID
   action: String
-  
 } 
 
 type Query {
@@ -334,7 +325,7 @@ type Query {
 
 
   getAllPermissions:[Permission]
-  getPermission(id: UUID!):Permission
+  getPermission(id: UUID):Permission
 
 
   # getClientOrganizationUnit(id: UUID!): ClientOrganizationUnit

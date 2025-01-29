@@ -129,7 +129,7 @@ type ComplexityRoot struct {
 		AllRoles          func(childComplexity int, id uuid.UUID) int
 		AllTenants        func(childComplexity int) int
 		GetAllPermissions func(childComplexity int) int
-		GetPermission     func(childComplexity int, id uuid.UUID) int
+		GetPermission     func(childComplexity int, id *uuid.UUID) int
 		GetRole           func(childComplexity int, id uuid.UUID) int
 		GetTenant         func(childComplexity int, id uuid.UUID) int
 	}
@@ -189,7 +189,7 @@ type QueryResolver interface {
 	GetRole(ctx context.Context, id uuid.UUID) (*models.Role, error)
 	AllRoles(ctx context.Context, id uuid.UUID) ([]*models.Role, error)
 	GetAllPermissions(ctx context.Context) ([]*models.Permission, error)
-	GetPermission(ctx context.Context, id uuid.UUID) (*models.Permission, error)
+	GetPermission(ctx context.Context, id *uuid.UUID) (*models.Permission, error)
 }
 
 type executableSchema struct {
@@ -670,7 +670,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetPermission(childComplexity, args["id"].(uuid.UUID)), true
+		return e.complexity.Query.GetPermission(childComplexity, args["id"].(*uuid.UUID)), true
 
 	case "Query.getRole":
 		if e.complexity.Query.GetRole == nil {
@@ -1284,8 +1284,6 @@ input CreateRoleInput {
   permissions: [String!]!
   roleType: RoleTypeEnum!
   assignableScopeRef: UUID!
-
-
 }
 
 
@@ -1297,10 +1295,7 @@ input UpdateRoleInput {
   permissions: [String!]!
   roleType: RoleTypeEnum!
   assignableScopeRef: UUID!
- 
 }
-
-
 
 type Permission {
   id: UUID!
@@ -1313,13 +1308,10 @@ type Permission {
   updatedBy: String
 }
 
-
 input CreatePermission {
   name: String!
   serviceId: UUID!
   action: String!
-
-
 }
 
 
@@ -1328,7 +1320,6 @@ input UpdatePermission {
   name: String!
   serviceId: UUID
   action: String
-  
 } 
 
 type Query {
@@ -1352,7 +1343,7 @@ type Query {
 
 
   getAllPermissions:[Permission]
-  getPermission(id: UUID!):Permission
+  getPermission(id: UUID):Permission
 
 
   # getClientOrganizationUnit(id: UUID!): ClientOrganizationUnit
@@ -1770,22 +1761,22 @@ func (ec *executionContext) field_Query_getPermission_args(ctx context.Context, 
 func (ec *executionContext) field_Query_getPermission_argsID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
-) (uuid.UUID, error) {
+) (*uuid.UUID, error) {
 	// We won't call the directive if the argument is null.
 	// Set call_argument_directives_with_null to true to call directives
 	// even if the argument is null.
 	_, ok := rawArgs["id"]
 	if !ok {
-		var zeroVal uuid.UUID
+		var zeroVal *uuid.UUID
 		return zeroVal, nil
 	}
 
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+		return ec.unmarshalOUUID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
 	}
 
-	var zeroVal uuid.UUID
+	var zeroVal *uuid.UUID
 	return zeroVal, nil
 }
 
@@ -4868,7 +4859,7 @@ func (ec *executionContext) _Query_getPermission(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetPermission(rctx, fc.Args["id"].(uuid.UUID))
+		return ec.resolvers.Query().GetPermission(rctx, fc.Args["id"].(*uuid.UUID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

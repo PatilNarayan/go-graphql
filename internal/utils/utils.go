@@ -93,8 +93,26 @@ func ValidateTenantID(tenantID uuid.UUID) error {
 func ValidateMstResType(resourceID uuid.UUID) error {
 	var count int64
 	if err := config.DB.Model(&dto.Mst_ResourceTypes{}).
-		// Where("resource_id = ? AND row_status = 1 AND resource_type_id IN (?)", resourceID, resourceIds).
 		Where("resource_type_id = ? AND row_status = 1", resourceID).
+		Count(&count).Error; err != nil {
+		return err
+	}
+	if count == 0 {
+		return errors.New("resource ID does not exist")
+	}
+	return nil
+}
+
+func ValidateRole(resourceID uuid.UUID) error {
+	resourceType := dto.Mst_ResourceTypes{}
+	if err := config.DB.Where("name = ? AND row_status = 1", "Role").First(&resourceType).Error; err != nil {
+		logger.AddContext(err).Error("Resource type not found")
+		return fmt.Errorf("resource type not found: %w", err)
+	}
+	var count int64
+	if err := config.DB.Model(&dto.TenantResource{}).
+		// Where("resource_id = ? AND row_status = 1 AND resource_type_id IN (?)", resourceID, resourceIds).
+		Where("resource_id = ? AND row_status = 1 AND resource_type_id = ?", resourceID, resourceType.ResourceTypeID).
 		Count(&count).Error; err != nil {
 		return err
 	}
