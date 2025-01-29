@@ -414,6 +414,7 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 			return nil, fmt.Errorf("failed to delete role: %w", err)
 		}
 	}
+	logger.Log.Infof("Role updated successfully for ID: %s", input.ID)
 
 	logger.Log.Infof("Role updated successfully for ID: %s", input.ID)
 	return convertRoleToGraphQL(&role), nil
