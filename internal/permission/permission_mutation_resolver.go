@@ -24,7 +24,6 @@ func (r *PermissionMutationResolver) DeletePermission(ctx context.Context, id uu
 	logger.Log.Infof("Attempting to delete permission with ID: %s", id)
 
 	updates := map[string]interface{}{
-		"deleted_at": gorm.DeletedAt{Time: time.Now(), Valid: true},
 		"row_status": 0,
 	}
 	result := r.DB.Model(&dto.TNTPermission{}).Where("permission_id = ?", id).Updates(updates)

@@ -7,7 +7,6 @@ import (
 	"go_graphql/internal/dto"
 	"go_graphql/logger"
 	"regexp"
-	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -67,7 +66,6 @@ func ValidatePermissionID(permissionId string) error {
 
 func UpdateDeletedMap() map[string]interface{} {
 	return map[string]interface{}{
-		"deleted_at": gorm.DeletedAt{Time: time.Now(), Valid: true},
 		"row_status": 0,
 	}
 }

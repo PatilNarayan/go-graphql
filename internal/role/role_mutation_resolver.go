@@ -190,13 +190,11 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 	if err := utils.ValidateRole(input.ID); err != nil {
 		return nil, err
 	}
-	var oldROleName dto.TNTRole
+	oldROleName := dto.TNTRole{}
 	if err := r.DB.Where("resource_id = ? AND row_status = 1", input.ID).First(&oldROleName).Error; err != nil {
 		logger.AddContext(err).Warn("Role not found")
 		return nil, errors.New("role not found")
 	}
-
-	oldROleName.Name = role.Name
 
 	if input.RoleType == "" {
 		logger.Log.Warn("Role type is required")
@@ -213,14 +211,9 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 	// 	return nil, errors.New("role not found")
 	// }
 
-	if *&oldROleName.ResourceTypeID != input.AssignableScopeRef {
+	if oldROleName.ResourceTypeID != input.AssignableScopeRef {
 		logger.Log.Warn("AssignableScopeRef cannot be changed")
 		return nil, errors.New("AssignableScopeRef cannot be changed")
-	}
-
-	if oldROleName.Name != input.Name {
-		logger.Log.Warn("Role name cannot be changed")
-		return nil, errors.New("Role name cannot be changed")
 	}
 
 	// Update fields
@@ -282,10 +275,10 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 			v := v.(map[string]interface{})
 			if mstresourceType.Name == v["key"].(string) {
 				rolesMap := v["roles"].(map[string]interface{})
-				if rolesMap[input.Name] == nil {
+				if rolesMap[oldROleName.Name] == nil {
 					return nil, fmt.Errorf("No such role exists")
 				} else {
-					permitrole := rolesMap[input.Name].(map[string]interface{})
+					permitrole := rolesMap[oldROleName.Name].(map[string]interface{})
 					id = permitrole["id"]
 				}
 			}
@@ -332,7 +325,7 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 		updateData["description"] = *input.Description
 	}
 
-	if err := r.DB.Model(&role).Updates(updateData).Error; err != nil {
+	if err := r.DB.Model(&role).Where("resource_id = ? AND row_status = 1", input.ID).UpdateColumns(updateData).Error; err != nil {
 		logger.AddContext(err).Error("Failed to update role")
 		return nil, err
 	}
@@ -427,8 +420,15 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 		}
 	}
 
+	finalRole := dto.TNTRole{}
+
+	if err := r.DB.First(&finalRole, "resource_id = ? AND row_status = 1", input.ID).Error; err != nil {
+		logger.AddContext(err).Error("Failed to fetch role")
+		return nil, err
+	}
+
 	logger.Log.Infof("Role updated successfully for ID: %s", input.ID)
-	return convertRoleToGraphQL(&role), nil
+	return convertRoleToGraphQL(&finalRole), nil
 }
 
 // DeleteRole handles deleting a role by ID.
