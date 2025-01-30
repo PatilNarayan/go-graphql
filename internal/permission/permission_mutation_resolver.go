@@ -23,6 +23,15 @@ type PermissionMutationResolver struct {
 func (r *PermissionMutationResolver) DeletePermission(ctx context.Context, id uuid.UUID) (bool, error) {
 	logger.Log.Infof("Attempting to delete permission with ID: %s", id)
 
+	var count int64
+	if err := r.DB.Model(&dto.TNTRolePermission{}).Where("permission_id = ? AND row_status = 1", id).Count(&count).Error; err != nil {
+		return false, err
+	}
+	if count > 0 {
+		logger.Log.Errorf("Permission with ID %s is in use and cannot be deleted", id)
+		return false, errors.New("permission is in use and cannot be deleted")
+	}
+
 	updates := map[string]interface{}{
 		"row_status": 0,
 	}
@@ -105,6 +114,15 @@ func (r *PermissionMutationResolver) CreatePermission(ctx context.Context, input
 func (r *PermissionMutationResolver) UpdatePermission(ctx context.Context, input *models.UpdatePermission) (*models.Permission, error) {
 	permissionID := input.ID
 	logger.Log.Infof("Starting update for permission with ID: %s", permissionID)
+
+	var count int64
+	if err := r.DB.Model(&dto.TNTRolePermission{}).Where("permission_id = ? AND row_status = 1", permissionID).Count(&count).Error; err != nil {
+		return nil, err
+	}
+	if count > 0 {
+		logger.Log.Errorf("Permission with ID %s is in use and cannot be updated", permissionID)
+		return nil, errors.New("permission is in use and cannot be updated")
+	}
 
 	if input == nil {
 		logger.Log.Error("Input is required for updating permission")

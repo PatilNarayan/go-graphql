@@ -5,6 +5,7 @@ import (
 	"go_graphql/gql"
 	"go_graphql/gql/generated"
 	"go_graphql/logger"
+	"go_graphql/middleware"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -25,6 +26,7 @@ func main() {
 	// Initialize Gin router
 	r := gin.Default()
 	log.Info("Gin router initialized")
+	r.Use(middleware.ContextMiddleware())
 
 	// Initialize database connection
 	db := config.InitDB()

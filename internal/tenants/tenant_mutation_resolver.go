@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go_graphql/config"
 	"go_graphql/gql/models"
 	"go_graphql/internal/constants"
 	"go_graphql/internal/dto"
 	"go_graphql/internal/role"
-	"go_graphql/internal/utils"
 	"go_graphql/logger"
 	"go_graphql/permit"
 	"time"
@@ -45,7 +45,7 @@ func (r *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 
 	if input.ParentOrgID != "" {
 		// Validate ParentOrgID
-		resourceTypeId, err := utils.GetResourceTypeIDs([]string{"Root"})
+		resourceTypeId, err := GetResourceTypeIDs([]string{"Root"})
 		if err != nil {
 			log.WithError(err).Error("Failed to get resource type IDs")
 			return nil, fmt.Errorf("failed to get resource type IDs: %w", err)
@@ -133,7 +133,7 @@ func (r *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 		tenantResource.Name = *input.Name
 	}
 	if input.ParentOrgID != nil {
-		resourceTypeId, err := utils.GetResourceTypeIDs([]string{"Root"})
+		resourceTypeId, err := GetResourceTypeIDs([]string{"Root"})
 		if err != nil {
 			log.WithError(err).Error("Failed to get resource type IDs")
 			return nil, fmt.Errorf("failed to get resource type IDs: %w", err)
@@ -295,4 +295,18 @@ func (r *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID)
 	log.Info("Deleted tenant successfully")
 
 	return true, nil
+}
+
+func GetResourceTypeIDs(resourceName []string) ([]string, error) {
+	resourceType := []dto.Mst_ResourceTypes{}
+	if err := config.DB.Where("name in (?) AND row_status = 1", resourceName).Find(&resourceType).Error; err != nil {
+		logger.AddContext(err).Error("Resource type not found")
+		return nil, err
+	}
+	var resourceIds []string
+	for _, resource := range resourceType {
+		resourceIds = append(resourceIds, resource.ResourceTypeID.String())
+	}
+
+	return resourceIds, nil
 }

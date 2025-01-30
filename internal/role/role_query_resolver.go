@@ -8,7 +8,6 @@ import (
 	"go_graphql/config"
 	"go_graphql/gql/models"
 	"go_graphql/internal/dto"
-	"go_graphql/internal/utils"
 	"go_graphql/logger"
 
 	"github.com/google/uuid"
@@ -81,31 +80,17 @@ func (r *RoleQueryResolver) GetAllRolesForAssignableScopeRef(ctx context.Context
 		return nil, fmt.Errorf("assignableScopeRef cannot be nil")
 	}
 
-	if err := utils.ValidateResourceID(assignableScopeRef); err != nil {
+	if err := ValidateMstResType(assignableScopeRef); err != nil {
 		return nil, fmt.Errorf("invalid assignableScopeRef: %w", err)
 	}
 
-	resourceIds, err := utils.GetResourceTypeIDs([]string{"Role"})
-	if err != nil {
-		return nil, err
-	}
-
-	var assignableResource []dto.TenantResource
-	if err := r.DB.Where("parent_resource_id = ? AND row_status = 1 AND resource_type_id IN (?)", assignableScopeRef, resourceIds).Find(&assignableResource).Error; err != nil {
-		return nil, fmt.Errorf("failed to fetch tenant resource: %w", err)
-	}
-
-	if len(assignableResource) == 0 {
-		return nil, fmt.Errorf("assignableScopeRef %s does not exist", assignableScopeRef)
-	}
-
-	roleIds := make([]uuid.UUID, len(assignableResource))
-	for i, resource := range assignableResource {
-		roleIds[i] = resource.ResourceID
-	}
+	// resourceIds, err := utils.GetResourceTypeIDs([]string{"Role"})
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	var roles []dto.TNTRole
-	if err := r.DB.Where("resource_id IN (?) AND row_status = 1", roleIds).Find(&roles).Error; err != nil {
+	if err := r.DB.Where("resource_id = ? AND row_status = 1", assignableScopeRef).Find(&roles).Error; err != nil {
 		logger.AddContext(err).Error("Failed to fetch roles from the database")
 		return nil, fmt.Errorf("failed to fetch roles: %w", err)
 	}
@@ -168,7 +153,7 @@ func convertRoleToGraphQL(role *dto.TNTRole) *models.Role {
 	res.Permissions = permissions
 
 	var ParentResource dto.Mst_ResourceTypes
-	if err := config.DB.Where(&dto.Mst_ResourceTypes{ResourceTypeID: role.ResourceTypeID, RowStatus: 1}).First(&ParentResource).Error; err != nil {
+	if err := config.DB.Where(&dto.Mst_ResourceTypes{ResourceTypeID: role.ScopeResourceTypeID, RowStatus: 1}).First(&ParentResource).Error; err != nil {
 		logger.AddContext(err).Error("Failed to fetch parent resource")
 		return nil
 	}
