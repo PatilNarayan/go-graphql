@@ -33,8 +33,9 @@ func (r *Resolver) Query() generated.QueryResolver {
 
 // Mutation returns the root mutation resolvers, delegating to feature-based resolvers
 func (r *Resolver) Mutation() generated.MutationResolver {
+	permitClient := permit.NewPermitClient()
 	return &mutationResolver{
-		TenantMutationResolver:                 &tenants.TenantMutationResolver{DB: r.DB},
+		TenantMutationResolver:                 &tenants.TenantMutationResolver{DB: r.DB, PermitClient: permitClient},
 		AccountMutationResolver:                &accounts.AccountMutationResolver{DB: r.DB},
 		ClientOrganizationUnitMutationResolver: &clientorganizationunit.ClientOrganizationUnitMutationResolver{DB: r.DB},
 		RoleMutationResolver:                   &role.RoleMutationResolver{DB: r.DB},

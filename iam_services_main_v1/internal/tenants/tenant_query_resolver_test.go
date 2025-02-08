@@ -3,345 +3,240 @@ package tenants
 import (
 	"context"
 	"encoding/json"
+	"testing"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"go.uber.org/thriftrw/ptr"
+	"gorm.io/gorm"
+
 	"iam_services_main_v1/gql/models"
 	"iam_services_main_v1/internal/dto"
-	"iam_services_main_v1/logger"
-
-	"testing"
-	"time"
-
-	"github.com/glebarez/sqlite"
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
-func TestTenantQueryResolver_AllTenants(t *testing.T) {
-	// Initialize an in-memory SQLite database for testing
-	logger.InitLogger()
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("failed to connect to database: %v", err)
-	}
+// MockDB is a mock implementation of *gorm.DB
+type MockDB struct {
+	mock.Mock
+	*gorm.DB // Embed *gorm.DB to make it compatible with *gorm.DB
+}
 
-	// Migrate the required schema
-	err = db.AutoMigrate(&dto.TenantResource{}, &dto.TenantMetadata{}, &dto.Mst_ResourceTypes{})
-	if err != nil {
-		t.Fatalf("failed to migrate database: %v", err)
-	}
+func (m *MockDB) Where(query interface{}, args ...interface{}) *gorm.DB {
+	called := m.Called(query, args)
+	return called.Get(0).(*gorm.DB)
+}
 
-	mstResType1 := dto.Mst_ResourceTypes{
-		ResourceTypeID: uuid.New(),
-		ServiceID:      uuid.New(),
-		Name:           "Tenant",
-		RowStatus:      1,
-		CreatedBy:      "user1",
-		UpdatedBy:      "user1",
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
-	}
+func (m *MockDB) First(dest interface{}, conds ...interface{}) *gorm.DB {
+	called := m.Called(dest)
+	return called.Get(0).(*gorm.DB)
+}
 
-	db.Create(&mstResType1)
+func (m *MockDB) Find(dest interface{}, conds ...interface{}) *gorm.DB {
+	called := m.Called(dest)
+	return called.Get(0).(*gorm.DB)
+}
 
-	err = db.Create(&mstResType1).Error
-
-	// Seed test data
-	tenant1 := dto.TenantResource{
-		ResourceID:     uuid.New(),
-		Name:           "Tenant 1",
-		ResourceTypeID: mstResType1.ResourceTypeID,
-		RowStatus:      1,
-		CreatedBy:      "user1",
-		UpdatedBy:      "user1",
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
-	}
-	tenant1Metadata := dto.TenantMetadata{
-		ResourceID: tenant1.ResourceID,
-		Metadata:   json.RawMessage(`{"contactInfo": {"email": "abc", "address": {"city": "String", "state": "String", "street": "String", "country": "String", "zipCode": "String"}, "phoneNumber": "12345"}, "description": "xyz"}`),
-		RowStatus:  1,
-		CreatedBy:  "user1",
-		UpdatedBy:  "user1",
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
-	}
-
-	tenant2 := dto.TenantResource{
-		ResourceID:     uuid.New(),
-		Name:           "Tenant 2",
-		ResourceTypeID: uuid.New(),
-		RowStatus:      1,
-		CreatedBy:      "user1",
-		UpdatedBy:      "user1",
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
-	}
-
-	tenant2Metadata := dto.TenantMetadata{
-		ResourceID: tenant2.ResourceID,
-		Metadata:   json.RawMessage(`{"contactInfo": {"email": "abc", "address": {"city": "String", "state": "String", "street": "String", "country": "String", "zipCode": "String"}, "phoneNumber": "12345"}, "description": "xyz"}`),
-		RowStatus:  1,
-		CreatedBy:  "user1",
-		UpdatedBy:  "user1",
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
-	}
-
-	db.Create(&tenant1)
-	db.Create(&tenant2)
-	db.Create(&tenant1Metadata)
-	db.Create(&tenant2Metadata)
-
-	type args struct {
-		ctx context.Context
-	}
+func TestGetTenant(t *testing.T) {
 	tests := []struct {
-		name    string
-		r       *TenantQueryResolver
-		args    args
-		want    []*models.Tenant
-		wantErr bool
+		name           string
+		tenantID       uuid.UUID
+		setupMock      func(*MockDB)
+		expectedError  error
+		expectedTenant *models.Tenant
 	}{
 		{
-			name: "Retrieve all tenants",
-			r:    &TenantQueryResolver{DB: db},
-			args: args{ctx: context.Background()},
-			want: []*models.Tenant{
-				{
-					ID:   tenant1.ResourceID,
-					Name: tenant1.Name,
-				},
-				{
-					ID:   tenant2.ResourceID,
-					Name: tenant1.Name,
+			name:     "successful tenant retrieval",
+			tenantID: uuid.New(),
+			setupMock: func(db *MockDB) {
+				resourceType := &dto.Mst_ResourceTypes{
+					ResourceTypeID: uuid.New(),
+					Name:           "Tenant",
+				}
+
+				tenantResource := &dto.TenantResource{
+					ResourceID:     uuid.New(),
+					ResourceTypeID: resourceType.ResourceTypeID,
+					Name:           "Test Tenant",
+				}
+
+				metadata := &dto.TenantMetadata{
+					ResourceID: tenantResource.ResourceID,
+					Metadata: json.RawMessage(`{
+						"description": "Test Description",
+						"contactInfo": {
+							"email": "test@example.com",
+							"phone": "123-456-7890"
+						}
+					}`),
+				}
+
+				// Mock resource type query
+				db.On("Where", mock.Anything, mock.Anything).Return(db)
+				db.On("First", mock.AnythingOfType("*dto.Mst_ResourceTypes")).
+					Run(func(args mock.Arguments) {
+						arg := args.Get(0).(*dto.Mst_ResourceTypes)
+						*arg = *resourceType
+					}).
+					Return(&gorm.DB{Error: nil})
+
+				// Mock tenant resource query
+				db.On("Where", mock.Anything, mock.Anything).Return(db)
+				db.On("First", mock.AnythingOfType("*dto.TenantResource")).
+					Run(func(args mock.Arguments) {
+						arg := args.Get(0).(*dto.TenantResource)
+						*arg = *tenantResource
+					}).
+					Return(&gorm.DB{Error: nil})
+
+				// Mock metadata query
+				db.On("Where", mock.Anything, mock.Anything).Return(db)
+				db.On("First", mock.AnythingOfType("*dto.TenantMetadata")).
+					Run(func(args mock.Arguments) {
+						arg := args.Get(0).(*dto.TenantMetadata)
+						*arg = *metadata
+					}).
+					Return(&gorm.DB{Error: nil})
+			},
+			expectedError: nil,
+			expectedTenant: &models.Tenant{
+				Name:        "Test Tenant",
+				Description: ptr.String("Test Description"),
+				ContactInfo: &models.ContactInfo{
+					Email:       ptr.String("test@example.com"),
+					PhoneNumber: ptr.String("123-456-7890"),
 				},
 			},
-			wantErr: false,
 		},
 		{
-			name:    "Empty database",
-			r:       &TenantQueryResolver{DB: db},
-			args:    args{ctx: context.Background()},
-			want:    []*models.Tenant{},
-			wantErr: false,
+			name:     "tenant not found",
+			tenantID: uuid.New(),
+			setupMock: func(db *MockDB) {
+				// Mock resource type query
+				db.On("Where", mock.Anything, mock.Anything).Return(db)
+				db.On("First", mock.AnythingOfType("*dto.Mst_ResourceTypes")).
+					Return(&gorm.DB{Error: gorm.ErrRecordNotFound})
+			},
+			expectedError:  ErrResourceTypeNotFound,
+			expectedTenant: nil,
+		},
+		{
+			name:           "nil tenant ID",
+			tenantID:       uuid.Nil,
+			setupMock:      func(db *MockDB) {},
+			expectedError:  ErrTenantIDRequired,
+			expectedTenant: nil,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.r.AllTenants(tt.args.ctx)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("TenantQueryResolver.AllTenants() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			mockDB := &MockDB{}
+			tt.setupMock(mockDB)
+
+			resolver := &TenantQueryResolver{
+				DB: mockDB.DB, // Use the mock directly
+			}
+
+			tenant, err := resolver.GetTenant(context.Background(), tt.tenantID)
+
+			if tt.expectedError != nil {
+				assert.ErrorIs(t, err, tt.expectedError)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedTenant.Name, tenant.Name)
+				assert.Equal(t, tt.expectedTenant.Description, tenant.Description)
+				if tt.expectedTenant.ContactInfo != nil {
+					assert.Equal(t, tt.expectedTenant.ContactInfo.Email, tenant.ContactInfo.Email)
+					assert.Equal(t, tt.expectedTenant.ContactInfo.PhoneNumber, tenant.ContactInfo.PhoneNumber)
+				}
 			}
 		})
 	}
 }
 
-func TestTenantQueryResolver_GetTenant(t *testing.T) {
-	logger.InitLogger()
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect database")
-	}
-
-	// Migrate the required schema
-	err = db.AutoMigrate(&dto.TenantResource{}, &dto.TenantMetadata{}, &dto.Mst_ResourceTypes{})
-	if err != nil {
-		panic(err)
-	}
-
-	mstResType1 := dto.Mst_ResourceTypes{
-		ResourceTypeID: uuid.New(),
-		ServiceID:      uuid.New(),
-		Name:           "Tenant",
-		RowStatus:      1,
-		CreatedBy:      "user1",
-		UpdatedBy:      "user1",
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
-	}
-
-	db.Create(&mstResType1)
-
-	root := dto.TenantResource{
-		ResourceID:       uuid.New(),
-		Name:             "Tenant 1",
-		ResourceTypeID:   mstResType1.ResourceTypeID,
-		ParentResourceID: nil,
-		RowStatus:        1,
-		CreatedBy:        "user1",
-		UpdatedBy:        "user1",
-		CreatedAt:        time.Now(),
-		UpdatedAt:        time.Now(),
-	}
-	rootMetadata := dto.TenantMetadata{
-		ResourceID: root.ResourceID,
-		Metadata:   json.RawMessage(`{"contactInfo": {"email": "abc", "address": {"city": "String", "state": "String", "street": "String", "country": "String", "zipCode": "String"}, "phoneNumber": "12345"}, "description": "xyz"}`),
-		RowStatus:  1,
-		CreatedBy:  "user1",
-		UpdatedBy:  "user1",
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
-	}
-
-	db.Create(&root)
-	db.Create(&rootMetadata)
-
-	// Seed test data
-	tenant1 := dto.TenantResource{
-		ResourceID:       uuid.New(),
-		Name:             "Tenant 1",
-		ResourceTypeID:   mstResType1.ResourceTypeID,
-		ParentResourceID: &root.ResourceID,
-		RowStatus:        1,
-		CreatedBy:        "user1",
-		UpdatedBy:        "user1",
-		CreatedAt:        time.Now(),
-		UpdatedAt:        time.Now(),
-	}
-	tenant1Metadata := dto.TenantMetadata{
-		ResourceID: tenant1.ResourceID,
-		Metadata:   json.RawMessage(`{"contactInfo": {"email": "abc", "address": {"city": "String", "state": "String", "street": "String", "country": "String", "zipCode": "String"}, "phoneNumber": "12345"}, "description": "xyz"}`),
-		RowStatus:  1,
-		CreatedBy:  "user1",
-		UpdatedBy:  "user1",
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
-	}
-
-	tenant2 := dto.TenantResource{
-		ResourceID:       uuid.New(),
-		Name:             "Tenant 2",
-		ResourceTypeID:   mstResType1.ResourceTypeID,
-		ParentResourceID: &root.ResourceID,
-		RowStatus:        1,
-		CreatedBy:        "user1",
-		UpdatedBy:        "user1",
-		CreatedAt:        time.Now(),
-		UpdatedAt:        time.Now(),
-	}
-
-	tenant2Metadata := dto.TenantMetadata{
-		ResourceID: tenant2.ResourceID,
-		Metadata:   json.RawMessage(`{"contactInfo": {"email": "abc", "address": {"city": "String", "state": "String", "street": "String", "country": "String", "zipCode": "String"}, "phoneNumber": "12345"}, "description": "xyz"}`),
-		RowStatus:  1,
-		CreatedBy:  "user1",
-		UpdatedBy:  "user1",
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
-	}
-
-	db.Create(&tenant1)
-	db.Create(&tenant2)
-	db.Create(&tenant1Metadata)
-	db.Create(&tenant2Metadata)
-	type args struct {
-		ctx context.Context
-		id  uuid.UUID
-	}
+func TestAllTenants(t *testing.T) {
 	tests := []struct {
-		name    string
-		r       *TenantQueryResolver
-		args    args
-		want    *models.Tenant
-		wantErr bool
+		name          string
+		setupMock     func(*MockDB)
+		expectedError error
+		expectedCount int
 	}{
-		// TODO: Add test cases.
-		{"test", &TenantQueryResolver{DB: db}, args{ctx: context.Background(), id: tenant1.ResourceID}, &models.Tenant{
-			ID:   tenant1.ResourceID,
-			Name: tenant1.Name,
-		}, false},
-		{"test2", &TenantQueryResolver{DB: db}, args{ctx: context.Background(), id: tenant2.ResourceID}, &models.Tenant{
-			ID:   tenant2.ResourceID,
-			Name: tenant2.Name,
-		}, false},
-		{"test3", &TenantQueryResolver{DB: db}, args{ctx: context.Background(), id: uuid.Nil}, nil, true},
+		{
+			name: "successful tenants retrieval",
+			setupMock: func(db *MockDB) {
+				resourceType := &dto.Mst_ResourceTypes{
+					ResourceTypeID: uuid.New(),
+					Name:           "Tenant",
+				}
+
+				tenantResources := []dto.TenantResource{
+					{
+						ResourceID:     uuid.New(),
+						ResourceTypeID: resourceType.ResourceTypeID,
+						Name:           "Tenant 1",
+					},
+					{
+						ResourceID:     uuid.New(),
+						ResourceTypeID: resourceType.ResourceTypeID,
+						Name:           "Tenant 2",
+					},
+				}
+
+				// Mock resource type query
+				db.On("Where", mock.Anything, mock.Anything).Return(db)
+				db.On("First", mock.AnythingOfType("*dto.Mst_ResourceTypes")).
+					Run(func(args mock.Arguments) {
+						arg := args.Get(0).(*dto.Mst_ResourceTypes)
+						*arg = *resourceType
+					}).
+					Return(&gorm.DB{Error: nil})
+
+				// Mock tenants query
+				db.On("Where", mock.Anything).Return(db)
+				db.On("Find", mock.AnythingOfType("*[]dto.TenantResource")).
+					Run(func(args mock.Arguments) {
+						arg := args.Get(0).(*[]dto.TenantResource)
+						*arg = tenantResources
+					}).
+					Return(&gorm.DB{Error: nil})
+
+				// Mock metadata queries
+				db.On("Where", mock.Anything, mock.Anything).Return(db)
+				db.On("First", mock.AnythingOfType("*dto.TenantMetadata")).
+					Return(&gorm.DB{Error: gorm.ErrRecordNotFound})
+			},
+			expectedError: nil,
+			expectedCount: 2,
+		},
+		{
+			name: "resource type not found",
+			setupMock: func(db *MockDB) {
+				db.On("Where", mock.Anything, mock.Anything).Return(db)
+				db.On("First", mock.AnythingOfType("*dto.Mst_ResourceTypes")).
+					Return(&gorm.DB{Error: gorm.ErrRecordNotFound})
+			},
+			expectedError: ErrResourceTypeNotFound,
+			expectedCount: 0,
+		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.r.GetTenant(tt.args.ctx, tt.args.id)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("TenantQueryResolver.GetTenant() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			mockDB := &MockDB{}
+			tt.setupMock(mockDB)
+
+			resolver := &TenantQueryResolver{
+				DB: mockDB.DB, // Use the mock directly
+			}
+
+			tenants, err := resolver.AllTenants(context.Background())
+
+			if tt.expectedError != nil {
+				assert.ErrorIs(t, err, tt.expectedError)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedCount, len(tenants))
 			}
 		})
 	}
-}
-
-func getDB() *gorm.DB {
-	logger.InitLogger()
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect database")
-	}
-
-	// Migrate the required schema
-	err = db.AutoMigrate(&dto.TenantResource{}, &dto.TenantMetadata{}, &dto.Mst_ResourceTypes{})
-	if err != nil {
-		panic(err)
-	}
-
-	mstResType1 := dto.Mst_ResourceTypes{
-		ResourceTypeID: uuid.New(),
-		ServiceID:      uuid.New(),
-		Name:           "Tenant",
-		RowStatus:      1,
-		CreatedBy:      "user1",
-		UpdatedBy:      "user1",
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
-	}
-
-	db.Create(&mstResType1)
-
-	err = db.Create(&mstResType1).Error
-
-	// Seed test data
-	tenant1 := dto.TenantResource{
-		ResourceID:     uuid.New(),
-		Name:           "Tenant 1",
-		ResourceTypeID: mstResType1.ResourceTypeID,
-		RowStatus:      1,
-		CreatedBy:      "user1",
-		UpdatedBy:      "user1",
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
-	}
-	tenant1Metadata := dto.TenantMetadata{
-		ResourceID: tenant1.ResourceID,
-		Metadata:   json.RawMessage(`{"contactInfo": {"email": "abc", "address": {"city": "String", "state": "String", "street": "String", "country": "String", "zipCode": "String"}, "phoneNumber": "12345"}, "description": "xyz"}`),
-		RowStatus:  1,
-		CreatedBy:  "user1",
-		UpdatedBy:  "user1",
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
-	}
-
-	tenant2 := dto.TenantResource{
-		ResourceID:     uuid.New(),
-		Name:           "Tenant 2",
-		ResourceTypeID: uuid.New(),
-		RowStatus:      1,
-		CreatedBy:      "user1",
-		UpdatedBy:      "user1",
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
-	}
-
-	tenant2Metadata := dto.TenantMetadata{
-		ResourceID: tenant2.ResourceID,
-		Metadata:   json.RawMessage(`{"contactInfo": {"email": "abc", "address": {"city": "String", "state": "String", "street": "String", "country": "String", "zipCode": "String"}, "phoneNumber": "12345"}, "description": "xyz"}`),
-		RowStatus:  1,
-		CreatedBy:  "user1",
-		UpdatedBy:  "user1",
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
-	}
-
-	db.Create(&tenant1)
-	db.Create(&tenant2)
-	db.Create(&tenant1Metadata)
-	db.Create(&tenant2Metadata)
-
-	return db
 }
