@@ -1,18 +1,17 @@
-package role
+package roles
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"go_graphql/gql/models"
-	"go_graphql/internal/constants"
-	"go_graphql/internal/dto"
-	"go_graphql/internal/utils"
-	"go_graphql/permit"
 	"iam_services_main_v1/config"
-
-	// "go_graphql/config"
-	middleware "go_graphql/internal/middlewares"
+	"iam_services_main_v1/gql/models"
+	"iam_services_main_v1/helpers"
+	"iam_services_main_v1/internal/constants"
+	"iam_services_main_v1/internal/dto"
+	middleware "iam_services_main_v1/internal/middlewares"
+	"iam_services_main_v1/internal/permit"
+	"iam_services_main_v1/internal/utils"
 	"time"
 
 	"github.com/gin-gonic/gin"

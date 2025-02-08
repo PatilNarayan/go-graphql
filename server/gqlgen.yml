@@ -1,0 +1,34 @@
+schema:
+  - gql/schemas/schema.graphqls
+
+
+exec:
+  filename: gql/generated/generated.go
+  package: generated
+
+
+model:
+  filename: gql/models/models_gen.go
+  package: models
+
+
+resolver:
+  layout: follow-schema
+  dir: gql/resolvers
+  package: resolvers
+
+
+models:
+  UUID:
+    model:
+      - github.com/99designs/gqlgen/graphql.UUID
+  Mutation:
+    model: go_graphql/gql/generated.Mutation
+  Query:
+    model: go_graphql/gql/generated.Query
+  Account:
+    fields:
+      billingInfo:
+        resolver: true
+      billingAddress:
+          resolver: true

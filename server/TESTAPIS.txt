@@ -1,0 +1,198 @@
+# 3. Create Permission
+mutation CreatePermission {
+  createPermission(
+    input: {
+      name: "NotTenant Specific"
+      serviceId: "user-service"
+      action: "CRUD"
+    }
+  ) {
+    id
+    name
+    serviceId
+    action
+    createdAt
+  }
+}
+
+query GetAllRoles {
+  allRoles {
+    id
+    name
+    permissions {
+      name
+      serviceId
+      action
+    }
+    assignableScope {
+      id
+      name
+      createdAt
+      updatedAt
+      createdBy
+      updatedBy
+    }
+    description
+    version
+    roleType
+    createdAt
+    createdBy
+    updatedAt
+    updatedBy
+  }
+}
+
+# Get specific role by ID
+query GetRole {
+  getRole(id:"3953d47a-83cd-4376-81c2-3cac00903f65") {
+    id
+    name
+    permissions {
+      name
+      serviceId
+      action
+    }
+    assignableScope {
+      id
+      name
+      createdAt
+      updatedAt
+      createdBy
+      updatedBy
+    }
+    description
+    version
+    roleType
+    createdAt
+    createdBy
+    updatedAt
+    updatedBy
+  }
+}
+
+mutation CreateRole {
+  createRole(
+    input: {
+      name: "New Test System Admin"
+      description: "Full system administration access"
+      permissions: []
+      assignableScopeRef: "4a357cac-f67c-4dc5-803e-7d15f01626eb"
+      version: "1.0"
+      roleType: CUSTOM
+    }
+  ) {
+    id
+    name
+    description
+    roleType
+    createdAt
+  }
+}
+
+query GetAllRolesForTenant {
+  getAllRolesForTenant(assignableScopeRef:"4a357cac-f67c-4dc5-803e-7d15f01626eb"){
+    id
+    name
+    permissions {
+      name
+      serviceId
+      action
+    }
+    assignableScope {
+      id
+      name
+      createdAt
+      updatedAt
+      createdBy
+      updatedBy
+    }
+    description
+    version
+    roleType
+    createdAt
+    createdBy
+    updatedAt
+    updatedBy
+  }
+}
+
+mutation CreateTenantDirect {
+  createTenant(
+    input: {
+      name: "Apple"
+      description: "Global technology company"
+      parentOrgId: "11111111-1111-1111-1111-111111111111"
+      contactInfo: {
+        email: "String"
+        phoneNumber: "String"
+        address: {
+          street: "String"
+          city: "String"
+          state: "String"
+          zipCode: "String"
+          country: "String"
+        }
+      }
+    }
+  ) {
+    id
+    name
+    description
+    createdAt
+    createdBy
+  }
+}
+
+{
+  allTenants{
+    id
+    name
+    createdAt
+  }
+}
+
+mutation UpdateRole {
+  updateRole(
+    input: {
+      id:"3953d47a-83cd-4376-81c2-3cac00903f65"
+      name: "Supar Admin"
+      description: "Full system administration access"
+      permissions: []
+      assignableScopeRef: "2ad1a37f-7b6f-46e4-b24c-ee365b926727"
+      version: "1.0"
+      roleType: CUSTOM
+    }
+  ) {
+    id
+    name
+    description
+    roleType
+    createdAt
+  }
+}
+
+mutation{
+  deletePermission(id:"")
+}
+
+mutation{
+  deleteRole(id:"")
+}
+
+# 3. Create Permission
+mutation UpdatePermission {
+  updatePermission(
+    input: {
+      id:""
+      name: "NotTenant Specific"
+      serviceId: "user-service"
+      action: "CRUD"
+    }
+  ) {
+    id
+    name
+    serviceId
+    action
+    createdAt
+  }
+}

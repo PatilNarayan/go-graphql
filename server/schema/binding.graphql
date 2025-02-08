@@ -1,0 +1,170 @@
+interface Principal {
+id: String!
+name: String!
+email: String!
+tenant: Tenant!
+}
+
+interface Resource {
+id: String!
+name: String!
+createdDate: Date!
+updatedDate: Date
+}
+
+interface Organization {
+id: String!
+name: String!
+description: String
+parentId : String
+}
+
+t-mobile 21-11-2024 08:25 • type Permission {
+id: String!
+name: String!
+action: String!
+service: Service!
+}
+
+input CreatePermissionInput {
+name: String!
+action: String!
+serviceRef: String!
+}
+
+input UpdatePermissionInput {
+id: String!
+name: String
+action: String
+serviceRef: String
+}
+
+type Service {
+id: String!
+name: String!
+}
+
+t-mobile 21-11-2024 08:25 • type Permission {
+id: String!
+name: String!
+action: String!
+service: Service!
+}
+
+input CreatePermissionInput {
+name: String!
+action: String!
+serviceRef: String!
+}
+
+input UpdatePermissionInput {
+id: String!
+name: String
+action: String
+serviceRef: String
+}
+
+type Service {
+id: String!
+name: String!
+}
+
+type Role implements Resource {
+id: String!
+name: String!
+createdDate: Date!
+updatedDate: Date
+version: String!
+description: String
+permissions: [Permission!]!
+roleType: RoleTypeEnum!
+assignableScope: Resource!
+}
+
+input CreateRoleInput {
+name: String!
+version: String!
+description: String
+permissions: [String!]!
+roleType: RoleTypeEnum!
+assignableScopeRef: String!
+}
+
+input UpdateRoleInput {
+id: String!
+name: String
+version: String!
+description: String
+permissions: [String!]
+roleType: RoleTypeEnum
+scopeId: String
+}
+
+enum RoleTypeEnum {
+DEFAULT
+CUSTOM
+}
+
+type Role implements Resource {
+id: String!
+name: String!
+createdDate: Date!
+updatedDate: Date
+version: String!
+description: String
+permissions: [Permission!]!
+roleType: RoleTypeEnum!
+assignableScope: Resource!
+}
+
+input CreateRoleInput {
+name: String!
+version: String!
+description: String
+permissions: [String!]!
+roleType: RoleTypeEnum!
+assignableScopeRef: String!
+}
+
+input UpdateRoleInput {
+id: String!
+name: String
+version: String!
+description: String
+permissions: [String!]
+roleType: RoleTypeEnum
+scopeId: String
+}
+
+enum RoleTypeEnum {
+DEFAULT
+CUSTOM
+}
+
+type Binding implements Resource {
+id: String!
+name: String!
+createdDate: Date!
+updatedDate: Date
+principal: Principal!
+role: Role!
+scopeRef: Resource!
+version: String!
+}
+
+input CreateBindingInput {
+name: String!
+principalId: String!
+roleId: String!
+scopeRefId: String!
+version: String!
+}
+
+input UpdateBindingInput {
+id: String!
+name: String!
+principalId: String!
+roleId: String!
+scopeRefId: String!
+version: String!
+}

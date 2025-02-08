@@ -1,0 +1,419 @@
+scalar Date
+
+interface Principal {
+  id: String!
+  name: String!
+  email: String!
+  tenant: Tenant!
+}
+
+interface Resource {
+  id: String!
+  name: String!
+  createdDate: Date!
+  updatedDate: Date
+}
+
+interface Organization {
+  id: String!
+  name: String!
+  description: String
+}
+
+type Permission {
+  id: String!
+  name: String!
+  action: String!
+  service: Service!
+}
+
+input CreatePermissionInput {
+  name: String!
+  action: String!
+  serviceRef: String!
+}
+
+input UpdatePermissionInput {
+  id: String!
+  name: String
+  action: String
+  serviceRef: String
+}
+
+type Service {
+  id: String!
+  name: String!
+}
+
+type Role implements Resource {
+  id: String!
+  name: String!
+  createdDate: Date!
+  updatedDate: Date
+  version: String!
+  description: String
+  permissions: [Permission!]!
+  roleType: RoleTypeEnum!
+  assignableScope: Resource!
+}
+
+input CreateRoleInput {
+  name: String!
+  version: String!
+  description: String
+  permissions: [String!]!
+  roleType: RoleTypeEnum!
+  assignableScopeRef: String!
+}
+
+input UpdateRoleInput {
+  id: String!
+  name: String
+  version: String!
+  description: String
+  permissions: [String!]
+  roleType: RoleTypeEnum
+  scopeId: String
+}
+
+enum RoleTypeEnum {
+  DEFAULT
+  CUSTOM
+}
+
+type User implements Principal & Resource {
+  id: String!
+  name: String!
+  firstName: String!
+  lastName: String!
+  email: String!
+  createdDate: Date!
+  updatedDate: Date
+  tenant: Tenant!
+}
+
+input CreateUserInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  tenantId: String!
+}
+
+input UpdateUserInput {
+  id: String!
+  firstName: String
+  lastName: String
+  email: String
+  tenantId: String
+}
+
+type Group implements Principal & Resource {
+  id: String!
+  name: String!
+  email: String!
+  tenant: Tenant!
+  description: String
+  members: [User!]!
+  createdDate: Date!
+  updatedDate: Date
+}
+
+input CreateGroupInput {
+  name: String!
+  email: String!
+  tenantId: String!
+  description: String
+  members: [String!]!
+}
+
+input UpdateGroupInput {
+  id: String!
+  name: String
+  email: String
+  tenantId: String!
+  description: String
+  members: [String!]!
+}
+
+type Root implements Resource & Organization {
+  id: String!
+  name: String!
+  createdDate: Date!
+  updatedDate: Date
+  description: String
+}
+
+input CreateRootInput {
+  name: String!
+  description: String
+}
+
+input UpdateRootInput {
+  id: String!
+  name: String
+  description: String
+}
+
+type Tenant implements Resource & Organization {
+  id: String!
+  name: String!
+  createdDate: Date!
+  updatedDate: Date
+  description: String
+  parentOrg: Organization!
+  contactInfo: ContactInfo
+}
+
+type ContactInfo {
+  id: String!
+  email: String
+  phoneNumber: String
+  address: Address
+}
+
+input CreateTenantInput {
+  name: String!
+  description: String
+  parentOrgId: String!
+  contactInfoId: String!
+}
+
+input UpdateTenantInput {
+  id: String!
+  name: String
+  description: String
+  parentOrgId: String
+  contactInfoId: String!
+}
+
+type Address {
+  id: String!
+  street: String
+  city: String
+  state: String
+  zipCode: String
+  country: String
+}
+
+input CreateAddressInput {
+  street: String
+  city: String
+  state: String
+  zipCode: String
+  country: String
+}
+
+input UpdateAddressInput {
+  id: String!
+  street: String
+  city: String
+  state: String
+  zipCode: String
+  country: String
+}
+
+type ClientOrganizationUnit implements Resource & Organization {
+  id: String!
+  name: String!
+  createdDate: Date!
+  updatedDate: Date
+  description: String
+  tenant: Tenant!
+  parentOrg: Organization!
+}
+
+input CreateClientOrganizationUnitInput {
+  name: String!
+  description: String
+  tenantId: String!
+  parentOrgId: String!
+}
+
+input UpdateClientOrganizationUnitInput {
+  id: String!
+  name: String
+  description: String
+  tenantId: String
+  parentOrgId: String
+}
+
+type Account implements Resource & Organization {
+  id: String!
+  name: String!
+  createdDate: Date!
+  updatedDate: Date
+  description: String
+  tenant: Tenant!
+  parentOrg: Organization!
+  billingInfo: BillingInfo
+}
+
+input CreateAccountInput {
+  name: String!
+  description: String
+  tenantId: String!
+  parentOrgId: String!
+  billingInfoId: String!
+}
+
+input UpdateAccountInput {
+  id: String!
+  name: String
+  description: String
+  tenantId: String
+  parentOrgId: String
+  billingInfoId: String!
+}
+
+type BillingInfo {
+  id: String!
+  creditCardNumber: String!
+  creditCardType: String!
+  expirationDate: String!
+  cvv: String!
+  billingAddress: BillingAddress!
+}
+
+input CreateBillingInfoInput {
+  creditCardNumber: String!
+  creditCardType: String!
+  expirationDate: String!
+  cvv: String!
+  billingAddressId: String!
+}
+
+input UpdateBillingInfoInput {
+  id: String!
+  creditCardNumber: String!
+  creditCardType: String!
+  expirationDate: String!
+  cvv: String!
+  billingAddressId: String!
+}
+
+type BillingAddress {
+  id: String!
+  street: String!
+  city: String!
+  state: String!
+  zipCode: String!
+  country: String!
+}
+
+input CreateBillingAddressInput {
+  street: String!
+  city: String!
+  state: String!
+  zipCode: String!
+  country: String!
+}
+
+input UpdateBillingAddressInput {
+  id: String!
+  street: String
+  city: String
+  state: String
+  zipCode: String
+  country: String
+}
+
+type Binding implements Resource {
+  id: String!
+  name: String!
+  createdDate: Date!
+  updatedDate: Date
+  principal: Principal!
+  role: Role!
+  scopeRef: Resource!
+  version: String!
+}
+
+input CreateBindingInput {
+  name: String!
+  principalId: String!
+  roleId: String!
+  scopeRefId: String!
+  version: String!
+}
+
+input UpdateBindingInput {
+  id: String!
+  name: String!
+  principalId: String!
+  roleId: String!
+  scopeRefId: String!
+  version: String!
+}
+
+type Query {
+  getPrincipal(id: String!): Principal
+  allPrincipals: [Principal!]!
+
+  getOrganization(id: String!): Organization
+  allOrganizations: [Organization!]!
+
+  getResource(id: String!): Resource
+  allResources: [Resource!]!
+
+  getPermission(id: String!): Permission
+  allPermissions: [Permission!]!
+
+  getRole(id: String!): Role
+  allRoles: [Role!]!
+
+  getRoot(id: String!): Root
+
+  getTenant(id: String!): Tenant
+  allTenants: [Tenant!]!
+
+  getClientOrganizationUnit(id: String!): ClientOrganizationUnit
+  allClientOrganizationUnits: [ClientOrganizationUnit!]!
+
+  getAccount(id: String!): Account
+  allAccounts: [Account!]!
+
+  getBinding(id: String!): Binding
+  allBindings: [Binding!]!
+}
+
+type Mutation {
+  createRole(input: CreateRoleInput!): Role!
+  updateRole(input: UpdateRoleInput!): Role!
+  deleteRole(id: String!): Boolean!
+
+  createPermission(input: CreatePermissionInput!): Permission!
+  updatePermission(input: UpdatePermissionInput!): Permission!
+  deletePermission(id: String!): Boolean!
+
+  createUser(input: CreateUserInput!): User!
+  updateUser(input: UpdateUserInput!): User!
+  deleteUser(id: String!): Boolean!
+
+  createGroup(input: CreateGroupInput!): Group!
+  updateGroup(input: UpdateGroupInput!): Group!
+  deleteGroup(id: String!): Boolean!
+
+  createRoot(input: CreateRootInput!): Root!
+  updateRoot(input: UpdateRootInput!): Root!
+  deleteRoot(id: String!): Boolean!
+
+  createTenant(input: CreateTenantInput!): Tenant!
+  updateTenant(input: UpdateTenantInput!): Tenant!
+  deleteTenant(id: String!): Boolean!
+
+  createClientOrganizationUnit(
+    input: CreateClientOrganizationUnitInput!
+  ): ClientOrganizationUnit!
+  updateClientOrganizationUnit(
+    input: UpdateClientOrganizationUnitInput!
+  ): ClientOrganizationUnit!
+  deleteClientOrganizationUnit(id: String!): Boolean!
+
+  createAccount(input: CreateAccountInput!): Account!
+  updateAccount(input: UpdateAccountInput!): Account!
+  deleteAccount(id: String!): Boolean!
+
+  createBinding(input: CreateBindingInput!): Binding!
+  updateBinding(input: UpdateBindingInput!): Binding!
+  deleteBinding(id: String!): Boolean!
+}

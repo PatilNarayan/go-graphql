@@ -1,0 +1,35 @@
+# schema.graphql
+
+# Tenant Type definition
+type Tenant {
+  id: ID!
+  organizationId: ID!
+  projectId: ID!
+  environmentId: ID!
+  createdAt: String!
+  updatedAt: String!
+  lastActionAt: String!
+  key: String!
+  name: String!
+  attributes: TenantAttributes!
+}
+
+# Attributes related to the Tenant
+type TenantAttributes {
+  allowedLocations: [String]!
+}
+
+# Input types for creating and updating a tenant
+input TenantInput {
+  organizationId: ID!
+  projectId: ID!
+  environmentId: ID!
+  key: String!
+  name: String!
+  attributes: TenantAttributesInput!
+}
+
+input TenantAttributesInput {
+  allowedLocations: [String]!
+}
+

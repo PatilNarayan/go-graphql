@@ -1,0 +1,43 @@
+{"level":"info","msg":"Environment variables loaded successfully","time":"2025-01-09T09:20:56+05:30"}
+{"level":"info","msg":"Gin router initialized","time":"2025-01-09T09:20:56+05:30"}
+{"level":"info","msg":"Database connection established","time":"2025-01-09T09:20:56+05:30"}
+{"level":"info","msg":"GraphQL server initialized","time":"2025-01-09T09:20:56+05:30"}
+{"level":"info","msg":"Routes configured","time":"2025-01-09T09:20:56+05:30"}
+{"level":"info","msg":"Starting server at http://localhost:8080/playground","time":"2025-01-09T09:20:56+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-09T09:22:17+05:30"}
+{"count":2,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-09T09:22:17+05:30"}
+{"level":"info","msg":"Found parent organization","operation":"AllTenants","parentID":"11111111-1111-1111-1111-111111111111","tenantID":"4a357cac-f67c-4dc5-803e-7d15f01626eb","time":"2025-01-09T09:22:17+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"4a357cac-f67c-4dc5-803e-7d15f01626eb","time":"2025-01-09T09:22:17+05:30"}
+{"level":"info","msg":"Found parent organization","operation":"AllTenants","parentID":"11111111-1111-1111-1111-111111111111","tenantID":"9fd843e9-ef1d-43e2-940b-6303657ae0ce","time":"2025-01-09T09:22:17+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"9fd843e9-ef1d-43e2-940b-6303657ae0ce","time":"2025-01-09T09:22:17+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-09T09:22:25+05:30"}
+{"count":2,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-09T09:22:25+05:30"}
+{"level":"info","msg":"Found parent organization","operation":"AllTenants","parentID":"11111111-1111-1111-1111-111111111111","tenantID":"4a357cac-f67c-4dc5-803e-7d15f01626eb","time":"2025-01-09T09:22:25+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"4a357cac-f67c-4dc5-803e-7d15f01626eb","time":"2025-01-09T09:22:25+05:30"}
+{"level":"info","msg":"Found parent organization","operation":"AllTenants","parentID":"11111111-1111-1111-1111-111111111111","tenantID":"9fd843e9-ef1d-43e2-940b-6303657ae0ce","time":"2025-01-09T09:22:25+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"9fd843e9-ef1d-43e2-940b-6303657ae0ce","time":"2025-01-09T09:22:25+05:30"}
+{"level":"info","msg":"Environment variables loaded successfully","time":"2025-01-09T09:37:42+05:30"}
+{"level":"info","msg":"Gin router initialized","time":"2025-01-09T09:37:42+05:30"}
+{"level":"info","msg":"Database connection established","time":"2025-01-09T09:37:42+05:30"}
+{"level":"info","msg":"GraphQL server initialized","time":"2025-01-09T09:37:42+05:30"}
+{"level":"info","msg":"Routes configured","time":"2025-01-09T09:37:42+05:30"}
+{"level":"info","msg":"Starting server at http://localhost:8080/playground","time":"2025-01-09T09:37:42+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-09T09:41:48+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"53c1ae9e-9df7-4487-b483-c7a20441431e","time":"2025-01-09T09:41:48+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-09T09:41:49+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-09T09:41:49+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"53c1ae9e-9df7-4487-b483-c7a20441431e","time":"2025-01-09T09:41:49+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-09T09:43:11+05:30"}
+{"count":3,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-09T09:43:11+05:30"}
+{"level":"info","msg":"Found parent organization","operation":"AllTenants","parentID":"11111111-1111-1111-1111-111111111111","tenantID":"4a357cac-f67c-4dc5-803e-7d15f01626eb","time":"2025-01-09T09:43:11+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"4a357cac-f67c-4dc5-803e-7d15f01626eb","time":"2025-01-09T09:43:11+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"53c1ae9e-9df7-4487-b483-c7a20441431e","time":"2025-01-09T09:43:11+05:30"}
+{"level":"info","msg":"Found parent organization","operation":"AllTenants","parentID":"11111111-1111-1111-1111-111111111111","tenantID":"9fd843e9-ef1d-43e2-940b-6303657ae0ce","time":"2025-01-09T09:43:11+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"9fd843e9-ef1d-43e2-940b-6303657ae0ce","time":"2025-01-09T09:43:11+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-09T09:43:12+05:30"}
+{"count":3,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-09T09:43:12+05:30"}
+{"level":"info","msg":"Found parent organization","operation":"AllTenants","parentID":"11111111-1111-1111-1111-111111111111","tenantID":"4a357cac-f67c-4dc5-803e-7d15f01626eb","time":"2025-01-09T09:43:12+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"4a357cac-f67c-4dc5-803e-7d15f01626eb","time":"2025-01-09T09:43:12+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"53c1ae9e-9df7-4487-b483-c7a20441431e","time":"2025-01-09T09:43:12+05:30"}
+{"level":"info","msg":"Found parent organization","operation":"AllTenants","parentID":"11111111-1111-1111-1111-111111111111","tenantID":"9fd843e9-ef1d-43e2-940b-6303657ae0ce","time":"2025-01-09T09:43:12+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"9fd843e9-ef1d-43e2-940b-6303657ae0ce","time":"2025-01-09T09:43:12+05:30"}

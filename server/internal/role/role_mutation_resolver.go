@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go_graphql/config"
 	"go_graphql/gql/models"
 	"go_graphql/internal/constants"
 	"go_graphql/internal/dto"
 	"go_graphql/internal/utils"
+	middleware "go_graphql/middlewares"
 	"go_graphql/permit"
-	"iam_services_main_v1/config"
 
 	// "go_graphql/config"
-	middleware "go_graphql/internal/middlewares"
+
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -34,10 +35,10 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 		return nil, fmt.Errorf("unable to get gin context")
 	}
 
-	tenantID, err := helpers.GetTenant(ginCtx)
-	if err != nil {
-		return nil, err
-	}
+	// tenantID, err := helpers.GetTenant(ginCtx)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	if err := ValidateTenantID(uuid.MustParse(tenantID)); err != nil {
 		return nil, err

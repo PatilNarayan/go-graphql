@@ -1,0 +1,269 @@
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:42:14+05:30"}
+{"error":"SQL logic error: no such table: mst_resource_types (1)","level":"error","msg":"Failed to find resource type","operation":"AllTenants","time":"2025-01-03T22:42:14+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:42:14+05:30"}
+{"error":"SQL logic error: no such table: mst_resource_types (1)","level":"error","msg":"Failed to find resource type","operation":"AllTenants","time":"2025-01-03T22:42:14+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:42:14+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:45:14+05:30"}
+{"error":"SQL logic error: no such table: mst_resource_types (1)","level":"error","msg":"Failed to find resource type","operation":"AllTenants","time":"2025-01-03T22:45:14+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:45:14+05:30"}
+{"error":"SQL logic error: no such table: mst_resource_types (1)","level":"error","msg":"Failed to find resource type","operation":"AllTenants","time":"2025-01-03T22:45:14+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:45:14+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:45:39+05:30"}
+{"error":"SQL logic error: no such table: mst_resource_types (1)","level":"error","msg":"Failed to find resource type","operation":"AllTenants","time":"2025-01-03T22:45:39+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:45:39+05:30"}
+{"error":"SQL logic error: no such table: mst_resource_types (1)","level":"error","msg":"Failed to find resource type","operation":"AllTenants","time":"2025-01-03T22:45:39+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:45:39+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:46:15+05:30"}
+{"error":"SQL logic error: no such table: mst_resource_types (1)","level":"error","msg":"Failed to find resource type","operation":"AllTenants","time":"2025-01-03T22:46:15+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:46:15+05:30"}
+{"error":"SQL logic error: no such table: mst_resource_types (1)","level":"error","msg":"Failed to find resource type","operation":"AllTenants","time":"2025-01-03T22:46:15+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:46:15+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:47:02+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-03T22:47:02+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"feda376f-52c1-4141-b97f-71daa46ef5ea","time":"2025-01-03T22:47:02+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:47:02+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-03T22:47:02+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"feda376f-52c1-4141-b97f-71daa46ef5ea","time":"2025-01-03T22:47:02+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:47:02+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:47:15+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-03T22:47:15+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"02ba3012-ad4e-4d7a-bdf1-ecd5d871d8d9","time":"2025-01-03T22:47:15+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:47:15+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-03T22:47:15+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"02ba3012-ad4e-4d7a-bdf1-ecd5d871d8d9","time":"2025-01-03T22:47:15+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:47:15+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:57:09+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-03T22:57:09+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"0e7855e2-780c-4066-95ef-c0ccd69a9ee1","time":"2025-01-03T22:57:09+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:57:09+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-03T22:57:09+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"0e7855e2-780c-4066-95ef-c0ccd69a9ee1","time":"2025-01-03T22:57:09+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:57:09+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:57:54+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-03T22:57:54+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"7f600efd-8302-4d10-bf40-59a1a1ba136d","time":"2025-01-03T22:57:54+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:57:54+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-03T22:57:54+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"7f600efd-8302-4d10-bf40-59a1a1ba136d","time":"2025-01-03T22:57:54+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T22:57:54+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T23:01:52+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-03T23:01:52+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"8e8b347b-4b28-4f9d-b90c-89a88236502e","time":"2025-01-03T23:01:52+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T23:01:52+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-03T23:01:52+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"8e8b347b-4b28-4f9d-b90c-89a88236502e","time":"2025-01-03T23:01:52+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T23:01:52+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T23:03:04+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-03T23:03:04+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"15b616a8-b41b-4d8f-a2e1-d988b927a0af","time":"2025-01-03T23:03:04+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T23:03:04+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-03T23:03:04+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"15b616a8-b41b-4d8f-a2e1-d988b927a0af","time":"2025-01-03T23:03:04+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"1ee24c65-5e1d-4d4a-8412-4b78cb36f829","time":"2025-01-03T23:08:07+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"GetTenant","tenantID":"1ee24c65-5e1d-4d4a-8412-4b78cb36f829","time":"2025-01-03T23:08:07+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"5e996416-c374-4ce7-aa99-0bb8a1171cfa","time":"2025-01-03T23:08:07+05:30"}
+{"error":"record not found","level":"error","msg":"Failed to fetch tenant","operation":"GetTenant","tenantID":"5e996416-c374-4ce7-aa99-0bb8a1171cfa","time":"2025-01-03T23:08:07+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"00000000-0000-0000-0000-000000000000","time":"2025-01-03T23:08:07+05:30"}
+{"error":"record not found","level":"warning","msg":"No metadata found for tenant","operation":"GetTenant","tenantID":"00000000-0000-0000-0000-000000000000","time":"2025-01-03T23:08:07+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"f37ac414-ef60-439f-8e3d-787862b8bcb8","time":"2025-01-03T23:08:29+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"GetTenant","tenantID":"f37ac414-ef60-439f-8e3d-787862b8bcb8","time":"2025-01-03T23:08:29+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"376b253c-c627-4790-8994-b1f5bd28899f","time":"2025-01-03T23:08:29+05:30"}
+{"error":"record not found","level":"error","msg":"Failed to fetch tenant","operation":"GetTenant","tenantID":"376b253c-c627-4790-8994-b1f5bd28899f","time":"2025-01-03T23:08:29+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"00000000-0000-0000-0000-000000000000","time":"2025-01-03T23:08:29+05:30"}
+{"error":"record not found","level":"warning","msg":"No metadata found for tenant","operation":"GetTenant","tenantID":"00000000-0000-0000-0000-000000000000","time":"2025-01-03T23:08:29+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"d8d0a6cd-94ee-4749-8c92-450261087c4b","time":"2025-01-03T23:12:16+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"GetTenant","tenantID":"d8d0a6cd-94ee-4749-8c92-450261087c4b","time":"2025-01-03T23:12:16+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"cf728271-6bdc-4adb-874a-707bc39f4b3e","time":"2025-01-03T23:12:16+05:30"}
+{"error":"record not found","level":"error","msg":"Failed to fetch tenant","operation":"GetTenant","tenantID":"cf728271-6bdc-4adb-874a-707bc39f4b3e","time":"2025-01-03T23:12:16+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"00000000-0000-0000-0000-000000000000","time":"2025-01-03T23:12:16+05:30"}
+{"error":"record not found","level":"warning","msg":"No metadata found for tenant","operation":"GetTenant","tenantID":"00000000-0000-0000-0000-000000000000","time":"2025-01-03T23:12:16+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"edbbddaa-f9c0-49e8-b358-6893812822e1","time":"2025-01-03T23:13:07+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"GetTenant","tenantID":"edbbddaa-f9c0-49e8-b358-6893812822e1","time":"2025-01-03T23:13:07+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"388ed82b-d62c-4d19-9acb-279bde65f47e","time":"2025-01-03T23:13:07+05:30"}
+{"error":"record not found","level":"error","msg":"Failed to fetch tenant","operation":"GetTenant","tenantID":"388ed82b-d62c-4d19-9acb-279bde65f47e","time":"2025-01-03T23:13:07+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"00000000-0000-0000-0000-000000000000","time":"2025-01-03T23:13:07+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"42da0060-933d-4122-af6b-99ff5a9ff5bd","time":"2025-01-03T23:14:36+05:30"}
+{"level":"info","msg":"Found parent organization","operation":"GetTenant","parentID":"b8f87040-83bb-45b9-a7c6-dff5c55d9453","tenantID":"42da0060-933d-4122-af6b-99ff5a9ff5bd","time":"2025-01-03T23:14:36+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"GetTenant","tenantID":"42da0060-933d-4122-af6b-99ff5a9ff5bd","time":"2025-01-03T23:14:36+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"168ab5c8-c920-490b-aac7-b1445a497224","time":"2025-01-03T23:14:36+05:30"}
+{"error":"record not found","level":"error","msg":"Failed to fetch tenant","operation":"GetTenant","tenantID":"168ab5c8-c920-490b-aac7-b1445a497224","time":"2025-01-03T23:14:36+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"00000000-0000-0000-0000-000000000000","time":"2025-01-03T23:14:36+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"9b80537b-25b2-40ef-9982-b82619eeccf5","time":"2025-01-03T23:14:47+05:30"}
+{"level":"info","msg":"Found parent organization","operation":"GetTenant","parentID":"5558626f-1231-4eaa-9e49-ba07364d5414","tenantID":"9b80537b-25b2-40ef-9982-b82619eeccf5","time":"2025-01-03T23:14:47+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"GetTenant","tenantID":"9b80537b-25b2-40ef-9982-b82619eeccf5","time":"2025-01-03T23:14:47+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"5d577faa-f4f1-46dd-88bf-b0d5b3d0bf0f","time":"2025-01-03T23:14:47+05:30"}
+{"error":"record not found","level":"error","msg":"Failed to fetch tenant","operation":"GetTenant","tenantID":"5d577faa-f4f1-46dd-88bf-b0d5b3d0bf0f","time":"2025-01-03T23:14:47+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"00000000-0000-0000-0000-000000000000","time":"2025-01-03T23:14:47+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"92c9a672-04eb-4de0-9fdc-dbd3df0bde88","time":"2025-01-03T23:15:57+05:30"}
+{"level":"info","msg":"Found parent organization","operation":"GetTenant","parentID":"f5c895c5-d55e-4b95-92d2-e83bc7245155","tenantID":"92c9a672-04eb-4de0-9fdc-dbd3df0bde88","time":"2025-01-03T23:15:57+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"GetTenant","tenantID":"92c9a672-04eb-4de0-9fdc-dbd3df0bde88","time":"2025-01-03T23:15:57+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"0e36cf37-f71c-481f-8250-44fc5c88c1b7","time":"2025-01-03T23:15:57+05:30"}
+{"error":"record not found","level":"error","msg":"Failed to fetch tenant","operation":"GetTenant","tenantID":"0e36cf37-f71c-481f-8250-44fc5c88c1b7","time":"2025-01-03T23:15:57+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"00000000-0000-0000-0000-000000000000","time":"2025-01-03T23:15:57+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"27e35fdb-ba22-441e-83af-f35803ac2d8a","time":"2025-01-03T23:17:50+05:30"}
+{"level":"info","msg":"Found parent organization","operation":"GetTenant","parentID":"bdc75bad-cf63-4250-9b3c-b1f3b74a006b","tenantID":"27e35fdb-ba22-441e-83af-f35803ac2d8a","time":"2025-01-03T23:17:50+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"GetTenant","tenantID":"27e35fdb-ba22-441e-83af-f35803ac2d8a","time":"2025-01-03T23:17:50+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"433466e0-ff6f-4e58-a724-3b4be12f9dd8","time":"2025-01-03T23:17:50+05:30"}
+{"error":"record not found","level":"error","msg":"Failed to fetch tenant","operation":"GetTenant","tenantID":"433466e0-ff6f-4e58-a724-3b4be12f9dd8","time":"2025-01-03T23:17:50+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"00000000-0000-0000-0000-000000000000","time":"2025-01-03T23:17:50+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"7a89af22-df6f-4269-b6cd-ad45deee7006","time":"2025-01-03T23:20:31+05:30"}
+{"level":"info","msg":"Found parent organization","operation":"GetTenant","parentID":"2afa7da8-9551-4835-afed-2a46a4875890","tenantID":"7a89af22-df6f-4269-b6cd-ad45deee7006","time":"2025-01-03T23:20:31+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"GetTenant","tenantID":"7a89af22-df6f-4269-b6cd-ad45deee7006","time":"2025-01-03T23:20:31+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"cb80188b-311b-4136-8864-2437415d7ddc","time":"2025-01-03T23:20:31+05:30"}
+{"level":"info","msg":"Found parent organization","operation":"GetTenant","parentID":"2afa7da8-9551-4835-afed-2a46a4875890","tenantID":"cb80188b-311b-4136-8864-2437415d7ddc","time":"2025-01-03T23:20:31+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"GetTenant","tenantID":"cb80188b-311b-4136-8864-2437415d7ddc","time":"2025-01-03T23:20:31+05:30"}
+{"level":"info","msg":"Fetching tenant","operation":"GetTenant","tenantID":"00000000-0000-0000-0000-000000000000","time":"2025-01-03T23:20:31+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:32:03+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"0ea08db0-5db5-451d-9b3a-c63bc0940827","time":"2025-01-03T23:32:03+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T23:32:47+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-03T23:32:47+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"e60e7cb5-81ba-42e1-8c18-cbb6b7d220b2","time":"2025-01-03T23:32:47+05:30"}
+{"level":"info","msg":"Fetching all tenants","operation":"AllTenants","time":"2025-01-03T23:32:47+05:30"}
+{"count":1,"level":"info","msg":"Found tenants","operation":"AllTenants","time":"2025-01-03T23:32:47+05:30"}
+{"level":"info","msg":"Updated tenant with metadata","operation":"AllTenants","tenantID":"e60e7cb5-81ba-42e1-8c18-cbb6b7d220b2","time":"2025-01-03T23:32:47+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:33:51+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"9b7faea0-963b-4866-ad35-24450c6acf65","time":"2025-01-03T23:33:51+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:33:51+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:33:51+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"9b7faea0-963b-4866-ad35-24450c6acf65","time":"2025-01-03T23:33:51+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:34:18+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"ce586e08-65f0-410e-958a-b5b875ae6875","time":"2025-01-03T23:34:18+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:34:18+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:34:18+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"ce586e08-65f0-410e-958a-b5b875ae6875","time":"2025-01-03T23:34:18+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:35:26+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"7cf14bb7-b359-4a53-ae69-2ab37b405ef2","time":"2025-01-03T23:35:26+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:35:26+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:35:26+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"7cf14bb7-b359-4a53-ae69-2ab37b405ef2","time":"2025-01-03T23:35:26+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:35:26+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"312491f6-93fa-41ed-915f-3c7bd5a2a30c","time":"2025-01-03T23:35:26+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:35:26+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:35:26+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"312491f6-93fa-41ed-915f-3c7bd5a2a30c","time":"2025-01-03T23:35:26+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:35:26+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"bd2e3780-5a92-4eeb-a74e-e56ecf622de5","time":"2025-01-03T23:35:26+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:35:26+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:35:26+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:35:35+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"677db7f7-f314-44a6-bd51-62e731097bd8","time":"2025-01-03T23:35:35+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:35:35+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:35:35+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"677db7f7-f314-44a6-bd51-62e731097bd8","time":"2025-01-03T23:35:35+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:35:35+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"fa64d126-63ff-4216-b93b-640f618fa77e","time":"2025-01-03T23:35:35+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:35:35+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:35:35+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"fa64d126-63ff-4216-b93b-640f618fa77e","time":"2025-01-03T23:35:35+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:35:35+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"a0e89ae4-fb33-4f84-8019-cd01c0b5dda1","time":"2025-01-03T23:35:35+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:35:35+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:35:35+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:37:11+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"9eaef58b-a094-491b-b02d-98a9f4969e2b","time":"2025-01-03T23:37:11+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:37:11+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:37:11+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"9eaef58b-a094-491b-b02d-98a9f4969e2b","time":"2025-01-03T23:37:11+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:37:11+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"d16d05e9-1b07-4845-b8da-272b59b542bb","time":"2025-01-03T23:37:11+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:37:11+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:37:11+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"d16d05e9-1b07-4845-b8da-272b59b542bb","time":"2025-01-03T23:37:11+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:37:11+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"c7d2eff4-0336-4109-a803-645b1e211c8c","time":"2025-01-03T23:37:11+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:37:11+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:37:11+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"a476da68-c845-4e86-be09-f6d027606d38","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"a476da68-c845-4e86-be09-f6d027606d38","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"80b14d74-b91a-4762-83bb-7e37a80c34e5","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"80b14d74-b91a-4762-83bb-7e37a80c34e5","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"3c9b9e92-88bf-43ef-a72e-fc7a719cafc7","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"3c9b9e92-88bf-43ef-a72e-fc7a719cafc7","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"980a9881-de5e-474d-8d05-670efc333bc4","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"980a9881-de5e-474d-8d05-670efc333bc4","time":"2025-01-03T23:37:30+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:40:33+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"ab22f5d0-5d47-4498-804e-f3b47840acaf","time":"2025-01-03T23:40:33+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:40:33+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:40:33+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"ab22f5d0-5d47-4498-804e-f3b47840acaf","time":"2025-01-03T23:40:33+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:40:33+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"a3076ed0-e45a-4a0e-bd46-898382f75b23","time":"2025-01-03T23:40:33+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:40:33+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:40:33+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:40:50+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"75ce135f-d033-4fae-9692-6696c306f1c4","time":"2025-01-03T23:40:50+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:40:50+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:40:50+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:41:32+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"348eabd1-325b-4ca1-b931-dcdc178be7a5","time":"2025-01-03T23:41:32+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:41:32+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:41:32+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"348eabd1-325b-4ca1-b931-dcdc178be7a5","time":"2025-01-03T23:41:32+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:41:32+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"4aaf8445-0558-424d-930f-8e9b004126b5","time":"2025-01-03T23:41:32+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:41:32+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:41:32+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:41:53+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"b84b00e4-8921-4769-a700-688ded939eb2","time":"2025-01-03T23:41:53+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:41:53+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:41:53+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"b84b00e4-8921-4769-a700-688ded939eb2","time":"2025-01-03T23:41:53+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:41:53+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"c16ea7eb-1aaf-4cc1-a93b-a16ab5348e2c","time":"2025-01-03T23:41:53+05:30"}
+{"level":"info","msg":"Parent organization validated","operation":"CreateTenant","parentOrgID":"00000000-0000-0000-0000-000000000000","time":"2025-01-03T23:41:53+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:41:53+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:41:53+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:42:11+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"2969ff2e-b9fd-45e8-bd9a-1ed253fb0eb0","time":"2025-01-03T23:42:11+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:42:11+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:42:11+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"2969ff2e-b9fd-45e8-bd9a-1ed253fb0eb0","time":"2025-01-03T23:42:11+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:42:11+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"cf2fbe68-a7e0-4d69-88a1-403fd8355f01","time":"2025-01-03T23:42:11+05:30"}
+{"level":"info","msg":"Parent organization validated","operation":"CreateTenant","parentOrgID":"fb5c17b5-a77e-45c0-b7bf-27f16463cea1","time":"2025-01-03T23:42:11+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:42:11+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:42:11+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:42:30+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"26491097-a743-4136-8689-b04b5a3f99db","time":"2025-01-03T23:42:30+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:42:30+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:42:30+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"26491097-a743-4136-8689-b04b5a3f99db","time":"2025-01-03T23:42:30+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-03T23:45:04+05:30"}
+{"error":"record not found","level":"error","msg":"tenant metadata not found","operation":"UpdateTenant","time":"2025-01-03T23:45:04+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-03T23:45:04+05:30"}
+{"error":"record not found","level":"error","msg":"tenant resource not found","operation":"UpdateTenant","time":"2025-01-03T23:45:04+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-03T23:45:04+05:30"}
+{"error":"record not found","level":"error","msg":"tenant metadata not found","operation":"UpdateTenant","time":"2025-01-03T23:45:04+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-03T23:45:04+05:30"}
+{"error":"record not found","level":"error","msg":"tenant metadata not found","operation":"UpdateTenant","time":"2025-01-03T23:45:04+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-03T23:45:37+05:30"}
+{"error":"record not found","level":"error","msg":"tenant resource not found","operation":"UpdateTenant","time":"2025-01-03T23:45:37+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-03T23:45:37+05:30"}
+{"error":"record not found","level":"error","msg":"tenant metadata not found","operation":"UpdateTenant","time":"2025-01-03T23:45:37+05:30"}
+{"level":"info","msg":"Found tenant resource","operation":"DeleteTenant","tenantID":"b1a9ae0b-748f-48a8-964b-1b15c6d7d746","time":"2025-01-03T23:48:39+05:30"}
+{"level":"info","msg":"Deleted tenant metadata","operation":"DeleteTenant","time":"2025-01-03T23:48:39+05:30"}
+{"level":"info","msg":"Deleted tenant resource","operation":"DeleteTenant","time":"2025-01-03T23:48:39+05:30"}
+{"level":"info","msg":"Deleted tenant successfully","operation":"DeleteTenant","time":"2025-01-03T23:48:39+05:30"}
+{"error":"record not found","level":"error","msg":"failed to fetch tenant resource","operation":"DeleteTenant","time":"2025-01-03T23:48:39+05:30"}
+{"error":"record not found","level":"error","msg":"failed to fetch tenant resource","operation":"DeleteTenant","time":"2025-01-03T23:48:39+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-03T23:48:50+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"4244ac5f-c4bd-4fad-aee6-0bbc4a496855","time":"2025-01-03T23:48:50+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-03T23:48:50+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-03T23:48:50+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"4244ac5f-c4bd-4fad-aee6-0bbc4a496855","time":"2025-01-03T23:48:50+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-03T23:48:55+05:30"}
+{"error":"record not found","level":"error","msg":"tenant resource not found","operation":"UpdateTenant","time":"2025-01-03T23:48:55+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-03T23:48:55+05:30"}
+{"error":"record not found","level":"error","msg":"tenant metadata not found","operation":"UpdateTenant","time":"2025-01-03T23:48:55+05:30"}

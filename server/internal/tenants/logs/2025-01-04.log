@@ -1,0 +1,35 @@
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-04T09:49:08+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"4ea87e3b-344f-480f-929a-b14c566e7706","time":"2025-01-04T09:49:08+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-04T09:58:01+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"623b5a3d-5d19-4fde-8669-06fe3864ad91","time":"2025-01-04T09:58:01+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-04T09:59:02+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"8d54066c-9521-49df-ad69-340cbe4a6a1e","time":"2025-01-04T09:59:02+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-04T09:59:49+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"7a1758ee-64a5-499a-9953-871895efdce6","time":"2025-01-04T09:59:49+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-04T10:00:29+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"4b04306e-fa47-4e68-af51-f2956359dba4","time":"2025-01-04T10:00:29+05:30"}
+{"level":"info","msg":"Starting tenant creation process","operation":"CreateTenant","time":"2025-01-04T10:01:07+05:30"}
+{"level":"info","msg":"Generated new tenant resource","operation":"CreateTenant","tenantID":"9106cf59-dfc9-49e2-abf0-7e768818d3a0","time":"2025-01-04T10:01:07+05:30"}
+{"level":"info","msg":"Tenant resource created successfully","operation":"CreateTenant","time":"2025-01-04T10:01:07+05:30"}
+{"level":"info","msg":"Tenant metadata created successfully","operation":"CreateTenant","time":"2025-01-04T10:01:07+05:30"}
+{"level":"info","msg":"Tenant creation completed successfully","operation":"CreateTenant","tenantID":"9106cf59-dfc9-49e2-abf0-7e768818d3a0","time":"2025-01-04T10:01:07+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-04T10:06:09+05:30"}
+{"error":"record not found","level":"error","msg":"tenant resource not found","operation":"UpdateTenant","time":"2025-01-04T10:06:09+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-04T10:06:09+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-04T10:06:51+05:30"}
+{"error":"record not found","level":"error","msg":"tenant resource not found","operation":"UpdateTenant","time":"2025-01-04T10:06:51+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-04T10:06:51+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-04T10:07:28+05:30"}
+{"error":"record not found","level":"error","msg":"tenant resource not found","operation":"UpdateTenant","time":"2025-01-04T10:07:28+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-04T10:07:28+05:30"}
+{"error":"record not found","level":"error","msg":"tenant metadata not found","operation":"UpdateTenant","time":"2025-01-04T10:07:28+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-04T10:07:44+05:30"}
+{"error":"record not found","level":"error","msg":"tenant resource not found","operation":"UpdateTenant","time":"2025-01-04T10:07:44+05:30"}
+{"level":"info","msg":"Starting tenant update process","operation":"UpdateTenant","time":"2025-01-04T10:07:44+05:30"}
+{"error":"record not found","level":"error","msg":"tenant metadata not found","operation":"UpdateTenant","time":"2025-01-04T10:07:44+05:30"}
+{"level":"info","msg":"Found tenant resource","operation":"DeleteTenant","tenantID":"9d526d6f-d951-42fd-9c9b-693da11bdfd9","time":"2025-01-04T10:09:04+05:30"}
+{"level":"info","msg":"Deleted tenant metadata","operation":"DeleteTenant","time":"2025-01-04T10:09:04+05:30"}
+{"level":"info","msg":"Deleted tenant resource","operation":"DeleteTenant","time":"2025-01-04T10:09:04+05:30"}
+{"level":"info","msg":"Deleted tenant successfully","operation":"DeleteTenant","time":"2025-01-04T10:09:04+05:30"}
+{"error":"record not found","level":"error","msg":"failed to fetch tenant resource","operation":"DeleteTenant","time":"2025-01-04T10:09:04+05:30"}
+{"error":"record not found","level":"error","msg":"failed to fetch tenant resource","operation":"DeleteTenant","time":"2025-01-04T10:09:04+05:30"}

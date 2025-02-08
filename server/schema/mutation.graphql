@@ -1,0 +1,13 @@
+type Mutation {
+  createTenant(input: TenantInput!): Tenant!
+  updateTenant(id: ID!, input: TenantInput!): Tenant!
+  deleteTenant(id: ID!): Boolean!
+
+  createUser(input: UserInput!): User!
+  updateUser(key: ID!, input: UserInput!): User!
+  deleteUser(key: ID!): Boolean!
+
+  createBinding(input: CreateBindingInput!): Binding!
+  updateBinding(input: UpdateBindingInput!): Binding!
+  deleteBinding(id: String!): Boolean!
+}
