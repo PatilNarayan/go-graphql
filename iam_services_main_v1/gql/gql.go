@@ -21,8 +21,9 @@ type Resolver struct {
 
 // Query returns the root query resolvers, delegating to feature-based resolverssss
 func (r *Resolver) Query() generated.QueryResolver {
+	permitClient := permit.NewPermitClient()
 	return &queryResolver{
-		TenantQueryResolver:                 &tenants.TenantQueryResolver{DB: r.DB},
+		TenantQueryResolver:                 &tenants.TenantQueryResolver{DB: r.DB, PermitClient: permitClient},
 		AccountQueryResolver:                &accounts.AccountQueryResolver{DB: r.DB},
 		ClientOrganizationUnitQueryResolver: &clientorganizationunit.ClientOrganizationUnitQueryResolver{DB: r.DB},
 		RoleQueryResolver:                   &role.RoleQueryResolver{DB: r.DB},

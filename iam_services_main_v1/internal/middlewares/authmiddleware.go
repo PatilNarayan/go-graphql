@@ -77,7 +77,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		if tenantID != "" {
 			c.Set("tenantID", tenantID)
 		}
-		userID := c.GetHeader("X-User-ID")
+		userID := c.GetHeader("userID")
 		if userID != "" {
 			c.Set("userID", userID)
 		}

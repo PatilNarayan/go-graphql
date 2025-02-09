@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -35,4 +36,29 @@ func GetTenant(ctx *gin.Context) (string, error) {
 		return "", fmt.Errorf("invalid tenantID: %w", err)
 	}
 	return tenantID, nil
+}
+
+func GetUserID(ctx *gin.Context) (string, error) {
+	userID := ctx.GetHeader("userID")
+	if userID == "" {
+		return "", errors.New("userID not found in headers")
+	}
+	return userID, nil
+}
+
+// StructToMap converts a struct to map[string]interface{}
+func StructToMap(obj interface{}) (map[string]interface{}, error) {
+	// Marshal the struct into JSON
+	bytes, err := json.Marshal(obj)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal struct: %w", err)
+	}
+
+	// Unmarshal JSON into map
+	var result map[string]interface{}
+	if err := json.Unmarshal(bytes, &result); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON to map: %w", err)
+	}
+
+	return result, nil
 }

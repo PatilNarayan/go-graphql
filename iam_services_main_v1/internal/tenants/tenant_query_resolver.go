@@ -39,19 +39,29 @@ func (r *TenantQueryResolver) getTenantResourceType() (*dto.Mst_ResourceTypes, e
 
 // AllTenants retrieves all tenants with their associated metadata
 func (r *TenantQueryResolver) AllTenants(ctx context.Context) ([]*models.Tenant, error) {
-	resourceType, err := r.getTenantResourceType()
+
+	// get all tenants from permit
+	allTenants, err := r.PermitClient.SendRequest(ctx, "GET", "tenants", nil)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(allTenants)
 
-	var tenantResources []dto.TenantResources
-	if err := r.DB.Where(&dto.TenantResources{
-		ResourceTypeID: resourceType.ResourceTypeID,
-	}).Find(&tenantResources).Error; err != nil {
-		return nil, fmt.Errorf("failed to fetch tenants: %w", err)
-	}
+	return r.extractTenants(allTenants.([]interface{}))
 
-	return r.processTenantResources(tenantResources)
+	// resourceType, err := r.getTenantResourceType()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// var tenantResources []dto.TenantResources
+	// if err := r.DB.Where(&dto.TenantResources{
+	// 	ResourceTypeID: resourceType.ResourceTypeID,
+	// }).Find(&tenantResources).Error; err != nil {
+	// 	return nil, fmt.Errorf("failed to fetch tenants: %w", err)
+	// }
+
+	// return r.processTenantResources(tenantResources)
 }
 
 // GetTenant retrieves a single tenant by ID with its metadata
@@ -60,30 +70,38 @@ func (r *TenantQueryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*mod
 		return nil, ErrTenantIDRequired
 	}
 
-	resourceType, err := r.getTenantResourceType()
+	// get tenant from permit
+	tenant, err := r.PermitClient.SendRequest(ctx, "GET", fmt.Sprintf("tenants/%s", id), nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var tenantResource dto.TenantResources
-	if err := r.DB.Where(&dto.TenantResources{
-		ResourceID:     id,
-		ResourceTypeID: resourceType.ResourceTypeID,
-	}).First(&tenantResource).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrTenantNotFound
-		}
-		return nil, fmt.Errorf("failed to fetch tenant: %w", err)
-	}
+	return r.extractTenantAttributes(tenant.(map[string]interface{}))
 
-	tenants, err := r.processTenantResources([]dto.TenantResources{tenantResource})
-	if err != nil {
-		return nil, err
-	}
-	if len(tenants) == 0 {
-		return nil, ErrTenantNotFound
-	}
-	return tenants[0], nil
+	// resourceType, err := r.getTenantResourceType()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// var tenantResource dto.TenantResources
+	// if err := r.DB.Where(&dto.TenantResources{
+	// 	ResourceID:     id,
+	// 	ResourceTypeID: resourceType.ResourceTypeID,
+	// }).First(&tenantResource).Error; err != nil {
+	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 		return nil, ErrTenantNotFound
+	// 	}
+	// 	return nil, fmt.Errorf("failed to fetch tenant: %w", err)
+	// }
+
+	// tenants, err := r.processTenantResources([]dto.TenantResources{tenantResource})
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// if len(tenants) == 0 {
+	// 	return nil, ErrTenantNotFound
+	// }
+	// return tenants[0], nil
 }
 
 // processTenantResources processes a slice of tenant resources and returns GraphQL tenant models
@@ -140,4 +158,91 @@ func (r *TenantQueryResolver) enrichTenantWithMetadata(tenant *models.Tenant) er
 	}
 
 	return nil
+}
+
+func (r *TenantQueryResolver) extractTenantAttributes(data map[string]interface{}) (*models.Tenant, error) {
+	tenant := &models.Tenant{}
+
+	if id, ok := data["id"].(string); ok {
+		tenant.ID = uuid.MustParse(id)
+	}
+
+	if name, ok := data["name"].(string); ok {
+		tenant.Name = name
+	}
+
+	if createdAt, ok := data["created_at"].(string); ok {
+		tenant.CreatedAt = createdAt
+	}
+
+	if updatedAt, ok := data["updated_at"].(string); ok {
+		tenant.UpdatedAt = ptr.String(updatedAt)
+	}
+
+	parentOrgID := uuid.Nil
+	if attributes, ok := data["attributes"].(map[string]interface{}); ok {
+		if attrName, ok := attributes["name"].(string); ok {
+			tenant.Name = attrName
+		}
+
+		if description, ok := attributes["description"].(string); ok {
+			tenant.Description = &description
+		}
+
+		if createdBy, ok := attributes["createdBy"].(string); ok {
+			tenant.CreatedBy = &createdBy
+		}
+
+		if updatedBy, ok := attributes["updatedBy"].(string); ok {
+			tenant.UpdatedBy = &updatedBy
+		}
+
+		if contactInfo, ok := attributes["contactInfo"].(map[string]interface{}); ok {
+			tenant.ContactInfo = buildContactInfo(contactInfo)
+		}
+
+		if parentOrgIDStr, ok := attributes["parentOrgId"].(string); ok {
+			parentOrgID = uuid.MustParse(parentOrgIDStr)
+		}
+	}
+	var parentOrg *dto.TenantResources
+
+	if err := r.DB.Where(&dto.TenantResources{
+		ResourceID: parentOrgID,
+	}).First(&parentOrg).Error; err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrParentOrgNotFound, err)
+	}
+
+	if parentOrg != nil {
+		tenant.ParentOrg = &models.Root{
+			ID:        parentOrg.ResourceID,
+			Name:      parentOrg.Name,
+			CreatedAt: parentOrg.CreatedAt.String(),
+			UpdatedAt: ptr.String(parentOrg.UpdatedAt.String()),
+			CreatedBy: &parentOrg.CreatedBy,
+			UpdatedBy: &parentOrg.UpdatedBy,
+		}
+	}
+
+	return tenant, nil
+}
+
+func (r *TenantQueryResolver) extractTenants(data []interface{}) ([]*models.Tenant, error) {
+	var tenants []*models.Tenant
+
+	for _, item := range data {
+		tenantMap, ok := item.(map[string]interface{})
+		if !ok {
+			return nil, errors.New("invalid tenant data format")
+		}
+
+		tenant, err := r.extractTenantAttributes(tenantMap)
+		if err != nil {
+			return nil, err
+		}
+
+		tenants = append(tenants, tenant)
+	}
+
+	return tenants, nil
 }

@@ -5,13 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"iam_services_main_v1/gql/models"
-	"iam_services_main_v1/internal/constants"
+	"iam_services_main_v1/helpers"
 	"iam_services_main_v1/internal/dao"
 	"iam_services_main_v1/internal/dto"
+	"iam_services_main_v1/internal/middlewares"
 	"iam_services_main_v1/internal/permit"
 	"iam_services_main_v1/internal/roles"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -42,7 +44,7 @@ func (t *TenantMutationResolver) validateParentOrg(parentOrgID string) (*uuid.UU
 	return &parentOrg.ResourceID, nil
 }
 
-func (t *TenantMutationResolver) createTenantResource(name string, resourceID, parentID uuid.UUID) (*dto.TenantResources, error) {
+func (t *TenantMutationResolver) createTenantResource(name string, resourceID, parentID uuid.UUID, UserID string) (*dto.TenantResources, error) {
 	var resourceType dto.Mst_ResourceTypes
 	if err := t.DB.Where("name = ?", "Tenant").First(&resourceType).Error; err != nil {
 		return nil, fmt.Errorf("resource type not found: %w", err)
@@ -51,8 +53,8 @@ func (t *TenantMutationResolver) createTenantResource(name string, resourceID, p
 	tenant := &dto.TenantResources{
 		ResourceID:       resourceID,
 		Name:             name,
-		CreatedBy:        constants.DefaltCreatedBy,
-		UpdatedBy:        constants.DefaltCreatedBy,
+		CreatedBy:        UserID,
+		UpdatedBy:        UserID,
 		CreatedAt:        time.Now(),
 		ResourceTypeID:   resourceType.ResourceTypeID,
 		ParentResourceID: &parentID,
@@ -65,7 +67,7 @@ func (t *TenantMutationResolver) createTenantResource(name string, resourceID, p
 	return tenant, nil
 }
 
-func (t *TenantMutationResolver) createTenantMetadata(resourceID uuid.UUID, description *string, contactInfo *models.ContactInfoInput) error {
+func (t *TenantMutationResolver) createTenantMetadata(resourceID uuid.UUID, description *string, contactInfo *models.ContactInfoInput, UserID string) error {
 	metadata := map[string]interface{}{
 		"description": description,
 		"contactInfo": contactInfo,
@@ -79,7 +81,7 @@ func (t *TenantMutationResolver) createTenantMetadata(resourceID uuid.UUID, desc
 	tenantMetadata := &dto.TenantMetadata{
 		ResourceID: resourceID,
 		Metadata:   metadataJSON,
-		CreatedBy:  constants.DefaltCreatedBy,
+		CreatedBy:  UserID,
 		CreatedAt:  time.Now(),
 	}
 
@@ -90,7 +92,7 @@ func (t *TenantMutationResolver) createTenantMetadata(resourceID uuid.UUID, desc
 	return nil
 }
 
-func (t *TenantMutationResolver) updateMetadata(resourceID uuid.UUID, description *string, contactInfo *models.ContactInfoInput) error {
+func (t *TenantMutationResolver) updateMetadata(resourceID uuid.UUID, description *string, contactInfo *models.ContactInfoInput, userID string) error {
 	var tenantMetadata dto.TenantMetadata
 	if err := t.DB.Where("resource_id = ?", resourceID).First(&tenantMetadata).Error; err != nil {
 		return fmt.Errorf("tenant metadata not found: %w", err)
@@ -116,7 +118,7 @@ func (t *TenantMutationResolver) updateMetadata(resourceID uuid.UUID, descriptio
 
 	updates := map[string]interface{}{
 		"metadata":   updatedMetadataJSON,
-		"updated_by": constants.DefaltUpdatedBy,
+		"updated_by": userID,
 		"updated_at": time.Now(),
 	}
 
@@ -179,12 +181,29 @@ func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 		return nil, err
 	}
 
+	// Extract gin.Context from GraphQL context
+	ginCtx, ok := ctx.Value(middlewares.GinContextKey).(*gin.Context)
+	if !ok {
+		return nil, fmt.Errorf("unable to get gin context")
+	}
+
+	UserID, err := helpers.GetUserID(ginCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	inputMap, err := helpers.StructToMap(input)
+	if err != nil {
+		return nil, err
+	}
+	inputMap["createdBy"] = UserID
+	inputMap["updatedBy"] = UserID
 	// Create tenant in permit
 	var tenantData interface{}
 	if tenantData, err = t.PermitClient.SendRequest(ctx, "POST", "tenants", map[string]interface{}{
 		"name":       input.Name,
 		"key":        uuid.NewString(),
-		"attributes": input,
+		"attributes": inputMap,
 	}); err != nil {
 		return nil, err
 	}
@@ -209,13 +228,13 @@ func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 	}
 
 	// Create tenant resource
-	tenantResource, err := t.createTenantResource(input.Name, tenantUuid, *parentID)
+	tenantResource, err := t.createTenantResource(input.Name, tenantUuid, *parentID, UserID)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create tenant metadata
-	if err := t.createTenantMetadata(tenantResource.ResourceID, input.Description, input.ContactInfo); err != nil {
+	if err := t.createTenantMetadata(tenantResource.ResourceID, input.Description, input.ContactInfo, UserID); err != nil {
 		return nil, err
 	}
 
@@ -230,6 +249,17 @@ func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 
 // UpdateTenant resolver for updating a Tenant
 func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.UpdateTenantInput) (*models.Tenant, error) {
+
+	// Extract gin.Context from GraphQL context
+	ginCtx, ok := ctx.Value(middlewares.GinContextKey).(*gin.Context)
+	if !ok {
+		return nil, fmt.Errorf("unable to get gin context")
+	}
+
+	UserID, err := helpers.GetUserID(ginCtx)
+	if err != nil {
+		return nil, err
+	}
 
 	// Update tenant in permit
 	if _, err := t.PermitClient.SendRequest(ctx, "PATCH", fmt.Sprintf("tenants/%s", input.ID), map[string]interface{}{
@@ -248,7 +278,7 @@ func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 
 	// Update tenant resource
 	updates := map[string]interface{}{
-		"updated_by": constants.DefaltUpdatedBy,
+		"updated_by": UserID,
 		"updated_at": time.Now(),
 	}
 	if input.Name != nil {
@@ -267,7 +297,7 @@ func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 	}
 
 	// Update metadata
-	if err := t.updateMetadata(input.ID, input.Description, input.ContactInfo); err != nil {
+	if err := t.updateMetadata(input.ID, input.Description, input.ContactInfo, UserID); err != nil {
 		return nil, err
 	}
 
