@@ -34,7 +34,7 @@ func TestAllRoles(t *testing.T) {
 	db.Create(&mstResType)
 
 	// Create tenant resource
-	tenantResource := dto.TenantResource{
+	tenantResource := dto.TenantResources{
 		ResourceID:     tenantID,
 		Name:           "TestTenant",
 		ResourceTypeID: mstResType.ResourceTypeID,
@@ -62,7 +62,7 @@ func TestAllRoles(t *testing.T) {
 	db.Create(&role1)
 
 	// Create role resource
-	roleResource := dto.TenantResource{
+	roleResource := dto.TenantResources{
 		ResourceID:     role1.ResourceID,
 		Name:           role1.Name,
 		ResourceTypeID: mstResType.ResourceTypeID,
@@ -130,7 +130,7 @@ func TestGetRole(t *testing.T) {
 	db.Create(&mstResType)
 
 	// Create tenant resource
-	tenantResource := dto.TenantResource{
+	tenantResource := dto.TenantResources{
 		ResourceID:     tenantID,
 		Name:           "Test Tenant",
 		ResourceTypeID: mstResType.ResourceTypeID,
@@ -158,7 +158,7 @@ func TestGetRole(t *testing.T) {
 	db.Create(&role)
 
 	// Create role resource
-	roleResource := dto.TenantResource{
+	roleResource := dto.TenantResources{
 		ResourceID:     roleID,
 		Name:           role.Name,
 		ResourceTypeID: mstResType.ResourceTypeID,
@@ -221,7 +221,7 @@ func TestGetGetAllRolesForAssignableScopeRef(t *testing.T) {
 	db.Create(&mstResTypeTenant)
 
 	// Create tenant resource
-	tenantResource := dto.TenantResource{
+	tenantResource := dto.TenantResources{
 		ResourceID:     tenantID,
 		Name:           "Test Tenant",
 		ResourceTypeID: mstResTypeTenant.ResourceTypeID,
@@ -251,7 +251,7 @@ func TestGetGetAllRolesForAssignableScopeRef(t *testing.T) {
 		db.Create(&role)
 
 		// Create role resource
-		roleResource := dto.TenantResource{
+		roleResource := dto.TenantResources{
 			ResourceID:     roleID,
 			Name:           role.Name,
 			ResourceTypeID: mstResType.ResourceTypeID,

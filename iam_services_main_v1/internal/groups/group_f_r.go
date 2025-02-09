@@ -23,8 +23,8 @@ package groups
 // 	return &UpdatedAtStr, nil
 // }
 
-// func (r *GroupFieldResolver) Tenant(ctx context.Context, obj *dto.GroupEntity) (*dto.TenantResource, error) {
-// 	var tenant dto.TenantResource
+// func (r *GroupFieldResolver) Tenant(ctx context.Context, obj *dto.GroupEntity) (*dto.TenantResources, error) {
+// 	var tenant dto.TenantResources
 // 	if err := r.DB.First(&tenant, obj.TenantID).Error; err != nil {
 // 		return nil, err
 // 	}

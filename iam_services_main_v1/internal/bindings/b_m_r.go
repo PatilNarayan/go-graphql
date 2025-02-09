@@ -57,7 +57,7 @@ func (r *BindingsMutationResolver) CreateBinding(ctx context.Context, input mode
 	// 	parsedTenantId := uuid.MustParse(tenantID.(string))
 
 	// 	currentDate := time.Now()
-	// 	bindingDto := &dto.TenantResource{
+	// 	bindingDto := &dto.TenantResources{
 	// 		ResourceID:       resourceId,
 	// 		ResourceTypeID:   resourceType.ResourceTypeID,
 	// 		ParentResourceID: nil,
@@ -174,9 +174,9 @@ func (r *BindingsMutationResolver) UpdateBinding(ctx context.Context, input mode
 	// 	}
 
 	// 	// check if the binding is in resources table
-	// 	var resource *dto.TenantResource
+	// 	var resource *dto.TenantResources
 	// 	parsedResourceId := uuid.MustParse(input.ID)
-	// 	if err := r.DB.Where(&dto.TenantResource{ResourceID: parsedResourceId, RowStatus: 1}).First(&resource).Error; err != nil {
+	// 	if err := r.DB.Where(&dto.TenantResources{ResourceID: parsedResourceId, RowStatus: 1}).First(&resource).Error; err != nil {
 	// 		logger.Errorf("error while fetching organization for update %v", err)
 	// 		return nil, err
 	// 	}
@@ -235,7 +235,7 @@ func (r *BindingsMutationResolver) UpdateBinding(ctx context.Context, input mode
 	// 	}
 
 	// 	// update binding in resource table
-	// 	if err := r.DB.Where(&dto.TenantResource{ResourceID: uuid.MustParse(input.ID)}).UpdateColumns(&resource).Error; err != nil {
+	// 	if err := r.DB.Where(&dto.TenantResources{ResourceID: uuid.MustParse(input.ID)}).UpdateColumns(&resource).Error; err != nil {
 	// 		logger.Errorf("error while updating binding resource %v", err)
 	// 		return nil, err
 	// 	}
@@ -311,14 +311,14 @@ func (r *BindingsMutationResolver) DeleteBinding(ctx context.Context, id string)
 
 	// 	parsedInputId := uuid.MustParse(id)
 	// 	var roleAssignment dto.TenantRoleAssignments
-	// 	var tenantResource dto.TenantResource
+	// 	var tenantResource dto.TenantResources
 
 	// 	if err := r.DB.Where(&dto.TenantRoleAssignments{ResourceID: parsedInputId}).First(&roleAssignment).Error; err != nil {
 	// 		logger.Errorf("error while fetching organization for update %v", err)
 	// 		return false, err
 	// 	}
 
-	// 	if err := r.DB.Where(&dto.TenantResource{ResourceID: parsedInputId}).First(&tenantResource).Error; err != nil {
+	// 	if err := r.DB.Where(&dto.TenantResources{ResourceID: parsedInputId}).First(&tenantResource).Error; err != nil {
 	// 		logger.Errorf("error while fetching organization for update %v", err)
 	// 		return false, err
 	// 	}
@@ -341,7 +341,7 @@ func (r *BindingsMutationResolver) DeleteBinding(ctx context.Context, id string)
 	// 		return false, err
 	// 	}
 
-	// 	if err := r.DB.Model(dto.TenantResource{}).Where(&dto.TenantResource{ResourceID: parsedInputId}).Updates(map[string]interface{}{"RowStatus": 0, "UpdatedBy": "", "UpdatedAt": time.Now()}).Error; err != nil {
+	// 	if err := r.DB.Model(dto.TenantResources{}).Where(&dto.TenantResources{ResourceID: parsedInputId}).Updates(map[string]interface{}{"RowStatus": 0, "UpdatedBy": "", "UpdatedAt": time.Now()}).Error; err != nil {
 	// 		logger.Errorf("error while fetching organization for update %v", err)
 	// 		return false, err
 	// 	}

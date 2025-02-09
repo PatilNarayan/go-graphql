@@ -15,9 +15,9 @@ func GetResourceTypeByName(name string) (*dto.Mst_ResourceTypes, error) {
 	return &resourceType, nil
 }
 
-func GetResourceDetails(conditions map[string]interface{}) (*dto.TenantResource, error) {
+func GetResourceDetails(conditions map[string]interface{}) (*dto.TenantResources, error) {
 	DB := config.GetDB()
-	resourceDetails := dto.TenantResource{}
+	resourceDetails := dto.TenantResources{}
 	if err := DB.Where(conditions).First(&resourceDetails).Error; err != nil {
 		return nil, fmt.Errorf("parent details not found: %w", err)
 	}

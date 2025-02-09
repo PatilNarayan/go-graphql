@@ -53,7 +53,7 @@ func TestGetTenant(t *testing.T) {
 					Name:           "Tenant",
 				}
 
-				tenantResource := &dto.TenantResource{
+				tenantResource := &dto.TenantResources{
 					ResourceID:     uuid.New(),
 					ResourceTypeID: resourceType.ResourceTypeID,
 					Name:           "Test Tenant",
@@ -81,9 +81,9 @@ func TestGetTenant(t *testing.T) {
 
 				// Mock tenant resource query
 				db.On("Where", mock.Anything, mock.Anything).Return(db)
-				db.On("First", mock.AnythingOfType("*dto.TenantResource")).
+				db.On("First", mock.AnythingOfType("*dto.TenantResources")).
 					Run(func(args mock.Arguments) {
-						arg := args.Get(0).(*dto.TenantResource)
+						arg := args.Get(0).(*dto.TenantResources)
 						*arg = *tenantResource
 					}).
 					Return(&gorm.DB{Error: nil})
@@ -169,7 +169,7 @@ func TestAllTenants(t *testing.T) {
 					Name:           "Tenant",
 				}
 
-				tenantResources := []dto.TenantResource{
+				tenantResources := []dto.TenantResources{
 					{
 						ResourceID:     uuid.New(),
 						ResourceTypeID: resourceType.ResourceTypeID,
@@ -193,9 +193,9 @@ func TestAllTenants(t *testing.T) {
 
 				// Mock tenants query
 				db.On("Where", mock.Anything).Return(db)
-				db.On("Find", mock.AnythingOfType("*[]dto.TenantResource")).
+				db.On("Find", mock.AnythingOfType("*[]dto.TenantResources")).
 					Run(func(args mock.Arguments) {
-						arg := args.Get(0).(*[]dto.TenantResource)
+						arg := args.Get(0).(*[]dto.TenantResources)
 						*arg = tenantResources
 					}).
 					Return(&gorm.DB{Error: nil})

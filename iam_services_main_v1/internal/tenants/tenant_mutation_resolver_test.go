@@ -46,7 +46,7 @@ func TestTenantMutationResolver_CreateTenant(t *testing.T) {
 	config.DB = db
 
 	// Migrate the required schema
-	err = db.AutoMigrate(&dto.TenantResource{}, &dto.TenantMetadata{}, &dto.Mst_ResourceTypes{}, &dto.TNTRole{}, &dto.TNTPermission{}, &dto.TNTRolePermission{}, &dto.MstRole{}, &dto.MstPermission{}, &dto.MstRolePermission{})
+	err = db.AutoMigrate(&dto.TenantResources{}, &dto.TenantMetadata{}, &dto.Mst_ResourceTypes{}, &dto.TNTRole{}, &dto.TNTPermission{}, &dto.TNTRolePermission{}, &dto.MstRole{}, &dto.MstPermission{}, &dto.MstRolePermission{})
 	if err != nil {
 		t.Fatalf("failed to migrate database: %v", err)
 	}
@@ -98,7 +98,7 @@ func TestTenantMutationResolver_CreateTenant(t *testing.T) {
 	}
 	db.Create(&mstResType)
 
-	parentOrg := dto.TenantResource{
+	parentOrg := dto.TenantResources{
 		ResourceID:     uuid.New(),
 		Name:           "Parent Organization",
 		ResourceTypeID: mstResType1.ResourceTypeID,
@@ -164,7 +164,7 @@ func TestTenantMutationResolver_UpdateTenant(t *testing.T) {
 	}
 
 	// Migrate the required schema
-	err = db.AutoMigrate(&dto.TenantResource{}, &dto.TenantMetadata{}, &dto.Mst_ResourceTypes{})
+	err = db.AutoMigrate(&dto.TenantResources{}, &dto.TenantMetadata{}, &dto.Mst_ResourceTypes{})
 	if err != nil {
 		t.Fatalf("failed to migrate database: %v", err)
 	}
@@ -182,7 +182,7 @@ func TestTenantMutationResolver_UpdateTenant(t *testing.T) {
 	}
 	db.Create(&mstResType)
 
-	existingTenant := dto.TenantResource{
+	existingTenant := dto.TenantResources{
 		ResourceID:     uuid.New(),
 		Name:           "Existing Tenant",
 		ResourceTypeID: mstResType.ResourceTypeID,
@@ -265,14 +265,14 @@ func TestTenantMutationResolver_DeleteTenant(t *testing.T) {
 	}
 
 	// Migrate the required schema
-	err = db.AutoMigrate(&dto.TenantResource{}, &dto.TenantMetadata{})
+	err = db.AutoMigrate(&dto.TenantResources{}, &dto.TenantMetadata{})
 	if err != nil {
 		t.Fatalf("failed to migrate database: %v", err)
 	}
 
 	// Seed initial data
 	tenantID := uuid.New()
-	tenantResource := dto.TenantResource{
+	tenantResource := dto.TenantResources{
 		ResourceID: tenantID,
 		Name:       "Test Tenant",
 		CreatedBy:  "admin",

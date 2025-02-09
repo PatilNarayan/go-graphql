@@ -55,8 +55,8 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 		return nil, err
 	}
 	// check if role already exists
-	var roleExists dto.TenantResource
-	if err := r.DB.Where(&dto.TenantResource{Name: input.Name, RowStatus: 1, ResourceTypeID: resourceType.ResourceTypeID, TenantID: &tenantIDUUID}).First(&roleExists).Error; err == nil {
+	var roleExists dto.TenantResources
+	if err := r.DB.Where(&dto.TenantResources{Name: input.Name, RowStatus: 1, ResourceTypeID: resourceType.ResourceTypeID, TenantID: &tenantIDUUID}).First(&roleExists).Error; err == nil {
 		return nil, fmt.Errorf("role already exists")
 	}
 
@@ -108,7 +108,7 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 		return nil, err
 	}
 
-	if err := r.DB.Create(&dto.TenantResource{
+	if err := r.DB.Create(&dto.TenantResources{
 		ResourceID:     newRoleID,
 		ResourceTypeID: resourceType.ResourceTypeID,
 		Name:           input.Name,
@@ -409,7 +409,7 @@ func (r *RoleMutationResolver) DeleteRole(ctx context.Context, id uuid.UUID) (bo
 		return false, fmt.Errorf("failed to delete role: %w", err)
 	}
 
-	if err := r.DB.Model(&dto.TenantResource{}).Where("resource_id = ? AND row_status = 1", id).Updates(utils.UpdateDeletedMap()).Error; err != nil {
+	if err := r.DB.Model(&dto.TenantResources{}).Where("resource_id = ? AND row_status = 1", id).Updates(utils.UpdateDeletedMap()).Error; err != nil {
 		return false, fmt.Errorf("failed to delete role: %w", err)
 	}
 
@@ -463,7 +463,7 @@ func CreateMstRole(tenantID uuid.UUID) error {
 	}
 
 	for _, mrole := range mstRole {
-		tenantResource := &dto.TenantResource{
+		tenantResource := &dto.TenantResources{
 			ResourceID:       uuid.New(),
 			ParentResourceID: &tenantID,
 			ResourceTypeID:   resourceType.ResourceTypeID,
@@ -564,14 +564,14 @@ func DeleteDefaultRole(tenantID uuid.UUID) error {
 		return tx.Error
 	}
 
-	var roleResources []dto.TenantResource
+	var roleResources []dto.TenantResources
 	if err := tx.Where("tenant_id = ? AND resource_type_id = ? AND row_status = 1", tenantID, resourceType.ResourceTypeID).Find(&roleResources).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 
 	// Update row status in tenant_resources table
-	if err := tx.Model(&dto.TenantResource{}).
+	if err := tx.Model(&dto.TenantResources{}).
 		Where("tenant_id = ? AND resource_type_id = ? AND row_status = 1", tenantID, resourceType.ResourceTypeID).
 		Update("row_status", 0).Error; err != nil {
 		tx.Rollback()
@@ -642,7 +642,7 @@ func ValidateRole(resourceID uuid.UUID) error {
 		return fmt.Errorf("resource type not found: %w", err)
 	}
 	var count int64
-	if err := config.DB.Model(&dto.TenantResource{}).
+	if err := config.DB.Model(&dto.TenantResources{}).
 		// Where("resource_id = ? AND row_status = 1 AND resource_type_id IN (?)", resourceID, resourceIds).
 		Where("resource_id = ? AND row_status = 1 AND resource_type_id = ?", resourceID, resourceType.ResourceTypeID).
 		Count(&count).Error; err != nil {
@@ -676,8 +676,8 @@ func GetPermissionAction(permissionsIds []string) ([]string, error) {
 }
 
 func GetPermissionResourceAction(resourceID uuid.UUID) ([]string, error) {
-	var resources []dto.TenantResource
-	if err := config.DB.Model(&dto.TenantResource{}).Where("parent_resource_id = ? AND row_status = 1", resourceID).Find(&resources).Error; err != nil {
+	var resources []dto.TenantResources
+	if err := config.DB.Model(&dto.TenantResources{}).Where("parent_resource_id = ? AND row_status = 1", resourceID).Find(&resources).Error; err != nil {
 		return nil, err
 	}
 
@@ -723,7 +723,7 @@ func ValidateTenantID(tenantID uuid.UUID) error {
 		return fmt.Errorf("resource type not found: %w", err)
 	}
 	var count int64
-	if err := config.DB.Model(&dto.TenantResource{}).Where("resource_id = ? AND row_status = 1 AND resource_type_id = ?", tenantID, resourceType.ResourceTypeID).Count(&count).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err := config.DB.Model(&dto.TenantResources{}).Where("resource_id = ? AND row_status = 1 AND resource_type_id = ?", tenantID, resourceType.ResourceTypeID).Count(&count).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
 	}
 	if count == 0 {

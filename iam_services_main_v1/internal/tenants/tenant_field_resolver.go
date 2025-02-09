@@ -87,7 +87,7 @@ func buildAddress(data map[string]interface{}) *models.Address {
 }
 
 // Helper functions (can be in either file or separate utils file)
-func convertTenantToGraphQL(tenant *dto.TenantResource, parentOrg *dto.TenantResource) *models.Tenant {
+func convertTenantToGraphQL(tenant *dto.TenantResources, parentOrg *dto.TenantResources) *models.Tenant {
 	if tenant == nil {
 		return nil
 	}

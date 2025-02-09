@@ -38,7 +38,7 @@ func (r *RoleQueryResolver) AllRoles(ctx context.Context, id *uuid.UUID) ([]*mod
 		return nil, fmt.Errorf("invalid tenantID: %w", err)
 	}
 
-	var tntResources []dto.TenantResource
+	var tntResources []dto.TenantResources
 	if err := r.DB.Where("tenant_id = ? AND row_status = 1", tenantID).Find(&tntResources).Error; err != nil {
 		//logger.AddContext(err).Error("Failed to fetch roles from the database")
 		return nil, fmt.Errorf("failed to fetch roles: %w", err)
@@ -309,12 +309,12 @@ func convertMSTRoleToGraphQL(role *dto.MstRole) *models.Role {
 	// permissions = append(permissions, mstPermissions...)
 	res.Permissions = permissions
 
-	// var childResource, ParentResource dto.TenantResource
-	// if err := config.DB.Where(&dto.TenantResource{ResourceID: role.RoleID}).First(&childResource).Error; err != nil {
+	// var childResource, ParentResource dto.TenantResources
+	// if err := config.DB.Where(&dto.TenantResources{ResourceID: role.RoleID}).First(&childResource).Error; err != nil {
 	// 	logger.AddContext(err).Error("Failed to fetch parent resource")
 	// 	return nil
 	// }
-	// if err := config.DB.Where(&dto.TenantResource{ResourceID: *childResource.TenantID}).First(&ParentResource).Error; err != nil {
+	// if err := config.DB.Where(&dto.TenantResources{ResourceID: *childResource.TenantID}).First(&ParentResource).Error; err != nil {
 	// 	logger.AddContext(err).Error("Failed to fetch parent resource")
 	// 	return nil
 	// }

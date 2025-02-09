@@ -29,7 +29,7 @@ func (r *AccountMutationResolver) CreateAccount(ctx context.Context, input model
 	// 	return nil, fmt.Errorf("error parsing resource type  UUID: %w", err)
 	// }
 	// resourceID := uuid.New()
-	// accountResource := &dto.TenantResource{
+	// accountResource := &dto.TenantResources{
 	// 	ResourceID:       resourceID,
 	// 	Name:             input.Name,
 	// 	ParentResourceID: &input.ParentID,
@@ -138,8 +138,8 @@ func (r *AccountMutationResolver) CreateAccount(ctx context.Context, input model
 // CreateAccount resolver for adding a new Account
 func (r *AccountMutationResolver) UpdateAccount(ctx context.Context, input models.UpdateAccountInput) (*models.Account, error) {
 	// userID := uuid.New()
-	// var accountResource dto.TenantResource
-	// if err := r.DB.Where(&dto.TenantResource{ResourceID: input.ID}).First(&accountResource).Error; err != nil {
+	// var accountResource dto.TenantResources
+	// if err := r.DB.Where(&dto.TenantResources{ResourceID: input.ID}).First(&accountResource).Error; err != nil {
 	// 	return nil, fmt.Errorf("tenant resource not found: %w", err)
 	// }
 
@@ -149,8 +149,8 @@ func (r *AccountMutationResolver) UpdateAccount(ctx context.Context, input model
 	// }
 	// /*if *input.ParentID != uuid.Nil {
 	// 	// Validate ParentOrgID
-	// 	var parentOrg dto.TenantResource
-	// 	if err := r.DB.Where(&dto.TenantResource{ResourceID: *input.ParentID}).First(&parentOrg).Error; err != nil {
+	// 	var parentOrg dto.TenantResources
+	// 	if err := r.DB.Where(&dto.TenantResources{ResourceID: *input.ParentID}).First(&parentOrg).Error; err != nil {
 	// 		return nil, fmt.Errorf("parent organization not found: %w", err)
 	// 	}
 	// 	accountResource.ParentResourceID = &parentOrg.ResourceID
@@ -159,7 +159,7 @@ func (r *AccountMutationResolver) UpdateAccount(ctx context.Context, input model
 	// accountResource.UpdatedBy = userID.String()
 
 	// // Save updated TenantResource to the database
-	// if err := r.DB.Where(&dto.TenantResource{ResourceID: accountResource.ResourceID}).Updates(&accountResource).Error; err != nil {
+	// if err := r.DB.Where(&dto.TenantResources{ResourceID: accountResource.ResourceID}).Updates(&accountResource).Error; err != nil {
 	// 	return nil, fmt.Errorf("failed to update tenant resource: %w", err)
 	// }
 
@@ -216,9 +216,9 @@ func (r *AccountMutationResolver) DeleteAccount(ctx context.Context, id uuid.UUI
 	// userID := uuid.New()
 	// tx := r.DB.Begin()
 
-	// var accountResource dto.TenantResource
+	// var accountResource dto.TenantResources
 	// var accountMetadata dto.TenantMetadata
-	// if err := tx.Where(&dto.TenantResource{ResourceID: id}).First(&accountResource).Error; err != nil {
+	// if err := tx.Where(&dto.TenantResources{ResourceID: id}).First(&accountResource).Error; err != nil {
 	// 	tx.Rollback()
 	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
 	// 		return false, fmt.Errorf("account resource not found: %w", err)
@@ -233,7 +233,7 @@ func (r *AccountMutationResolver) DeleteAccount(ctx context.Context, id uuid.UUI
 	// }
 
 	// // Delete the TenantResource
-	// if err := tx.Model(&accountResource).Where(&dto.TenantResource{ResourceID: id}).Updates(map[string]interface{}{"RowStatus": 0, "UpdatedBy": userID}).Error; err != nil {
+	// if err := tx.Model(&accountResource).Where(&dto.TenantResources{ResourceID: id}).Updates(map[string]interface{}{"RowStatus": 0, "UpdatedBy": userID}).Error; err != nil {
 	// 	tx.Rollback()
 	// 	return false, fmt.Errorf("failed to delete account resource: %w", err)
 	// }

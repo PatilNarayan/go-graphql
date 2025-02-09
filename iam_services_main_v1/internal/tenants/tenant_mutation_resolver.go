@@ -26,15 +26,15 @@ func (t *TenantMutationResolver) validateParentOrg(parentOrgID string) (*uuid.UU
 		return nil, fmt.Errorf("parent organization ID is required")
 	}
 
-	resourceType, err := dao.GetResourceTypeByName("Role")
+	resourceType, err := dao.GetResourceTypeByName("Root")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get resource type IDs: %w", err)
 	}
 
-	var parentOrg dto.TenantResource
+	var parentOrg dto.TenantResources
 	if err := t.DB.Where(
 		"resource_id = ? AND resource_type_id in (?) AND row_status = 1",
-		parentOrgID, resourceType.ResourceTypeID.ID(),
+		parentOrgID, resourceType.ResourceTypeID,
 	).First(&parentOrg).Error; err != nil {
 		return nil, fmt.Errorf("parent organization not found: %w", err)
 	}
@@ -42,13 +42,13 @@ func (t *TenantMutationResolver) validateParentOrg(parentOrgID string) (*uuid.UU
 	return &parentOrg.ResourceID, nil
 }
 
-func (t *TenantMutationResolver) createTenantResource(name string, resourceID, parentID uuid.UUID) (*dto.TenantResource, error) {
+func (t *TenantMutationResolver) createTenantResource(name string, resourceID, parentID uuid.UUID) (*dto.TenantResources, error) {
 	var resourceType dto.Mst_ResourceTypes
 	if err := t.DB.Where("name = ?", "Tenant").First(&resourceType).Error; err != nil {
 		return nil, fmt.Errorf("resource type not found: %w", err)
 	}
 
-	tenant := &dto.TenantResource{
+	tenant := &dto.TenantResources{
 		ResourceID:       resourceID,
 		Name:             name,
 		CreatedBy:        constants.DefaltCreatedBy,
@@ -239,6 +239,13 @@ func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 		return nil, err
 	}
 
+	// Update resource instance
+	if _, err := t.PermitClient.SendRequest(ctx, "PATCH", fmt.Sprintf("resource_instances/%s", input.ID), map[string]interface{}{
+		"attributes": input,
+	}); err != nil {
+		return nil, err
+	}
+
 	// Update tenant resource
 	updates := map[string]interface{}{
 		"updated_by": constants.DefaltUpdatedBy,
@@ -255,7 +262,7 @@ func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 		updates["parent_resource_id"] = parentID
 	}
 
-	if err := t.DB.Model(&dto.TenantResource{}).Where("resource_id = ?", input.ID).Updates(updates).Error; err != nil {
+	if err := t.DB.Model(&dto.TenantResources{}).Where("resource_id = ?", input.ID).Updates(updates).Error; err != nil {
 		return nil, fmt.Errorf("failed to update tenant resource: %w", err)
 	}
 
@@ -283,21 +290,15 @@ func (t *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID)
 	}
 
 	// Update metadata
-	if err := tx.Model(&dto.TenantMetadata{}).Where("resource_id = ?", id).Updates(updates).Error; err != nil {
+	if err := tx.Model(&dto.TenantMetadata{}).Where("resource_id = ?", id).UpdateColumns(updates).Error; err != nil {
 		tx.Rollback()
 		return false, fmt.Errorf("failed to soft delete tenant metadata: %w", err)
 	}
 
 	// Update resource
-	if err := tx.Model(&dto.TenantResource{}).Where("resource_id = ?", id).Updates(updates).Error; err != nil {
+	if err := tx.Model(&dto.TenantResources{}).Where("resource_id = ?", id).UpdateColumns(updates).Error; err != nil {
 		tx.Rollback()
 		return false, fmt.Errorf("failed to delete tenant resource: %w", err)
-	}
-
-	// Delete default role
-	if err := roles.DeleteDefaultRole(id); err != nil {
-		tx.Rollback()
-		return false, fmt.Errorf("failed to delete default role: %w", err)
 	}
 
 	if err := tx.Commit().Error; err != nil {

@@ -5,10 +5,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
-type TenantResource struct {
+type TenantResources struct {
 	ResourceID       uuid.UUID  `gorm:"type:char(36);primaryKey;column:resource_id" json:"resource_id"`
 	ParentResourceID *uuid.UUID `gorm:"type:char(36);column:parent_resource_id" json:"parent_resource_id"`
 	ResourceTypeID   uuid.UUID  `gorm:"type:char(36);not null;column:resource_type_id" json:"resource_type_id"` // foreign key to resource_type
@@ -21,7 +20,7 @@ type TenantResource struct {
 	UpdatedAt        time.Time  `gorm:"column:updated_at;autoCreateTime" json:"updated_at"`
 }
 
-func (t *TenantResource) TableName() string {
+func (t *TenantResources) TableName() string {
 	return "tnt_resources"
 }
 
@@ -49,12 +48,6 @@ type TenantMetadata struct {
 	UpdatedBy  string          `gorm:"size:45" json:"updated_by"`
 	CreatedAt  time.Time       `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt  time.Time       `gorm:"autoUpdateTime" json:"updated_at"`
-}
-
-// BeforeCreate hook to generate UUID before saving
-func (t *TenantMetadata) BeforeCreate(tx *gorm.DB) (err error) {
-	//t.ID = uuid.New()
-	return
 }
 
 func (t *TenantMetadata) TableName() string {

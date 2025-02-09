@@ -40,9 +40,9 @@ func (r *ClientOrganizationUnitMutationResolver) CreateClientOrganizationUnit(ct
 		return nil, err
 	}
 
-	var parentOrg *dto.TenantResource
+	var parentOrg *dto.TenantResources
 	parentOrgId := uuid.MustParse(input.ParentOrgID)
-	if err := r.DB.Where(&dto.TenantResource{ResourceID: parentOrgId}).First(&parentOrg).Error; err != nil {
+	if err := r.DB.Where(&dto.TenantResources{ResourceID: parentOrgId}).First(&parentOrg).Error; err != nil {
 		logger.Errorf("error while fetching organization for update %v", err)
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (r *ClientOrganizationUnitMutationResolver) CreateClientOrganizationUnit(ct
 	tenantId := uuid.MustParse(input.TenantID)
 	if input.TenantID != "" {
 
-		if err := r.DB.Where(&dto.TenantResource{ResourceID: tenantId}).First(&parentOrg).Error; err != nil {
+		if err := r.DB.Where(&dto.TenantResources{ResourceID: tenantId}).First(&parentOrg).Error; err != nil {
 			logger.Errorf("error while fetching organization for update %v", err)
 			return nil, err
 		}
@@ -58,7 +58,7 @@ func (r *ClientOrganizationUnitMutationResolver) CreateClientOrganizationUnit(ct
 
 	resourceId := uuid.New()
 	currentDate := time.Now()
-	corgDto := &dto.TenantResource{
+	corgDto := &dto.TenantResources{
 		ResourceID:       resourceId,
 		ResourceTypeID:   resourceType.ResourceTypeID,
 		ParentResourceID: &parentOrg.ResourceID,
@@ -126,8 +126,8 @@ func (r *ClientOrganizationUnitMutationResolver) UpdateClientOrganizationUnit(ct
 	}
 	parsedUuid := uuid.MustParse(*input.TenantID)
 
-	var resource *dto.TenantResource
-	if err := r.DB.Where(&dto.TenantResource{ResourceID: input.ID, ParentResourceID: &parsedUuid, RowStatus: 1}).First(&resource).Error; err != nil {
+	var resource *dto.TenantResources
+	if err := r.DB.Where(&dto.TenantResources{ResourceID: input.ID, ParentResourceID: &parsedUuid, RowStatus: 1}).First(&resource).Error; err != nil {
 		logger.Errorf("error while fetching organization for update %v", err)
 		return nil, err
 	}
@@ -143,7 +143,7 @@ func (r *ClientOrganizationUnitMutationResolver) UpdateClientOrganizationUnit(ct
 
 	resource.UpdatedAt = time.Now()
 
-	if err := r.DB.Where(&dto.TenantResource{ResourceID: input.ID}).UpdateColumns(&resource).Error; err != nil {
+	if err := r.DB.Where(&dto.TenantResources{ResourceID: input.ID}).UpdateColumns(&resource).Error; err != nil {
 		logger.Errorf("error while updating client organization unit %v", err)
 		return nil, err
 	}
@@ -210,8 +210,8 @@ func (r *ClientOrganizationUnitMutationResolver) DeleteClientOrganizationUnit(ct
 		return false, errors.New("id is mandatory for delete")
 	}
 
-	var resource *dto.TenantResource
-	if err := r.DB.Where(&dto.TenantResource{ResourceID: id}).First(&resource).Error; err != nil {
+	var resource *dto.TenantResources
+	if err := r.DB.Where(&dto.TenantResources{ResourceID: id}).First(&resource).Error; err != nil {
 		logger.Errorf("error while fetching organization for update %v", err)
 		return false, err
 	}
@@ -219,7 +219,7 @@ func (r *ClientOrganizationUnitMutationResolver) DeleteClientOrganizationUnit(ct
 	resource.RowStatus = 0
 	resource.UpdatedAt = time.Now()
 
-	if err := r.DB.Model(dto.TenantResource{}).Where(&dto.TenantResource{ResourceID: id}).Updates(map[string]interface{}{"RowStatus": 0, "UpdatedBy": "", "UpdatedAt": time.Now()}).Error; err != nil {
+	if err := r.DB.Model(dto.TenantResources{}).Where(&dto.TenantResources{ResourceID: id}).Updates(map[string]interface{}{"RowStatus": 0, "UpdatedBy": "", "UpdatedAt": time.Now()}).Error; err != nil {
 		logger.Errorf("error while fetching organization for update %v", err)
 		return false, err
 	}

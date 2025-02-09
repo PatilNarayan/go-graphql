@@ -29,7 +29,7 @@ func setupTestDB() *gorm.DB {
 	}
 
 	// Auto-migrate tables
-	db.AutoMigrate(&dto.TNTRole{}, &dto.TNTPermission{}, &dto.TenantResource{}, &dto.Mst_ResourceTypes{}, &dto.TNTRolePermission{}, &dto.MstRole{}, &dto.MstPermission{}, &dto.MstRolePermission{})
+	db.AutoMigrate(&dto.TNTRole{}, &dto.TNTPermission{}, &dto.TenantResources{}, &dto.Mst_ResourceTypes{}, &dto.TNTRolePermission{}, &dto.MstRole{}, &dto.MstPermission{}, &dto.MstRolePermission{})
 
 	return db
 }
@@ -84,7 +84,7 @@ func TestCreateRole(t *testing.T) {
 	db.Create(&mstResType)
 
 	tenantID := uuid.New()
-	existingTenant := dto.TenantResource{
+	existingTenant := dto.TenantResources{
 		ResourceID:     tenantID,
 		Name:           "Existing Tenant",
 		ResourceTypeID: mstResType.ResourceTypeID,
@@ -175,7 +175,7 @@ func TestUpdateRole(t *testing.T) {
 	db.Create(&mstResTypeTenant)
 
 	tenantID := uuid.New()
-	existingTenant := dto.TenantResource{
+	existingTenant := dto.TenantResources{
 		ResourceID:     tenantID,
 		Name:           "Existing Tenant",
 		ResourceTypeID: mstResTypeTenant.ResourceTypeID,
@@ -187,7 +187,7 @@ func TestUpdateRole(t *testing.T) {
 	db.Create(&existingTenant)
 
 	roleID := uuid.New()
-	existingRole := dto.TenantResource{
+	existingRole := dto.TenantResources{
 		ResourceID:     roleID,
 		Name:           "Existing Tenant",
 		ResourceTypeID: mstResType.ResourceTypeID,
@@ -360,7 +360,7 @@ func TestDeleteRole(t *testing.T) {
 	)
 
 	tenantID := uuid.New()
-	existingTenant := dto.TenantResource{
+	existingTenant := dto.TenantResources{
 		ResourceID:     tenantID,
 		Name:           "Existing Tenant",
 		ResourceTypeID: mstResTypeTenant.ResourceTypeID,
@@ -372,7 +372,7 @@ func TestDeleteRole(t *testing.T) {
 	db.Create(&existingTenant)
 
 	roleID := uuid.New()
-	existingRole := dto.TenantResource{
+	existingRole := dto.TenantResources{
 		ResourceID:     roleID,
 		Name:           "Existing Tenant",
 		ResourceTypeID: mstResType.ResourceTypeID,

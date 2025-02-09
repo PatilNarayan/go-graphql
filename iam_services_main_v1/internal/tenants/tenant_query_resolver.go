@@ -44,8 +44,8 @@ func (r *TenantQueryResolver) AllTenants(ctx context.Context) ([]*models.Tenant,
 		return nil, err
 	}
 
-	var tenantResources []dto.TenantResource
-	if err := r.DB.Where(&dto.TenantResource{
+	var tenantResources []dto.TenantResources
+	if err := r.DB.Where(&dto.TenantResources{
 		ResourceTypeID: resourceType.ResourceTypeID,
 	}).Find(&tenantResources).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch tenants: %w", err)
@@ -65,8 +65,8 @@ func (r *TenantQueryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*mod
 		return nil, err
 	}
 
-	var tenantResource dto.TenantResource
-	if err := r.DB.Where(&dto.TenantResource{
+	var tenantResource dto.TenantResources
+	if err := r.DB.Where(&dto.TenantResources{
 		ResourceID:     id,
 		ResourceTypeID: resourceType.ResourceTypeID,
 	}).First(&tenantResource).Error; err != nil {
@@ -76,7 +76,7 @@ func (r *TenantQueryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*mod
 		return nil, fmt.Errorf("failed to fetch tenant: %w", err)
 	}
 
-	tenants, err := r.processTenantResources([]dto.TenantResource{tenantResource})
+	tenants, err := r.processTenantResources([]dto.TenantResources{tenantResource})
 	if err != nil {
 		return nil, err
 	}
@@ -87,13 +87,13 @@ func (r *TenantQueryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*mod
 }
 
 // processTenantResources processes a slice of tenant resources and returns GraphQL tenant models
-func (r *TenantQueryResolver) processTenantResources(resources []dto.TenantResource) ([]*models.Tenant, error) {
+func (r *TenantQueryResolver) processTenantResources(resources []dto.TenantResources) ([]*models.Tenant, error) {
 	tenants := make([]*models.Tenant, 0, len(resources))
 
 	for _, tr := range resources {
-		var parentOrg *dto.TenantResource
+		var parentOrg *dto.TenantResources
 		if tr.ParentResourceID != nil {
-			if err := r.DB.Where(&dto.TenantResource{
+			if err := r.DB.Where(&dto.TenantResources{
 				ResourceID: *tr.ParentResourceID,
 			}).First(&parentOrg).Error; err != nil {
 				return nil, fmt.Errorf("%w: %v", ErrParentOrgNotFound, err)

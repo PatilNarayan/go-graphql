@@ -26,10 +26,10 @@ func (r *ResourceQueryResolver) AllResources(ctx context.Context) ([]models.Reso
 		return nil, fmt.Errorf("gin context not found in the request")
 	}
 
-	var resources []dto.TenantResource
+	var resources []dto.TenantResources
 	tenantID, exists := ginCtx.Get("tenantID")
 	if !exists {
-		if err := r.DB.Where(&dto.TenantResource{RowStatus: 1}).Find(&resources).Error; err != nil {
+		if err := r.DB.Where(&dto.TenantResources{RowStatus: 1}).Find(&resources).Error; err != nil {
 			return nil, fmt.Errorf("failed to fetch resources: %w", err)
 		}
 	} else {
@@ -41,7 +41,7 @@ func (r *ResourceQueryResolver) AllResources(ctx context.Context) ([]models.Reso
 		if err != nil {
 			return nil, fmt.Errorf("error parsing resource type  UUID: %w", err)
 		}
-		if err := r.DB.Where(&dto.TenantResource{RowStatus: 1, TenantID: &parsedTenantID}).Find(&resources).Error; err != nil {
+		if err := r.DB.Where(&dto.TenantResources{RowStatus: 1, TenantID: &parsedTenantID}).Find(&resources).Error; err != nil {
 			return nil, fmt.Errorf("failed to fetch resources: %w", err)
 		}
 	}

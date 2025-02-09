@@ -35,11 +35,11 @@ func (r *ClientOrganizationUnitQueryResolver) GetClientOrganizationUnit(ctx cont
 		return nil, fmt.Errorf("resource type not found: %w", err)
 	}
 
-	var resource *dto.TenantResource
+	var resource *dto.TenantResources
 	tenantID, exists := ginCtx.Get("tenantID")
 	if !exists {
 		log.Println("without tenantid")
-		if err := r.DB.Where(&dto.TenantResource{ResourceTypeID: resourceType.ResourceTypeID, RowStatus: 1}).Find(&resource).Error; err != nil {
+		if err := r.DB.Where(&dto.TenantResources{ResourceTypeID: resourceType.ResourceTypeID, RowStatus: 1}).Find(&resource).Error; err != nil {
 			return nil, fmt.Errorf("failed to fetch tenants: %w", err)
 		}
 	} else {
@@ -52,7 +52,7 @@ func (r *ClientOrganizationUnitQueryResolver) GetClientOrganizationUnit(ctx cont
 			return nil, fmt.Errorf("error parsing resource type  UUID: %w", err)
 		}
 		log.Println("with tenantid", parsedTenantID)
-		if err := r.DB.Where(&dto.TenantResource{ResourceTypeID: resourceType.ResourceTypeID, RowStatus: 1, TenantID: &parsedTenantID}).Find(&resource).Error; err != nil {
+		if err := r.DB.Where(&dto.TenantResources{ResourceTypeID: resourceType.ResourceTypeID, RowStatus: 1, TenantID: &parsedTenantID}).Find(&resource).Error; err != nil {
 			return nil, fmt.Errorf("failed to fetch tenants: %w", err)
 		}
 	}
@@ -104,11 +104,11 @@ func (r *ClientOrganizationUnitQueryResolver) AllClientOrganizationUnits(ctx con
 		return nil, fmt.Errorf("resource type not found: %w", err)
 	}
 
-	var resources []*dto.TenantResource
+	var resources []*dto.TenantResources
 	tenantID, exists := ginCtx.Get("tenantID")
 	if !exists {
 		log.Println("without tenantid")
-		if err := r.DB.Where(&dto.TenantResource{ResourceTypeID: resourceType.ResourceTypeID, RowStatus: 1}).Find(&resources).Error; err != nil {
+		if err := r.DB.Where(&dto.TenantResources{ResourceTypeID: resourceType.ResourceTypeID, RowStatus: 1}).Find(&resources).Error; err != nil {
 			return nil, fmt.Errorf("failed to fetch tenants: %w", err)
 		}
 	} else {
@@ -121,7 +121,7 @@ func (r *ClientOrganizationUnitQueryResolver) AllClientOrganizationUnits(ctx con
 			return nil, fmt.Errorf("error parsing resource type  UUID: %w", err)
 		}
 		log.Println("with tenantid", parsedTenantID)
-		if err := r.DB.Where(&dto.TenantResource{ResourceTypeID: resourceType.ResourceTypeID, RowStatus: 1, TenantID: &parsedTenantID}).Find(&resources).Error; err != nil {
+		if err := r.DB.Where(&dto.TenantResources{ResourceTypeID: resourceType.ResourceTypeID, RowStatus: 1, TenantID: &parsedTenantID}).Find(&resources).Error; err != nil {
 			return nil, fmt.Errorf("failed to fetch tenants: %w", err)
 		}
 	}
