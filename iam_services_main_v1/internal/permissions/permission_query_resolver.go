@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"go.uber.org/thriftrw/ptr"
 	"gorm.io/gorm"
 )
 
@@ -47,9 +46,9 @@ func (r *PermissionQueryResolver) GetAllPermissions(ctx context.Context) ([]*mod
 			ServiceID: &permission.ServiceID,
 			// RoleID:    &permission.RoleID,
 			Action:    &permission.Action,
-			CreatedAt: ptr.String(permission.CreatedAt.Format(time.RFC3339)),
+			CreatedAt: permission.CreatedAt.Format(time.RFC3339),
 			// CreatedBy: permission.CreatedBy,
-			UpdatedAt: ptr.String(permission.UpdatedAt.Format(time.RFC3339)),
+			UpdatedAt: permission.UpdatedAt.Format(time.RFC3339),
 			// UpdatedBy: &permission.UpdatedBy,
 		})
 	}
@@ -81,9 +80,9 @@ func (r *PermissionQueryResolver) GetPermission(ctx context.Context, id uuid.UUI
 		ServiceID: &permission.ServiceID,
 		Action:    &permission.Action,
 		// RoleID:    &permission.RoleID,
-		CreatedAt: ptr.String(permission.CreatedAt.Format(time.RFC3339)),
+		CreatedAt: permission.CreatedAt.Format(time.RFC3339),
 		CreatedBy: permission.CreatedBy,
-		UpdatedAt: ptr.String(permission.UpdatedAt.Format(time.RFC3339)),
-		UpdatedBy: &permission.UpdatedBy,
+		UpdatedAt: permission.UpdatedAt.Format(time.RFC3339),
+		UpdatedBy: permission.UpdatedBy,
 	}, nil
 }

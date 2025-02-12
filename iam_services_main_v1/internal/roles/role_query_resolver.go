@@ -21,7 +21,7 @@ type RoleQueryResolver struct {
 }
 
 // Roles resolves the list of all roles.
-func (r *RoleQueryResolver) AllRoles(ctx context.Context, id *uuid.UUID) ([]*models.Role, error) {
+func (r *RoleQueryResolver) AllRoles(ctx context.Context) (models.OperationResult, error) {
 	//logger.Log.Info("Fetching all roles")
 	// Retrieve x-tenant-id from headers
 	ginCtx, ok := ctx.Value(middleware.GinContextKey).(*gin.Context)
@@ -47,15 +47,14 @@ func (r *RoleQueryResolver) AllRoles(ctx context.Context, id *uuid.UUID) ([]*mod
 	for _, tnt := range tntResources {
 		tntResourceIDs = append(tntResourceIDs, *&tnt.ResourceID)
 	}
-	fmt.Println("id----->", id, tntResourceIDs)
 
-	if id != nil {
-		res, err := r.GetAllRolesForAssignableScopeRef(ctx, *id, tntResourceIDs)
-		if err != nil {
-			return nil, err
-		}
-		return res, nil
-	}
+	// if id != nil {
+	// 	res, err := r.GetAllRolesForAssignableScopeRef(ctx, *id, tntResourceIDs)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	return res, nil
+	// }
 
 	var roles []dto.TNTRole
 	if err := r.DB.Where("row_status = ? AND resource_id IN (?)", 1, tntResourceIDs).Find(&roles).Error; err != nil {
@@ -64,9 +63,11 @@ func (r *RoleQueryResolver) AllRoles(ctx context.Context, id *uuid.UUID) ([]*mod
 	}
 
 	var result []*models.Role
+	var data []models.Data
 	for _, role := range roles {
 		convertedRole := convertRoleToGraphQL(&role)
 		result = append(result, convertedRole)
+		data = append(data, *convertedRole)
 	}
 
 	// var mstroles []dto.MstRole
@@ -81,11 +82,16 @@ func (r *RoleQueryResolver) AllRoles(ctx context.Context, id *uuid.UUID) ([]*mod
 	// }
 
 	//logger.Log.Infof("Fetched %d roles", len(result))
-	return result, nil
+
+	return &models.SuccessResponse{
+		Success: true,
+		Message: "Successfully retrieved tenants",
+		Data:    data,
+	}, nil
 }
 
 // GetRole resolves a single role by ID.
-func (r *RoleQueryResolver) GetRole(ctx context.Context, id uuid.UUID) (*models.Role, error) {
+func (r *RoleQueryResolver) GetRole(ctx context.Context, id uuid.UUID) (models.OperationResult, error) {
 	//logger.Log.Infof("Fetching role with ID: %s", id)
 
 	var role dto.TNTRole
@@ -95,10 +101,15 @@ func (r *RoleQueryResolver) GetRole(ctx context.Context, id uuid.UUID) (*models.
 	}
 
 	//logger.Log.Infof("Role with ID %s fetched successfully", id)
-	return convertRoleToGraphQL(&role), nil
+	data := convertRoleToGraphQL(&role)
+	return &models.SuccessResponse{
+		Success: true,
+		Message: "Successfully retrieved tenants",
+		Data:    []models.Data{*data},
+	}, nil
 }
 
-func (r *RoleQueryResolver) GetAllRolesForAssignableScopeRef(ctx context.Context, assignableScopeRef uuid.UUID, tntResourceIDs []uuid.UUID) ([]*models.Role, error) {
+func (r *RoleQueryResolver) GetAllRolesForAssignableScopeRef(ctx context.Context, assignableScopeRef uuid.UUID, tntResourceIDs []uuid.UUID) (models.OperationResult, error) {
 	//logger.Log.Infof("Fetching all roles for tenant with ID: %s", assignableScopeRef)
 
 	if assignableScopeRef == uuid.Nil {
@@ -121,9 +132,11 @@ func (r *RoleQueryResolver) GetAllRolesForAssignableScopeRef(ctx context.Context
 	}
 
 	var result []*models.Role
+	var data []models.Data
 	for _, role := range roles {
 		convertedRole := convertRoleToGraphQL(&role)
 		result = append(result, convertedRole)
+		data = append(data, *convertedRole)
 	}
 
 	// var mstroles []dto.MstRole
@@ -138,7 +151,12 @@ func (r *RoleQueryResolver) GetAllRolesForAssignableScopeRef(ctx context.Context
 	// }
 
 	//logger.Log.Infof("Fetched %d roles for tenant with ID: %s", len(result), assignableScopeRef)
-	return result, nil
+
+	return &models.SuccessResponse{
+		Success: true,
+		Message: "Successfully retrieved tenants",
+		Data:    data,
+	}, nil
 }
 
 // Helper function to convert database Role to GraphQL Role models.
@@ -291,8 +309,8 @@ func convertMSTRoleToGraphQL(role *dto.MstRole) *models.Role {
 		Version:     role.Version,
 		CreatedAt:   role.CreatedAt.String(),
 		UpdatedAt:   role.UpdatedAt.String(),
-		UpdatedBy:   uuid.MustParse(role.UpdatedBy),
-		CreatedBy:   uuid.MustParse(role.CreatedBy),
+		UpdatedBy:   role.UpdatedBy,
+		CreatedBy:   role.CreatedBy,
 	}
 
 	permissions, err := GetMSTRolePermission(role.RoleID)

@@ -1,6 +1,8 @@
 package middlewares
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -82,6 +84,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.Set("userID", userID)
 		}
 
+		fmt.Println("userID", userID)
 		// Proceed to the next handler
 	}
 }

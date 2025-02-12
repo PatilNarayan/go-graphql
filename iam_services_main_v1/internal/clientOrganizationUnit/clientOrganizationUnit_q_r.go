@@ -66,8 +66,8 @@ func (r *ClientOrganizationUnitQueryResolver) GetClientOrganizationUnit(ctx cont
 	json.Unmarshal([]byte(resourceMetadata.Metadata), &data)
 	if err == nil {
 		updatedAt := data["updated_at"].(string)
-		createdBy := data["created_by"].(string)
-		updatedBy := data["updated_by"].(string)
+		// createdBy := data["created_by"].(string)
+		// updatedBy := data["updated_by"].(string)
 
 		_, exists := data["description"]
 		var description string
@@ -80,8 +80,8 @@ func (r *ClientOrganizationUnitQueryResolver) GetClientOrganizationUnit(ctx cont
 			CreatedAt:   data["created_at"].(string),
 			Description: &description,
 			UpdatedAt:   updatedAt,
-			CreatedBy:   cast.createdBy,
-			UpdatedBy:   updatedBy,
+			// CreatedBy:   cast.createdBy,
+			// UpdatedBy:   updatedBy,
 		}
 		return unit, nil
 	}
@@ -142,9 +142,9 @@ func (r *ClientOrganizationUnitQueryResolver) AllClientOrganizationUnits(ctx con
 			metdataUnmarshalErr := json.Unmarshal([]byte(resourceMetadata.Metadata), &metadataMap)
 
 			if resourceUnmarshalErr == nil && metdataUnmarshalErr == nil {
-				updatedAt := data["updated_at"].(string)
-				createdBy := data["created_by"].(string)
-				updatedBy := data["updated_by"].(string)
+				// updatedAt := data["updated_at"].(string)
+				// createdBy := data["created_by"].(string)
+				// updatedBy := data["updated_by"].(string)
 				_, exists := metadataMap["description"]
 				var desciption string
 				if exists {
@@ -155,9 +155,9 @@ func (r *ClientOrganizationUnitQueryResolver) AllClientOrganizationUnits(ctx con
 					Name:        data["name"].(string),
 					Description: &desciption,
 					CreatedAt:   data["created_at"].(string),
-					UpdatedAt:   &updatedAt,
-					CreatedBy:   &createdBy,
-					UpdatedBy:   &updatedBy,
+					// UpdatedAt:   &updatedAt,
+					// CreatedBy:   &createdBy,
+					// UpdatedBy:   &updatedBy,
 				}
 				orgs = append(orgs, unit)
 			}

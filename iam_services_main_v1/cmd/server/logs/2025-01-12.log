@@ -5,12 +5,12 @@
 {"level":"info","msg":"GraphQL server initialized","time":"2025-01-12T00:43:06+05:30"}
 {"level":"info","msg":"Routes configured","time":"2025-01-12T00:43:06+05:30"}
 {"level":"info","msg":"Starting server at http://localhost:8080/playground","time":"2025-01-12T00:43:06+05:30"}
-{"level":"info","msg":"Environment variables loaded successfully","time":"2025-01-12T00:43:45+05:30"}
-{"level":"info","msg":"Gin router initialized","time":"2025-01-12T00:43:45+05:30"}
-{"level":"info","msg":"Database connection established","time":"2025-01-12T00:43:45+05:30"}
-{"level":"info","msg":"GraphQL server initialized","time":"2025-01-12T00:43:45+05:30"}
-{"level":"info","msg":"Routes configured","time":"2025-01-12T00:43:45+05:30"}
-{"level":"info","msg":"Starting server at http://localhost:8080/playground","time":"2025-01-12T00:43:45+05:30"}
+{"level":"info","msg":"Environment variables loaded successfully","time":"2025-01-12T00:43:36+05:30"}
+{"level":"info","msg":"Gin router initialized","time":"2025-01-12T00:43:36+05:30"}
+{"level":"info","msg":"Database connection established","time":"2025-01-12T00:43:36+05:30"}
+{"level":"info","msg":"GraphQL server initialized","time":"2025-01-12T00:43:36+05:30"}
+{"level":"info","msg":"Routes configured","time":"2025-01-12T00:43:36+05:30"}
+{"level":"info","msg":"Starting server at http://localhost:8080/playground","time":"2025-01-12T00:43:36+05:30"}
 {"level":"info","msg":"Environment variables loaded successfully","time":"2025-01-12T00:48:06+05:30"}
 {"level":"info","msg":"Gin router initialized","time":"2025-01-12T00:48:06+05:30"}
 {"level":"info","msg":"Database connection established","time":"2025-01-12T00:48:06+05:30"}

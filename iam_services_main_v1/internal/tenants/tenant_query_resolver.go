@@ -38,7 +38,7 @@ func (r *TenantQueryResolver) getTenantResourceType() (*dto.Mst_ResourceTypes, e
 }
 
 // AllTenants retrieves all tenants with their associated metadata
-func (r *TenantQueryResolver) AllTenants(ctx context.Context) ([]*models.Tenant, error) {
+func (r *TenantQueryResolver) AllTenants(ctx context.Context) (models.OperationResult, error) {
 
 	// get all tenants from permit
 	allTenants, err := r.PermitClient.SendRequest(ctx, "GET", "tenants", nil)
@@ -49,23 +49,10 @@ func (r *TenantQueryResolver) AllTenants(ctx context.Context) ([]*models.Tenant,
 
 	return r.extractTenants(allTenants.([]interface{}))
 
-	// resourceType, err := r.getTenantResourceType()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// var tenantResources []dto.TenantResources
-	// if err := r.DB.Where(&dto.TenantResources{
-	// 	ResourceTypeID: resourceType.ResourceTypeID,
-	// }).Find(&tenantResources).Error; err != nil {
-	// 	return nil, fmt.Errorf("failed to fetch tenants: %w", err)
-	// }
-
-	// return r.processTenantResources(tenantResources)
 }
 
 // GetTenant retrieves a single tenant by ID with its metadata
-func (r *TenantQueryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*models.Tenant, error) {
+func (r *TenantQueryResolver) GetTenant(ctx context.Context, id uuid.UUID) (models.OperationResult, error) {
 	if id == uuid.Nil {
 		return nil, ErrTenantIDRequired
 	}
@@ -76,7 +63,17 @@ func (r *TenantQueryResolver) GetTenant(ctx context.Context, id uuid.UUID) (*mod
 		return nil, err
 	}
 
-	return r.extractTenantAttributes(tenant.(map[string]interface{}))
+	data, err := r.extractTenantAttributes(tenant.(map[string]interface{}))
+	if err != nil {
+		return nil, err
+	}
+
+	// Return success response with tenants
+	return &models.SuccessResponse{
+		Success: true,
+		Message: "Successfully retrieved tenants",
+		Data:    []models.Data{*data},
+	}, nil
 
 	// resourceType, err := r.getTenantResourceType()
 	// if err != nil {
@@ -189,11 +186,11 @@ func (r *TenantQueryResolver) extractTenantAttributes(data map[string]interface{
 			tenant.Description = &description
 		}
 
-		if createdBy, ok := attributes["createdBy"].(string); ok {
+		if createdBy, ok := attributes["created_by"].(string); ok {
 			tenant.CreatedBy = uuid.MustParse(createdBy)
 		}
 
-		if updatedBy, ok := attributes["updatedBy"].(string); ok {
+		if updatedBy, ok := attributes["updated_by"].(string); ok {
 			tenant.UpdatedBy = uuid.MustParse(updatedBy)
 		}
 
@@ -227,22 +224,31 @@ func (r *TenantQueryResolver) extractTenantAttributes(data map[string]interface{
 	return tenant, nil
 }
 
-func (r *TenantQueryResolver) extractTenants(data []interface{}) ([]*models.Tenant, error) {
-	var tenants []*models.Tenant
+func (r *TenantQueryResolver) extractTenants(rawTenants []interface{}) (models.OperationResult, error) {
+	var tenants []models.Data
 
-	for _, item := range data {
-		tenantMap, ok := item.(map[string]interface{})
+	for _, rawTenant := range rawTenants {
+		tenantMap, ok := rawTenant.(map[string]interface{})
 		if !ok {
-			return nil, errors.New("invalid tenant data format")
+			return &models.ErrorResponse{
+				Success:   false,
+				Message:   "Failed to parse tenant data",
+				ErrorCode: "PARSING_ERROR",
+			}, nil
 		}
 
 		tenant, err := r.extractTenantAttributes(tenantMap)
 		if err != nil {
 			return nil, err
 		}
-
+		// Add to tenants slice
 		tenants = append(tenants, tenant)
 	}
 
-	return tenants, nil
+	// Return success response with tenants
+	return &models.SuccessResponse{
+		Success: true,
+		Message: "Successfully retrieved tenants",
+		Data:    tenants,
+	}, nil
 }

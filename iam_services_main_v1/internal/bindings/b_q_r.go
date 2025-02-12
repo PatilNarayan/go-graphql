@@ -82,21 +82,21 @@ func (r *BindingsQueryResolver) AllBindings(ctx context.Context) ([]*models.Bind
 	var bindings []*models.Binding
 
 	for _, binding := range roleAssignments {
-		createdAt := binding.CreatedAt.String()
-		updatedAt := binding.UpdatedAt.String()
-		createdBy := binding.CreatedBy
-		updatedBy := binding.UpdatedBy
+		// createdAt := binding.CreatedAt.String()
+		// updatedAt := binding.UpdatedAt.String()
+		// createdBy := binding.CreatedBy
+		// updatedBy := binding.UpdatedBy
 		principalType := r.FetchPrincipalBasedOnPrincipalId(ctx, binding.PrincipalID)
 
 		bindingData := &models.Binding{
-			ID:        binding.ResourceID.String(),
-			Name:      binding.Name,
-			Version:   binding.Version,
-			CreatedAt: &createdAt,
-			UpdatedAt: &updatedAt,
-			CreatedBy: &createdBy,
-			UpdatedBy: &updatedBy,
-			Role:      &models.Role{ID: binding.RoleID},
+			ID:      binding.ResourceID.String(),
+			Name:    binding.Name,
+			Version: binding.Version,
+			// CreatedAt: &createdAt,
+			// UpdatedAt: &updatedAt,
+			// CreatedBy: &createdBy,
+			// UpdatedBy: &updatedBy,
+			Role: &models.Role{ID: binding.RoleID},
 		}
 		var user *models.User
 		if principalType.Name == "User" {

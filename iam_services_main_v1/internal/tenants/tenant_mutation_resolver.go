@@ -10,7 +10,6 @@ import (
 	"iam_services_main_v1/internal/dto"
 	"iam_services_main_v1/internal/middlewares"
 	"iam_services_main_v1/internal/permit"
-	"iam_services_main_v1/internal/roles"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +23,7 @@ type TenantMutationResolver struct {
 }
 
 // CreateTenant resolver for adding a new Tenant
-func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.CreateTenantInput) (*models.Tenant, error) {
+func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.CreateTenantInput) (models.OperationResult, error) {
 
 	parentID, err := t.validateParentOrg(input.ParentID)
 	if err != nil {
@@ -48,39 +47,30 @@ func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 	if err != nil {
 		return nil, err
 	}
-	inputMap["createdBy"] = UserID
-	inputMap["updatedBy"] = UserID
+	inputMap["created_by"] = UserID
+	inputMap["updated_by"] = UserID
 	// Create tenant in permit
-	var tenantData interface{}
-	if tenantData, err = t.PermitClient.SendRequest(ctx, "POST", "tenants", map[string]interface{}{
+
+	if _, err = t.PermitClient.SendRequest(ctx, "POST", "tenants", map[string]interface{}{
 		"name":       input.Name,
-		"key":        uuid.NewString(),
+		"key":        input.ID,
 		"attributes": inputMap,
 	}); err != nil {
 		return nil, err
 	}
 
-	tenantID, ok := tenantData.(map[string]interface{})["id"].(string)
-	if !ok {
-		return nil, fmt.Errorf("failed to create tenant in permit")
-	}
-	tenantUuid, err := uuid.Parse(tenantID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse tenant ID: %w", err)
-	}
-
 	// Create resource instance
 	if _, err = t.PermitClient.SendRequest(ctx, "POST", "resource_instances", map[string]interface{}{
-		"key":        uuid.NewString(),
+		"key":        input.ID,
 		"resource":   "tenant",
-		"tenant":     tenantID,
+		"tenant":     input.ID,
 		"attributes": input,
 	}); err != nil {
 		return nil, err
 	}
 
 	// Create tenant resource
-	tenantResource, err := t.createTenantResource(input.Name, tenantUuid, *parentID, userUUID)
+	tenantResource, err := t.createTenantResource(input.Name, input.ID, *parentID, userUUID)
 	if err != nil {
 		return nil, err
 	}
@@ -90,17 +80,17 @@ func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 		return nil, err
 	}
 
-	// Create default role
-	if err := roles.CreateMstRole(tenantResource.ResourceID); err != nil {
-		return nil, fmt.Errorf("failed to create role: %w", err)
-	}
+	// // Create default role
+	// if err := roles.CreateMstRole(tenantResource.ResourceID); err != nil {
+	// 	return nil, fmt.Errorf("failed to create role: %w", err)
+	// }
 
 	tq := &TenantQueryResolver{DB: t.DB, PermitClient: t.PermitClient}
 	return tq.GetTenant(ctx, tenantResource.ResourceID)
 }
 
 // UpdateTenant resolver for updating a Tenant
-func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.UpdateTenantInput) (*models.Tenant, error) {
+func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.UpdateTenantInput) (models.OperationResult, error) {
 
 	// Extract gin.Context from GraphQL context
 	ginCtx, ok := ctx.Value(middlewares.GinContextKey).(*gin.Context)
@@ -158,7 +148,7 @@ func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 }
 
 // DeleteTenant resolver for deleting a Tenant
-func (t *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID) (bool, error) {
+func (t *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID) (models.OperationResult, error) {
 	tx := t.DB.Begin()
 
 	updates := map[string]interface{}{
@@ -168,26 +158,30 @@ func (t *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID)
 	// Delete from permit
 	if _, err := t.PermitClient.SendRequest(ctx, "DELETE", fmt.Sprintf("tenants/%s", id), nil); err != nil {
 		tx.Rollback()
-		return false, err
+		return nil, err
 	}
 
 	// Update metadata
 	if err := tx.Model(&dto.TenantMetadata{}).Where("resource_id = ?", id).UpdateColumns(updates).Error; err != nil {
 		tx.Rollback()
-		return false, fmt.Errorf("failed to soft delete tenant metadata: %w", err)
+		return nil, fmt.Errorf("failed to soft delete tenant metadata: %w", err)
 	}
 
 	// Update resource
 	if err := tx.Model(&dto.TenantResources{}).Where("resource_id = ?", id).UpdateColumns(updates).Error; err != nil {
 		tx.Rollback()
-		return false, fmt.Errorf("failed to delete tenant resource: %w", err)
+		return nil, fmt.Errorf("failed to delete tenant resource: %w", err)
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		return false, fmt.Errorf("failed to commit transaction: %w", err)
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	return true, nil
+	return &models.SuccessResponse{
+		Success: true,
+		Message: "Tenant deleted successfully",
+		Data:    []models.Data{},
+	}, nil
 }
 
 func (t *TenantMutationResolver) validateParentOrg(parentOrgID uuid.UUID) (*uuid.UUID, error) {

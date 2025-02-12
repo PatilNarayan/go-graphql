@@ -1,20 +1,18 @@
--- Create the mst_resource_types table with GORM UUID format
+-- Create the mst_resource_types table with MySQL UUID format
 DROP TABLE IF EXISTS mst_resource_types;
--- TRUNCATE tnt_resource_metadata;
--- TRUNCATE  tnt_resource;
 
 CREATE TABLE IF NOT EXISTS mst_resource_types (
     resource_type_id VARCHAR(36) PRIMARY KEY,
     service_id VARCHAR(36) NOT NULL,
-    name VARCHAR(45) NOT NULL,
+    name VARCHAR(36) NOT NULL,
     row_status INT DEFAULT 1,
-    created_by VARCHAR(45),
-    updated_by VARCHAR(45),
+    created_by VARCHAR(36) NOT NULL,
+    updated_by VARCHAR(36) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Insert sample data
+-- Insert sample data with proper UUID values
 INSERT INTO mst_resource_types (
     resource_type_id,
     service_id,
@@ -30,8 +28,8 @@ INSERT INTO mst_resource_types (
     'a1b2c3d4-e5f6-4747-8899-aabbccddeeff',
     'User',
     1,
-    'system_admin',
-    'system_admin',
+    '00000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000001',
     '2024-01-01 10:00:00',
     '2024-01-01 10:00:00'
 ),
@@ -40,8 +38,8 @@ INSERT INTO mst_resource_types (
     'b1b2c3d4-e5f6-4747-8899-aabbccddeeff',
     'Group',
     1,
-    'system_admin',
-    'system_admin',
+    '00000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000001',
     '2024-01-01 10:30:00',
     '2024-01-01 10:30:00'
 ),
@@ -50,8 +48,8 @@ INSERT INTO mst_resource_types (
     'c1b2c3d4-e5f6-4747-8899-aabbccddeeff',
     'Tenant',
     1,
-    'system_admin',
-    'system_admin',
+    '00000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000001',
     '2024-01-01 11:00:00',
     '2024-01-01 11:00:00'
 ),
@@ -60,8 +58,8 @@ INSERT INTO mst_resource_types (
     'd1b2c3d4-e5f6-4747-8899-aabbccddeeff',
     'Role',
     1,
-    'system_admin',
-    'system_admin',
+    '00000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000001',
     '2024-01-01 11:30:00',
     '2024-01-01 11:30:00'
 ),
@@ -70,8 +68,8 @@ INSERT INTO mst_resource_types (
     'e1b2c3d4-e5f6-4747-8899-aabbccddeeff',
     'Root',
     1,
-    'system_admin',
-    'system_admin',
+    '00000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000001',
     '2024-01-01 12:00:00',
     '2024-01-01 12:00:00'
 ),
@@ -80,8 +78,8 @@ INSERT INTO mst_resource_types (
     'f1b2c3d4-e5f6-4747-8899-aabbccddeeff',
     'Account',
     1,
-    'system_admin',
-    'system_admin',
+    '00000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000001',
     '2024-01-01 12:30:00',
     '2024-01-01 12:30:00'
 ),
@@ -90,10 +88,9 @@ INSERT INTO mst_resource_types (
     'g1b2c3d4-e5f6-4747-8899-aabbccddeeff',
     'Client Organization Unit',
     1,
-    'system_admin',
-    'system_admin',
+    '00000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000001',
     '2024-01-01 13:00:00',
     '2024-01-01 13:00:00'
 );
-
 

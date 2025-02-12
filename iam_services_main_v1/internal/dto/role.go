@@ -91,8 +91,8 @@ type MstRole struct {
 	ScopeResourceTypeID uuid.UUID `json:"scopeResourceTypeId" gorm:"type:char(36);column:scope_resource_type_id" db:"scope_resource_type_id"`
 	Description         string    `json:"description" gorm:"column:description;type:text" db:"description"`
 	RowStatus           int       `json:"rowStatus" gorm:"column:row_status" db:"row_status"`
-	CreatedBy           string    `json:"createdBy" gorm:"column:created_by;size:36" db:"created_by"`
-	UpdatedBy           string    `json:"updatedBy" gorm:"column:updated_by;size:36" db:"updated_by"`
+	CreatedBy           uuid.UUID `json:"createdBy" gorm:"column:created_by;size:36" db:"created_by"`
+	UpdatedBy           uuid.UUID `json:"updatedBy" gorm:"column:updated_by;size:36" db:"updated_by"`
 	CreatedAt           time.Time `json:"createdAt" gorm:"column:created_at;autoCreateTime" db:"created_at"`
 	UpdatedAt           time.Time `json:"updatedAt" gorm:"column:updated_at;autoUpdateTime" db:"updated_at"`
 }

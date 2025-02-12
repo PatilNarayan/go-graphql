@@ -5,13 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"iam_services_main_v1/gql/models"
-	"iam_services_main_v1/internal/constants"
 	"iam_services_main_v1/internal/dto"
 	"iam_services_main_v1/internal/permit"
 	"time"
 
 	"github.com/google/uuid"
-	"go.uber.org/thriftrw/ptr"
 	"gorm.io/gorm"
 )
 
@@ -34,12 +32,12 @@ func (r *PermissionMutationResolver) CreatePermission(ctx context.Context, input
 	permission := &dto.TNTPermission{
 		PermissionID: uuid.New(),
 		Name:         input.Name,
-		ServiceID:    input.ServiceID.String(),
-		Action:       input.Action,
+		ServiceID:    *input.ServiceID,
+		Action:       *input.Action,
 		RowStatus:    1,
 		// RoleID:       *input.RoleID,
-		CreatedBy: constants.DefaltCreatedBy,
-		UpdatedBy: constants.DefaltUpdatedBy,
+		// CreatedBy:uu
+		// UpdatedBy: constants.DefaltUpdatedBy,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -122,7 +120,7 @@ func (r *PermissionMutationResolver) UpdatePermission(ctx context.Context, input
 	// }
 
 	permission.Name = input.Name
-	permission.ServiceID = input.ServiceID.String()
+	permission.ServiceID = *input.ServiceID
 	permission.Action = *input.Action
 	// permission.RoleID = *input.RoleID
 	permission.UpdatedAt = time.Now()
@@ -155,10 +153,10 @@ func convertToGraphQLPermission(p *dto.TNTPermission) *models.Permission {
 		Name:      p.Name,
 		ServiceID: &p.ServiceID,
 		Action:    &p.Action,
-		CreatedAt: ptr.String(p.CreatedAt.String()),
+		// CreatedAt: ptr.String(p.CreatedAt.String()),
 		CreatedBy: p.CreatedBy,
-		UpdatedAt: ptr.String(p.UpdatedAt.String()),
-		UpdatedBy: ptr.String(p.UpdatedBy),
+		// UpdatedAt: ptr.String(p.UpdatedAt.String()),
+		// UpdatedBy: ptr.String(p.UpdatedBy),
 	}
 }
 
@@ -193,10 +191,10 @@ func (r *PermissionMutationResolver) DeletePermission(ctx context.Context, id uu
 }
 
 func validateCreateInput(input *models.CreatePermission) error {
-	if input == nil || input.ServiceID == uuid.Nil || input.Action == "" || input.Name == "" {
-		//logger.Log.Error("Input is required for creating permission")
-		return errors.New("input is required")
-	}
+	// if input == nil || input.ServiceID == uuid.Nil || input.Action == "" || input.Name == "" {
+	// 	//logger.Log.Error("Input is required for creating permission")
+	// 	return errors.New("input is required")
+	// }
 
 	// else {
 	// 	if err := r.DB.Where("name = ?", input.Name).First(&dto.TNTPermission{}).Error; err == nil {

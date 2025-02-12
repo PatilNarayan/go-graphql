@@ -26,7 +26,7 @@ type RoleMutationResolver struct {
 }
 
 // CreateRole handles creating a new role.
-func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.CreateRoleInput) (*models.Role, error) {
+func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.CreateRoleInput) (models.OperationResult, error) {
 
 	// Extract gin.Context from GraphQL context
 	ginCtx, ok := ctx.Value(middlewares.GinContextKey).(*gin.Context)
@@ -156,11 +156,17 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 			return nil, err
 		}
 	}
-	return convertRoleToGraphQL(&role), nil
+	data := convertRoleToGraphQL(&role)
+
+	return &models.SuccessResponse{
+		Success: true,
+		Message: "Successfully retrieved tenants",
+		Data:    []models.Data{*data},
+	}, nil
 }
 
 // UpdateRole handles updating an existing role.
-func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.UpdateRoleInput) (*models.Role, error) {
+func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.UpdateRoleInput) (models.OperationResult, error) {
 
 	// Extract gin.Context from GraphQL context
 	ginCtx, ok := ctx.Value(middlewares.GinContextKey).(*gin.Context)
@@ -353,40 +359,45 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 		return nil, err
 	}
 
-	return convertRoleToGraphQL(&finalRole), nil
+	data := convertRoleToGraphQL(&finalRole)
+	return &models.SuccessResponse{
+		Success: true,
+		Message: "Successfully retrieved tenants",
+		Data:    []models.Data{*data},
+	}, nil
 }
 
 // DeleteRole handles deleting a role by ID.
-func (r *RoleMutationResolver) DeleteRole(ctx context.Context, id uuid.UUID) (bool, error) {
+func (r *RoleMutationResolver) DeleteRole(ctx context.Context, id uuid.UUID) (models.OperationResult, error) {
 
 	// Extract gin.Context from GraphQL context
 	ginCtx, ok := ctx.Value(middleware.GinContextKey).(*gin.Context)
 	if !ok {
-		return false, fmt.Errorf("unable to get gin context")
+		return nil, fmt.Errorf("unable to get gin context")
 	}
 
 	// Retrieve x-tenant-id from headers
 	tenantID := ginCtx.GetHeader("tenantID")
 	if tenantID == "" {
-		return false, errors.New("tenantID not found in headers")
+		return nil, errors.New("tenantID not found in headers")
 	}
 
 	//validate uuid format
 	if _, err := uuid.Parse(tenantID); err != nil {
-		return false, fmt.Errorf("invalid tenantID: %w", err)
+		return nil, fmt.Errorf("invalid tenantID: %w", err)
 	}
 
 	if err := ValidateTenantID(uuid.MustParse(tenantID)); err != nil {
-		return false, err
+		return nil, err
 	}
 
 	if err := ValidateRoleID(id); err != nil {
-		return false, fmt.Errorf("invalid ID: %w", err)
+		return nil, fmt.Errorf("invalid ID: %w", err)
 	}
 
 	var roleDB dto.TNTRole
 	if err := r.DB.First(&roleDB, "resource_id = ? AND row_status = 1", id).Error; err != nil {
-		return false, errors.New("role not found")
+		return nil, errors.New("role not found")
 	}
 
 	updates := map[string]interface{}{
@@ -394,7 +405,7 @@ func (r *RoleMutationResolver) DeleteRole(ctx context.Context, id uuid.UUID) (bo
 	}
 	var assignableScopeRef dto.Mst_ResourceTypes
 	if err := r.DB.Where("resource_type_id = ? AND row_status = 1", roleDB.ScopeResourceTypeID).First(&assignableScopeRef).Error; err != nil {
-		return false, fmt.Errorf("invalid TenantID")
+		return nil, fmt.Errorf("invalid TenantID")
 	}
 
 	pc := permit.NewPermitClient()
@@ -413,24 +424,24 @@ func (r *RoleMutationResolver) DeleteRole(ctx context.Context, id uuid.UUID) (bo
 	// }
 
 	if _, err := pc.SendRequest(ctx, "DELETE", fmt.Sprintf("resources/%s/roles/%s", assignableScopeRef.Name, roleDB.ResourceID.String()), nil); err != nil {
-		return false, err
+		return nil, err
 	}
 
 	if err := r.DB.Model(&dto.TNTRole{}).Where("resource_id = ? AND row_status = 1", id).Updates(updates).Error; err != nil {
-		return false, err
+		return nil, err
 	}
 
 	if err := r.DB.Model(&dto.TNTRolePermission{}).Where("role_id = ? AND row_status = 1", id).Updates(utils.UpdateDeletedMap()).Error; err != nil {
-		return false, fmt.Errorf("failed to delete role: %w", err)
+		return nil, fmt.Errorf("failed to delete role: %w", err)
 	}
 
 	if err := r.DB.Model(&dto.TenantResources{}).Where("resource_id = ? AND row_status = 1", id).Updates(utils.UpdateDeletedMap()).Error; err != nil {
-		return false, fmt.Errorf("failed to delete role: %w", err)
+		return nil, fmt.Errorf("failed to delete role: %w", err)
 	}
 
 	actions, err := GetPermissionResourceAction(*&roleDB.ScopeResourceTypeID)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	updateres := make(map[string]interface{})
@@ -440,10 +451,14 @@ func (r *RoleMutationResolver) DeleteRole(ctx context.Context, id uuid.UUID) (bo
 	}
 	_, err = pc.SendRequest(ctx, "PATCH", fmt.Sprintf("resources/%s", assignableScopeRef.Name), update)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
-	return true, nil
+	return &models.SuccessResponse{
+		Success: true,
+		Message: "Successfully deleted role",
+		Data:    []models.Data{},
+	}, nil
 }
 
 func CheckPermissions(permissionsIds []string) error {

@@ -13,21 +13,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// CreateRoot is the resolver for the createRoot field.
-func (r *mutationResolver) CreateRoot(ctx context.Context, input models1.CreateRootInput) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: CreateRoot - createRoot"))
-}
-
-// UpdateRoot is the resolver for the updateRoot field.
-func (r *mutationResolver) UpdateRoot(ctx context.Context, input models1.UpdateRootInput) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: UpdateRoot - updateRoot"))
-}
-
-// DeleteRoot is the resolver for the deleteRoot field.
-func (r *mutationResolver) DeleteRoot(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: DeleteRoot - deleteRoot"))
-}
-
 // CreateTenant is the resolver for the createTenant field.
 func (r *mutationResolver) CreateTenant(ctx context.Context, input models1.CreateTenantInput) (models1.OperationResult, error) {
 	panic(fmt.Errorf("not implemented: CreateTenant - createTenant"))
@@ -58,91 +43,6 @@ func (r *mutationResolver) DeleteRole(ctx context.Context, id uuid.UUID) (models
 	panic(fmt.Errorf("not implemented: DeleteRole - deleteRole"))
 }
 
-// CreatePermission is the resolver for the createPermission field.
-func (r *mutationResolver) CreatePermission(ctx context.Context, input models1.CreatePermission) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: CreatePermission - createPermission"))
-}
-
-// UpdatePermission is the resolver for the updatePermission field.
-func (r *mutationResolver) UpdatePermission(ctx context.Context, input models1.UpdatePermission) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: UpdatePermission - updatePermission"))
-}
-
-// DeletePermission is the resolver for the deletePermission field.
-func (r *mutationResolver) DeletePermission(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: DeletePermission - deletePermission"))
-}
-
-// CreateClientOrganizationUnit is the resolver for the createClientOrganizationUnit field.
-func (r *mutationResolver) CreateClientOrganizationUnit(ctx context.Context, input models1.CreateClientOrganizationUnitInput) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: CreateClientOrganizationUnit - createClientOrganizationUnit"))
-}
-
-// UpdateClientOrganizationUnit is the resolver for the updateClientOrganizationUnit field.
-func (r *mutationResolver) UpdateClientOrganizationUnit(ctx context.Context, input models1.UpdateClientOrganizationUnitInput) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: UpdateClientOrganizationUnit - updateClientOrganizationUnit"))
-}
-
-// DeleteClientOrganizationUnit is the resolver for the deleteClientOrganizationUnit field.
-func (r *mutationResolver) DeleteClientOrganizationUnit(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: DeleteClientOrganizationUnit - deleteClientOrganizationUnit"))
-}
-
-// CreateBinding is the resolver for the createBinding field.
-func (r *mutationResolver) CreateBinding(ctx context.Context, input models1.CreateBindingInput) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: CreateBinding - createBinding"))
-}
-
-// UpdateBinding is the resolver for the updateBinding field.
-func (r *mutationResolver) UpdateBinding(ctx context.Context, input models1.UpdateBindingInput) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: UpdateBinding - updateBinding"))
-}
-
-// DeleteBinding is the resolver for the deleteBinding field.
-func (r *mutationResolver) DeleteBinding(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: DeleteBinding - deleteBinding"))
-}
-
-// CreateAccount is the resolver for the createAccount field.
-func (r *mutationResolver) CreateAccount(ctx context.Context, input models1.CreateAccountInput) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: CreateAccount - createAccount"))
-}
-
-// UpdateAccount is the resolver for the updateAccount field.
-func (r *mutationResolver) UpdateAccount(ctx context.Context, input models1.UpdateAccountInput) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: UpdateAccount - updateAccount"))
-}
-
-// DeleteAccount is the resolver for the deleteAccount field.
-func (r *mutationResolver) DeleteAccount(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: DeleteAccount - deleteAccount"))
-}
-
-// GetOrganization is the resolver for the getOrganization field.
-func (r *queryResolver) GetOrganization(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: GetOrganization - getOrganization"))
-}
-
-// AllOrganizations is the resolver for the allOrganizations field.
-func (r *queryResolver) AllOrganizations(ctx context.Context) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: AllOrganizations - allOrganizations"))
-}
-
-// GetResource is the resolver for the getResource field.
-func (r *queryResolver) GetResource(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: GetResource - getResource"))
-}
-
-// AllResources is the resolver for the allResources field.
-func (r *queryResolver) AllResources(ctx context.Context) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: AllResources - allResources"))
-}
-
-// GetRoot is the resolver for the getRoot field.
-func (r *queryResolver) GetRoot(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: GetRoot - getRoot"))
-}
-
 // GetTenant is the resolver for the getTenant field.
 func (r *queryResolver) GetTenant(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
 	panic(fmt.Errorf("not implemented: GetTenant - getTenant"))
@@ -163,46 +63,6 @@ func (r *queryResolver) AllRoles(ctx context.Context) (models1.OperationResult, 
 	panic(fmt.Errorf("not implemented: AllRoles - allRoles"))
 }
 
-// GetAllPermissions is the resolver for the getAllPermissions field.
-func (r *queryResolver) GetAllPermissions(ctx context.Context) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: GetAllPermissions - getAllPermissions"))
-}
-
-// GetPermission is the resolver for the getPermission field.
-func (r *queryResolver) GetPermission(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: GetPermission - getPermission"))
-}
-
-// GetClientOrganizationUnit is the resolver for the getClientOrganizationUnit field.
-func (r *queryResolver) GetClientOrganizationUnit(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: GetClientOrganizationUnit - getClientOrganizationUnit"))
-}
-
-// AllClientOrganizationUnits is the resolver for the allClientOrganizationUnits field.
-func (r *queryResolver) AllClientOrganizationUnits(ctx context.Context) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: AllClientOrganizationUnits - allClientOrganizationUnits"))
-}
-
-// GetBinding is the resolver for the getBinding field.
-func (r *queryResolver) GetBinding(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: GetBinding - getBinding"))
-}
-
-// AllBindings is the resolver for the allBindings field.
-func (r *queryResolver) AllBindings(ctx context.Context) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: AllBindings - allBindings"))
-}
-
-// GetAccount is the resolver for the getAccount field.
-func (r *queryResolver) GetAccount(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: GetAccount - getAccount"))
-}
-
-// AllAccounts is the resolver for the allAccounts field.
-func (r *queryResolver) AllAccounts(ctx context.Context) (models1.OperationResult, error) {
-	panic(fmt.Errorf("not implemented: AllAccounts - allAccounts"))
-}
-
 // Mutation returns generated1.MutationResolver implementation.
 func (r *Resolver) Mutation() generated1.MutationResolver { return &mutationResolver{r} }
 
@@ -211,3 +71,27 @@ func (r *Resolver) Query() generated1.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func (r *mutationResolver) CreatePermission(ctx context.Context, input models1.CreatePermission) (models1.OperationResult, error) {
+	panic(fmt.Errorf("not implemented: CreatePermission - createPermission"))
+}
+func (r *mutationResolver) UpdatePermission(ctx context.Context, input models1.UpdatePermission) (models1.OperationResult, error) {
+	panic(fmt.Errorf("not implemented: UpdatePermission - updatePermission"))
+}
+func (r *mutationResolver) DeletePermission(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
+	panic(fmt.Errorf("not implemented: DeletePermission - deletePermission"))
+}
+func (r *queryResolver) GetAllPermissions(ctx context.Context) (models1.OperationResult, error) {
+	panic(fmt.Errorf("not implemented: GetAllPermissions - getAllPermissions"))
+}
+func (r *queryResolver) GetPermission(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
+	panic(fmt.Errorf("not implemented: GetPermission - getPermission"))
+}
+*/

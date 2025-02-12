@@ -83,15 +83,15 @@ interface Organization {
 
 
 type Query {
-  getOrganization(id: UUID!): OperationResult
-  allOrganizations: OperationResult
+  # getOrganization(id: UUID!): OperationResult
+  # allOrganizations: OperationResult
 
 
-  getResource(id: UUID!): OperationResult
-  allResources: OperationResult
+  # getResource(id: UUID!): OperationResult
+  # allResources: OperationResult
 
 
-  getRoot(id: UUID!): OperationResult
+  # getRoot(id: UUID!): OperationResult
 
 
   getTenant(id: UUID!): OperationResult
@@ -102,27 +102,27 @@ type Query {
   allRoles: OperationResult
 
 
-  getAllPermissions: OperationResult
-  getPermission(id: UUID!): OperationResult
+  # getAllPermissions: OperationResult
+  # getPermission(id: UUID!): OperationResult
 
 
-  getClientOrganizationUnit(id: UUID!): OperationResult
-  allClientOrganizationUnits: OperationResult
+  # getClientOrganizationUnit(id: UUID!): OperationResult
+  # allClientOrganizationUnits: OperationResult
 
 
-  getBinding(id: UUID!): OperationResult
-  allBindings: OperationResult
+  # getBinding(id: UUID!): OperationResult
+  # allBindings: OperationResult
 
 
-  getAccount(id: UUID!): OperationResult
-  allAccounts: OperationResult
+  # getAccount(id: UUID!): OperationResult
+  # allAccounts: OperationResult
 }
 
 
 type Mutation {
-  createRoot(input: CreateRootInput!): OperationResult
-  updateRoot(input: UpdateRootInput!): OperationResult
-  deleteRoot(id: UUID!): OperationResult
+  # createRoot(input: CreateRootInput!): OperationResult
+  # updateRoot(input: UpdateRootInput!): OperationResult
+  # deleteRoot(id: UUID!): OperationResult
 
 
   createTenant(input: CreateTenantInput!): OperationResult
@@ -135,22 +135,8 @@ type Mutation {
   deleteRole(id: UUID!): OperationResult
 
 
-  createPermission(input: CreatePermission!) : OperationResult
-  updatePermission(input: UpdatePermission!) : OperationResult
-  deletePermission(id: UUID!): OperationResult
+  # createPermission(input: CreatePermission!) : OperationResult
+  # updatePermission(input: UpdatePermission!) : OperationResult
+  # deletePermission(id: UUID!): OperationResult
 
-
-  createClientOrganizationUnit(input: CreateClientOrganizationUnitInput!): OperationResult
-  updateClientOrganizationUnit(input: UpdateClientOrganizationUnitInput!): OperationResult
-  deleteClientOrganizationUnit(id: UUID!): OperationResult
-
-
-  createBinding(input: CreateBindingInput!): OperationResult
-  updateBinding(input: UpdateBindingInput!): OperationResult
-  deleteBinding(id: UUID!): OperationResult
-
-
-  createAccount(input: CreateAccountInput!): OperationResult
-  updateAccount(input: UpdateAccountInput!): OperationResult
-  deleteAccount(id: UUID!): OperationResult
 }
