@@ -176,7 +176,7 @@ func (r *TenantQueryResolver) extractTenantAttributes(data map[string]interface{
 	}
 
 	if updatedAt, ok := data["updated_at"].(string); ok {
-		tenant.UpdatedAt = ptr.String(updatedAt)
+		tenant.UpdatedAt = updatedAt
 	}
 
 	parentOrgID := uuid.Nil
@@ -190,11 +190,11 @@ func (r *TenantQueryResolver) extractTenantAttributes(data map[string]interface{
 		}
 
 		if createdBy, ok := attributes["createdBy"].(string); ok {
-			tenant.CreatedBy = &createdBy
+			tenant.CreatedBy = uuid.MustParse(createdBy)
 		}
 
 		if updatedBy, ok := attributes["updatedBy"].(string); ok {
-			tenant.UpdatedBy = &updatedBy
+			tenant.UpdatedBy = uuid.MustParse(updatedBy)
 		}
 
 		if contactInfo, ok := attributes["contactInfo"].(map[string]interface{}); ok {
@@ -218,9 +218,9 @@ func (r *TenantQueryResolver) extractTenantAttributes(data map[string]interface{
 			ID:        parentOrg.ResourceID,
 			Name:      parentOrg.Name,
 			CreatedAt: parentOrg.CreatedAt.String(),
-			UpdatedAt: ptr.String(parentOrg.UpdatedAt.String()),
-			CreatedBy: &parentOrg.CreatedBy,
-			UpdatedBy: &parentOrg.UpdatedBy,
+			UpdatedAt: parentOrg.UpdatedAt.String(),
+			CreatedBy: parentOrg.CreatedBy,
+			UpdatedBy: parentOrg.UpdatedBy,
 		}
 	}
 

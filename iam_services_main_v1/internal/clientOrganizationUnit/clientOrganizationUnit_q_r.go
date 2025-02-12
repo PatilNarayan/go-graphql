@@ -79,9 +79,9 @@ func (r *ClientOrganizationUnitQueryResolver) GetClientOrganizationUnit(ctx cont
 			Name:        data["name"].(string),
 			CreatedAt:   data["created_at"].(string),
 			Description: &description,
-			UpdatedAt:   &updatedAt,
-			CreatedBy:   &createdBy,
-			UpdatedBy:   &updatedBy,
+			UpdatedAt:   updatedAt,
+			CreatedBy:   cast.createdBy,
+			UpdatedBy:   updatedBy,
 		}
 		return unit, nil
 	}

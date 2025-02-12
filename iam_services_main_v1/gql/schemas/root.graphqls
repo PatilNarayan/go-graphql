@@ -1,0 +1,23 @@
+type Root implements Resource & Organization {
+  id: UUID!
+  name: String!
+  description: String
+  parentOrg: Organization
+  createdAt: DateTime! # Timestamp of creation
+  updatedAt: DateTime! # Timestamp of last update
+  createdBy: UUID! # Identifier of the user who created the record
+  updatedBy: UUID! # Identifier of the user who last updated the record
+}
+
+
+input CreateRootInput {
+  name: String!
+  description: String
+}
+
+
+input UpdateRootInput {
+  id: UUID!
+  name: String
+  description: String
+}

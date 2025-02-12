@@ -1,0 +1,31 @@
+type Binding {
+  id: String!
+  name: String!
+  principal: Principal!
+  role: Role!
+  scopeRef: Resource!
+  version: String!
+  createdAt: DateTime! # Timestamp of creation
+  updatedAt: DateTime! # Timestamp of last update
+  createdBy: UUID! # Identifier of the user who created the record
+  updatedBy: UUID! # Identifier of the user who last updated the record
+}
+
+
+input CreateBindingInput {
+  name: String!
+  principalId: String!
+  roleId: String!
+  scopeRefId: String!
+  version: String!
+}
+
+
+input UpdateBindingInput {
+  id: String!
+  name: String!
+  principalId: String!
+  roleId: String!
+  scopeRefId: String!
+  version: String!
+}

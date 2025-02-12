@@ -1,19 +1,32 @@
 schema:
   - gql/schemas/schema.graphqls
+  - gql/schemas/accounts.graphqls
+  - gql/schemas/binding.graphqls
+  - gql/schemas/clientorgunits.graphqls
+  - gql/schemas/groups.graphqls
+  - gql/schemas/roles.graphqls
+  - gql/schemas/root.graphqls
+  - gql/schemas/tenants.graphqls
+  - gql/schemas/users.graphqls
+
 
 exec:
   filename: gql/generated/generated.go
   package: generated
 
+
+
 model:
   filename: gql/models/models_gen.go
   package: models
+
+
 
 resolver:
   layout: follow-schema
   dir: gql/resolvers
   package: resolvers
-
+  
 models:
   UUID:
     model:
@@ -25,31 +38,30 @@ models:
   Account:
     fields:
       billingInfo:
-        resolver: true
-      billingAddress:
-        resolver: true
+        resolver: true        
   Binding:
-    fields:
-      principal:
-        resolver: true
-      role:
-        resolver: true
-      scopeRef:
-        resolver: true
+      fields:
+        principal:
+          resolver: true
+        role:
+          resolver: true
+        scopeRef:
+          resolver: true
   Role:
-    fields:
-      tenant:
-        resolver: true
+      fields:
+        tenant:
+          resolver: true
   ClientOrganizationUnit:
-    fields:
-      tenant:
-        resolver: true
-      parentOrg:
-        resolver: true
+      fields:
+        tenant:
+          resolver: true
+        parentOrg:
+          resolver: true
   Tenant:
-    fields:
-      organizationUnits:
-        resolver: true
-      contactInfo:
-        resolver: true
-  
+      fields:
+        organizationUnits:
+          resolver: true
+        contactInfo:
+          resolver: true
+    
+

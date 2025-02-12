@@ -14,8 +14,8 @@ type TenantResources struct {
 	Name             string     `gorm:"size:45;not null;column:name" json:"name"`
 	TenantID         *uuid.UUID `gorm:"type:char(36);column:tenant_id" json:"tenant_id"`
 	RowStatus        int        `gorm:"default:1;column:row_status" json:"row_status"`
-	CreatedBy        string     `gorm:"size:45;column:created_by" json:"created_by"`
-	UpdatedBy        string     `gorm:"size:45;column:updated_by" json:"updated_by"`
+	CreatedBy        uuid.UUID  `gorm:"size:45;column:created_by" json:"created_by"`
+	UpdatedBy        uuid.UUID  `gorm:"size:45;column:updated_by" json:"updated_by"`
 	CreatedAt        time.Time  `gorm:"column:created_at;autoCreateTime" json:"created_at"`
 	UpdatedAt        time.Time  `gorm:"column:updated_at;autoCreateTime" json:"updated_at"`
 }
@@ -29,8 +29,8 @@ type Mst_ResourceTypes struct {
 	ServiceID      uuid.UUID `gorm:"type:char(36);not null;column:service_id" json:"service_id"`
 	Name           string    `gorm:"size:45;not null;column:name" json:"name"`
 	RowStatus      int       `gorm:"default:1;column:row_status" json:"row_status"`
-	CreatedBy      string    `gorm:"size:45;column:created_by" json:"created_by"`
-	UpdatedBy      string    `gorm:"size:45;column:updated_by" json:"updated_by"`
+	CreatedBy      uuid.UUID `gorm:"size:45;column:created_by" json:"created_by"`
+	UpdatedBy      uuid.UUID `gorm:"size:45;column:updated_by" json:"updated_by"`
 	CreatedAt      time.Time `gorm:"column:created_at;autoCreateTime" json:"created_at"`
 	UpdatedAt      time.Time `gorm:"column:updated_at;autoCreateTime" json:"updated_at"`
 }
@@ -44,8 +44,8 @@ type TenantMetadata struct {
 	ResourceID uuid.UUID       `gorm:"type:char(36);not null" json:"resource_id"`
 	Metadata   json.RawMessage `gorm:"type:json;" json:"metadata"`
 	RowStatus  int             `gorm:"default:1;column:row_status" json:"row_status"`
-	CreatedBy  string          `gorm:"size:45" json:"created_by"`
-	UpdatedBy  string          `gorm:"size:45" json:"updated_by"`
+	CreatedBy  uuid.UUID       `gorm:"size:45" json:"created_by"`
+	UpdatedBy  uuid.UUID       `gorm:"size:45" json:"updated_by"`
 	CreatedAt  time.Time       `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt  time.Time       `gorm:"autoUpdateTime" json:"updated_at"`
 }
@@ -61,8 +61,8 @@ type TenantRoleAssignments struct {
 	PrincipalID uuid.UUID `gorm:"type:char(36);column:principal_id" json:"principal_id"`
 	RoleID      uuid.UUID `gorm:"type:char(36);column:role_id" json:"role_id"`
 	RowStatus   int       `gorm:"default:1;column:row_status" json:"row_status"`
-	CreatedBy   string    `gorm:"size:45;column:created_by" json:"created_by"`
-	UpdatedBy   string    `gorm:"size:45;column:updated_by" json:"updated_by"`
+	CreatedBy   uuid.UUID `gorm:"size:45;column:created_by" json:"created_by"`
+	UpdatedBy   uuid.UUID `gorm:"size:45;column:updated_by" json:"updated_by"`
 	CreatedAt   time.Time `gorm:"column:created_at;autoCreateTime" json:"created_at"`
 	UpdatedAt   time.Time `gorm:"column:updated_at;autoCreateTime" json:"updated_at"`
 }
@@ -78,8 +78,8 @@ type TenantPrincipals struct {
 	Email           string          `gorm:"size:45;not null;column:email" json:"email"`
 	Metadata        json.RawMessage `gorm:"type:json;" json:"metadata"`
 	RowStatus       int             `gorm:"default:1;column:row_status" json:"row_status"`
-	CreatedBy       string          `gorm:"size:45;column:created_by" json:"created_by"`
-	UpdatedBy       string          `gorm:"size:45;column:updated_by" json:"updated_by"`
+	CreatedBy       uuid.UUID       `gorm:"size:45;column:created_by" json:"created_by"`
+	UpdatedBy       uuid.UUID       `gorm:"size:45;column:updated_by" json:"updated_by"`
 	CreatedAt       time.Time       `gorm:"column:created_at;autoCreateTime" json:"created_at"`
 	UpdatedAt       time.Time       `gorm:"column:updated_at;autoCreateTime" json:"updated_at"`
 }
@@ -95,8 +95,8 @@ type TenantRoles struct {
 	Name           string    `gorm:"size:45;not null;column:name" json:"name"`
 	Version        string    `gorm:"size:45;not null;column:version" json:"version"`
 	RowStatus      int       `gorm:"default:1;column:row_status" json:"row_status"`
-	CreatedBy      string    `gorm:"size:45;column:created_by" json:"created_by"`
-	UpdatedBy      string    `gorm:"size:45;column:updated_by" json:"updated_by"`
+	CreatedBy      uuid.UUID `gorm:"size:45;column:created_by" json:"created_by"`
+	UpdatedBy      uuid.UUID `gorm:"size:45;column:updated_by" json:"updated_by"`
 	CreatedAt      time.Time `gorm:"column:created_at;autoCreateTime" json:"created_at"`
 	UpdatedAt      time.Time `gorm:"column:updated_at;autoCreateTime" json:"updated_at"`
 }
@@ -110,8 +110,8 @@ type TenantRolePermissions struct {
 	RoleID           uuid.UUID `gorm:"size:45;not null;column:role_id" json:"role_id"`
 	PermissionID     uuid.UUID `gorm:"size:45;not null;column:permission_id" json:"permission_id"`
 	RowStatus        int       `gorm:"default:1;column:row_status" json:"row_status"`
-	CreatedBy        string    `gorm:"size:45;column:created_by" json:"created_by"`
-	UpdatedBy        string    `gorm:"size:45;column:updated_by" json:"updated_by"`
+	CreatedBy        uuid.UUID `gorm:"size:45;column:created_by" json:"created_by"`
+	UpdatedBy        uuid.UUID `gorm:"size:45;column:updated_by" json:"updated_by"`
 	CreatedAt        time.Time `gorm:"column:created_at;autoCreateTime" json:"created_at"`
 	UpdatedAt        time.Time `gorm:"column:updated_at;autoCreateTime" json:"updated_at"`
 }
@@ -124,8 +124,8 @@ type MstPrincipalTypes struct {
 	PrincipalTypeID uuid.UUID `gorm:"size:45;not null;column:principal_type_id" json:"principal_type_id"`
 	Name            string    `gorm:"size:45;not null;column:name" json:"name"`
 	RowStatus       int       `gorm:"default:1;column:row_status" json:"row_status"`
-	CreatedBy       string    `gorm:"size:45;column:created_by" json:"created_by"`
-	UpdatedBy       string    `gorm:"size:45;column:updated_by" json:"updated_by"`
+	CreatedBy       uuid.UUID `gorm:"size:45;column:created_by" json:"created_by"`
+	UpdatedBy       uuid.UUID `gorm:"size:45;column:updated_by" json:"updated_by"`
 	CreatedAt       time.Time `gorm:"column:created_at;autoCreateTime" json:"created_at"`
 	UpdatedAt       time.Time `gorm:"column:updated_at;autoCreateTime" json:"updated_at"`
 }

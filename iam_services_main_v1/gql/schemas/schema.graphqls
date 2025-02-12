@@ -1,5 +1,56 @@
-scalar Date
-scalar UUID
+scalar DateTime # ISO 8601 formatted date-time string
+scalar UUID # Universally Unique Identifier
+# Custom JSON scalar type to handle arbitrary JSON data
+# Represents any arbitrary JSON-encoded object or array
+
+
+scalar JSON
+
+
+# Define a union for the possible "data" types
+union Data =    Root | Tenant | Role | Permission | ClientOrganizationUnit | Account
+
+
+union OperationResult = SuccessResponse | ErrorResponse
+
+
+# Standard Response Interface for both success and error responses
+interface Response {
+  """Indicates if the operation was successful."""
+  success: Boolean!
+
+
+  """A message providing additional context or information about the operation."""
+  message: String!
+}
+
+
+# Success Response for a generic operation
+type SuccessResponse implements Response {
+  """Indicates if the operation was successful."""
+  success: Boolean!
+
+
+   """A message providing additional context or information about the operation."""
+  message: String!
+
+
+  """The data returned from the operation."""
+  data: [Data]
+}
+
+
+
+# Define ErrorResponse for error cases
+type ErrorResponse implements Response {
+  success: Boolean!
+  message: String!
+  errorCode: String!
+  errorDetails: JSON
+}
+
+
+
 
 interface Principal {
   id: UUID!
@@ -8,444 +59,98 @@ interface Principal {
   tenant: Tenant!
 }
 
-"Interface of Resources"
 
 interface Resource {
   id: UUID!
   name: String!
-  createdAt: String!
-  updatedAt: String
-  createdBy: String
-  updatedBy: String
+  createdAt: DateTime! # Timestamp of creation
+  updatedAt: DateTime! # Timestamp of last update
+  createdBy: UUID! # Identifier of the user who created the record
+  updatedBy: UUID! # Identifier of the user who last updated the record
 }
 
-"Interface of Organization"
 
 interface Organization {
   id: UUID!
   name: String!
   description: String
   parentOrg: Organization
-  createdAt: String!
-  updatedAt: String
-  createdBy: String
-  updatedBy: String
-}
-
-type Root implements Resource & Organization {
-  id: UUID!
-  name: String!
-  description: String
-  parentOrg: Organization
-  createdAt: String!
-  updatedAt: String
-  createdBy: String
-  updatedBy: String
-}
-
-input CreateRootInput {
-  name: String!
-  description: String
-}
-
-input UpdateRootInput {
-  id: UUID!
-  name: String
-  description: String
-}
-
-type Account implements Resource & Organization {
-  id: UUID!
-  name: String!
-  createdAt: String!
-  updatedAt: String
-  createdBy: String
-  updatedBy: String
-  description: String
-  parentOrg : Organization
-  billingInfo: BillingInfo
-}
-
-input CreateAccountInput {
-  name: String!
-  description: String
-  tenantId: UUID!
-  parentId: UUID!
-  billingInfo: CreateBillingInfoInput
-}
-
-input UpdateAccountInput {
-  id: UUID!
-  name: String
-  description: String
-  tenantId: UUID
-  parentId: UUID
-  billingInfo: UpdateBillingInfoInput
-}
-
-type BillingInfo {
-  id: UUID!
-  creditCardNumber: String!
-  creditCardType: String!
-  expirationDate: String!
-  cvv: String!
-  billingAddress: BillingAddress!
-}
-
-input CreateBillingInfoInput {
-  creditCardNumber: String!
-  creditCardType: String!
-  expirationDate: String!
-  cvv: String!
-  billingAddress: CreateBillingAddressInput!
-}
-
-input UpdateBillingInfoInput {
-  id: UUID!
-  creditCardNumber: String!
-  creditCardType: String!
-  expirationDate: String!
-  cvv: String!
-  billingAddress: UpdateBillingAddressInput!
-}
-
-type BillingAddress {
-  street: String!
-  city: String!
-  state: String!
-  zipcode: String!
-  country: String!
-}
-
-input CreateBillingAddressInput {
-  street: String!
-  city: String!
-  state: String!
-  zipcode: String!
-  country: String!
-}
-
-input UpdateBillingAddressInput {
-  billingInfoId: UUID!  
-  street: String
-  city: String
-  state: String
-  zipcode: String
-  country: String
-}
-
-type Tenant implements Resource & Organization {
-  id: UUID!
-  name: String!
-  description: String
-  parentOrg: Organization!
-  contactInfo: ContactInfo
-  createdAt: String!
-  updatedAt: String
-  createdBy: String
-  updatedBy: String
-}
-
-type ContactInfo {
-  email: String
-  phoneNumber: String
-  address: Address
-}
-
-input ContactInfoInput {
-  email: String
-  phoneNumber: String
-  address: CreateAddressInput
-}
-
-input CreateTenantInput {
-  name: String!
-  description: String
-  parentOrgId: String!
-  contactInfo: ContactInfoInput
-}
-
-input UpdateTenantInput {
-  id: UUID!
-  name: String
-  description: String
-  parentOrgId: String
-  contactInfo: ContactInfoInput
- 
-}
-
-type Address {
-  street: String
-  city: String
-  state: String
-  zipCode: String
-  country: String
-}
-
-input CreateAddressInput {
-  street: String
-  city: String
-  state: String
-  zipCode: String
-  country: String
-}
-
-input UpdateAddressInput {
-  street: String
-  city: String
-  state: String
-  zipCode: String
-  country: String
-}
-
-type ClientOrganizationUnit implements Resource & Organization {
-  id: UUID!
-  name: String!
-  description: String
-  tenant: Tenant!
-  parentOrg: Organization!
-  createdAt: String!
-  updatedAt: String
-  createdBy: String
-  updatedBy: String
-}
-
-input CreateClientOrganizationUnitInput {
-  name: String!
-  description: String
-  tenantId: String!
-  parentOrgId: String!
-}
-
-input UpdateClientOrganizationUnitInput {
-  id: UUID!
-  name: String
-  description: String
-  tenantId: String
-  parentOrgId: String
-}
-
-enum RoleTypeEnum {
-  DEFAULT
-  CUSTOM
-}
-
-type Role implements Resource {
-  id: UUID!
-  name: String!
-  version: String!
-  description: String
-  permissions: [Permission!]!
-  roleType: RoleTypeEnum!
-  assignableScope: Resource!
-  createdAt: String!
-  createdBy: String
-  updatedAt: String
-  updatedBy: String
-}
-
-input CreateRoleInput {
-  name: String!
-  version: String!
-  description: String
-  permissions: [String!]!
-  roleType: RoleTypeEnum!
-  assignableScopeRef: UUID!
-
-}
-
-input UpdateRoleInput {
-  id: UUID!
-  name: String!
-  version: String!
-  description: String
-  permissions: [String!]!
-  roleType: RoleTypeEnum!
-  assignableScopeRef: UUID!
- 
-}
-
-
-type Permission {
-  id: UUID!
-  name: String!
-  serviceId: String
-  action: String
-  resource:  String!
-  description: String
-  createdAt: String
-  createdBy: String!
-  updatedAt: String
-  updatedBy: String
-}
-
-input CreatePermission {
-  name: String!
-  serviceId: UUID!
-  action: String!
-resource:  String!
-description: String
-}
-
-input UpdatePermission {
-  id: UUID!
-  name: String!
-  serviceId: UUID
-  action: String
-  resource:  String!
-  description: String
-} 
-
-type Binding {
-  id: String!
-  name: String!
-  createdAt: String
-  updatedAt: String
-  createdBy: String
-  updatedBy: String
-  principal: Principal!
-  role: Role!
-  scopeRef: Resource!
-  version: String!
-}
-
-input CreateBindingInput {
-  name: String!
-  principalId: String!
-  roleId: String!
-  scopeRefId: String!
-  version: String!
-  createdBy: String!
-}
-
-input UpdateBindingInput {
-  id: String!
-  name: String!
-  principalId: String!
-  roleId: String!
-  scopeRefId: String!
-  version: String!
-  updatedBy: String!
-}
-
-type User implements Principal & Resource {
-  id: UUID!
-  name: String!
-  firstName: String!
-  lastName: String!
-  email: String!
-  createdAt: String!
-  updatedAt: String
-  tenant: Tenant!
-  createdBy: String
-  updatedBy: String
-}
-
-input CreateUserInput {
-  firstName: String!
-  lastName: String!
-  email: String!
-  tenantId: String!
-}
-
-input UpdateUserInput {
-  id: String!
-  firstName: String
-  lastName: String
-  email: String
-  tenantId: String
-}
-
-type Group implements Principal & Resource {
-  id: UUID!
-  name: String!
-  email: String!
-  tenant: Tenant!
-  description: String
-  members: [User!]!
-  createdAt: String!
-  updatedAt: String
-  createdBy: String
-  updatedBy: String
-}
-
-input CreateGroupInput {
-  name: String!
-  email: String!
-  tenantId: String!
-  description: String
-  members: [String!]!
-}
-
-input UpdateGroupInput {
-  id: String!
-  name: String
-  email: String
-  tenantId: String!
-  description: String
-  members: [String!]!
+  createdAt: DateTime! # Timestamp of creation
+  updatedAt: DateTime! # Timestamp of last update
+  createdBy: UUID! # Identifier of the user who created the record
+  updatedBy: UUID! # Identifier of the user who last updated the record
 }
 
 
 type Query {
-  # getOrganization(id: UUID!): Organization
-  # allOrganizations: [Organization!]!
+  getOrganization(id: UUID!): OperationResult
+  allOrganizations: OperationResult
 
-  # getResource(id: UUID!): Resource
-  # allResources: [Resource!]!
 
-  # getRoot(id: UUID!): Root
+  getResource(id: UUID!): OperationResult
+  allResources: OperationResult
 
-  getTenant(id: UUID!): Tenant
-  allTenants: [Tenant]
 
-  getRole(id: UUID!): Role
-  allRoles(id: UUID): [Role!]!
+  getRoot(id: UUID!): OperationResult
 
-  getAllPermissions:[Permission]
-  getPermission(id: UUID!):Permission
 
-  getClientOrganizationUnit(id: UUID!): ClientOrganizationUnit
-  allClientOrganizationUnits: [ClientOrganizationUnit!]!
+  getTenant(id: UUID!): OperationResult
+  allTenants: OperationResult
 
-  getAccount(id: UUID!): Account
-  allAccounts: [Account!]!
 
-  getBinding(id: String!): Binding
-  allBindings: [Binding!]!
+  getRole(id: UUID!): OperationResult
+  allRoles: OperationResult
+
+
+  getAllPermissions: OperationResult
+  getPermission(id: UUID!): OperationResult
+
+
+  getClientOrganizationUnit(id: UUID!): OperationResult
+  allClientOrganizationUnits: OperationResult
+
+
+  getBinding(id: UUID!): OperationResult
+  allBindings: OperationResult
+
+
+  getAccount(id: UUID!): OperationResult
+  allAccounts: OperationResult
 }
 
+
 type Mutation {
-  # createRoot(input: CreateRootInput!): Root!
-  # updateRoot(input: UpdateRootInput!): Root!
-  # deleteRoot(id: UUID!): Boolean!
-
-  createTenant(input: CreateTenantInput!): Tenant!
-  updateTenant(input: UpdateTenantInput!): Tenant!
-  deleteTenant(id: UUID!): Boolean!
-
-  createRole(input: CreateRoleInput!): Role!
-  updateRole(input: UpdateRoleInput!): Role!
-  deleteRole(id: UUID!): Boolean!
-
-  createPermission(input: CreatePermission) : Permission
-  deletePermission(id: UUID!): Boolean!
-  updatePermission(input: UpdatePermission) : Permission
-
-  createClientOrganizationUnit(
-    input: CreateClientOrganizationUnitInput!
-  ): ClientOrganizationUnit!
-  updateClientOrganizationUnit(
-    input: UpdateClientOrganizationUnitInput!
-  ): ClientOrganizationUnit!
-  deleteClientOrganizationUnit(id: UUID!): Boolean!
-
-  createAccount(input: CreateAccountInput!): Account!
-  updateAccount(input: UpdateAccountInput!): Account!
-  deleteAccount(id: UUID!): Boolean!
+  createRoot(input: CreateRootInput!): OperationResult
+  updateRoot(input: UpdateRootInput!): OperationResult
+  deleteRoot(id: UUID!): OperationResult
 
 
-  createBinding(input: CreateBindingInput!): Binding!
-  updateBinding(input: UpdateBindingInput!): Binding!
-  deleteBinding(id: String!): Boolean!
+  createTenant(input: CreateTenantInput!): OperationResult
+  updateTenant(input: UpdateTenantInput!): OperationResult
+  deleteTenant(id: UUID!): OperationResult
+
+
+  createRole(input: CreateRoleInput!): OperationResult
+  updateRole(input: UpdateRoleInput!): OperationResult
+  deleteRole(id: UUID!): OperationResult
+
+
+  createPermission(input: CreatePermission!) : OperationResult
+  updatePermission(input: UpdatePermission!) : OperationResult
+  deletePermission(id: UUID!): OperationResult
+
+
+  createClientOrganizationUnit(input: CreateClientOrganizationUnitInput!): OperationResult
+  updateClientOrganizationUnit(input: UpdateClientOrganizationUnitInput!): OperationResult
+  deleteClientOrganizationUnit(id: UUID!): OperationResult
+
+
+  createBinding(input: CreateBindingInput!): OperationResult
+  updateBinding(input: UpdateBindingInput!): OperationResult
+  deleteBinding(id: UUID!): OperationResult
+
+
+  createAccount(input: CreateAccountInput!): OperationResult
+  updateAccount(input: UpdateAccountInput!): OperationResult
+  deleteAccount(id: UUID!): OperationResult
 }

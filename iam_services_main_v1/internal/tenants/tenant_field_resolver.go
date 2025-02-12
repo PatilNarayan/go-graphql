@@ -96,9 +96,9 @@ func convertTenantToGraphQL(tenant *dto.TenantResources, parentOrg *dto.TenantRe
 		ID:        tenant.ResourceID,
 		Name:      tenant.Name,
 		CreatedAt: tenant.CreatedAt.String(),
-		CreatedBy: &tenant.CreatedBy,
-		UpdatedAt: ptr.String(tenant.UpdatedAt.String()),
-		UpdatedBy: &tenant.UpdatedBy,
+		CreatedBy: tenant.CreatedBy,
+		UpdatedAt: tenant.UpdatedAt.String(),
+		UpdatedBy: tenant.UpdatedBy,
 	}
 
 	if parentOrg != nil {
@@ -106,9 +106,9 @@ func convertTenantToGraphQL(tenant *dto.TenantResources, parentOrg *dto.TenantRe
 			ID:        parentOrg.ResourceID,
 			Name:      parentOrg.Name,
 			CreatedAt: parentOrg.CreatedAt.String(),
-			UpdatedAt: ptr.String(parentOrg.UpdatedAt.String()),
-			CreatedBy: &parentOrg.CreatedBy,
-			UpdatedBy: &parentOrg.UpdatedBy,
+			UpdatedAt: parentOrg.UpdatedAt.String(),
+			CreatedBy: parentOrg.CreatedBy,
+			UpdatedBy: parentOrg.UpdatedBy,
 		}
 	}
 

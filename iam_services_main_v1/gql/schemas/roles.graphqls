@@ -1,0 +1,81 @@
+"Represents a Role entity"
+enum RoleTypeEnum {
+  DEFAULT    # Default role type
+  CUSTOM     # Custom role type
+}
+
+
+type Role implements Resource {
+  id: UUID!                # Unique identifier of the role
+  name: String!            # Name of the role
+  version: String!         # Version of the role
+  description: String      # Description of the role
+  permissions: [Permission!]! # Permissions associated with the role
+  roleType: RoleTypeEnum!  # Role type: DEFAULT or CUSTOM
+  assignableScope: Resource # Scope to which the role can be assigned
+  createdAt: DateTime!     # Timestamp of creation
+  updatedAt: DateTime!     # Timestamp of last update
+  createdBy: UUID!         # Identifier of the user who created the record
+  updatedBy: UUID!         # Identifier of the user who last updated the record
+}
+
+
+"Input for creating a new Role"
+input CreateRoleInput {
+  name: String!            # Name of the role
+  version: String!         # Version of the role
+  description: String      # Description of the role (optional)
+  permissions: [String!]!  # List of permission names for the role
+  roleType: RoleTypeEnum!  # Role type (DEFAULT or CUSTOM)
+  assignableScopeRef: UUID! # Reference ID for the scope to which the role can be assigned
+}
+
+
+"Input for updating an existing Role"
+input UpdateRoleInput {
+  id: UUID!                # ID of the role to be updated
+  name: String!            # Name of the role
+  version: String!         # Version of the role
+  description: String      # Description of the role (optional)
+  permissions: [String!]!  # List of permission names for the role
+  roleType: RoleTypeEnum!  # Role type (DEFAULT or CUSTOM)
+  assignableScopeRef: UUID! # Reference ID for the scope to which the role can be assigned
+}
+
+
+"Represents a Permission entity"
+type Permission {
+  id: UUID!                # Unique identifier of the permission
+  name: String!            # Name of the permission
+  serviceId: String        # Service ID associated with the permission (optional)
+  action: String           # Action associated with the permission (optional)
+  createdAt: DateTime!     # Timestamp of creation
+  updatedAt: DateTime!     # Timestamp of last update
+  createdBy: UUID!         # Identifier of the user who created the record
+  updatedBy: UUID!         # Identifier of the user who last updated the record
+}
+
+
+"Represents a Service entity associated with Permissions"
+type Service {
+  id: String!              # Unique identifier for the service
+  name: String!            # Name of the service
+}
+
+
+"Input for creating a new Permission"
+input CreatePermission {
+  name: String!            # Name of the permission
+  serviceId: String        # Service ID associated with the permission (optional)
+  action: String           # Action associated with the permission (optional)
+}
+
+
+"Input for updating an existing Permission"
+input UpdatePermission {
+  id: UUID!                # ID of the permission to be updated
+  name: String!            # Name of the permission
+  serviceId: String        # Service ID associated with the permission (optional)
+  action: String           # Action associated with the permission (optional)
+}
+

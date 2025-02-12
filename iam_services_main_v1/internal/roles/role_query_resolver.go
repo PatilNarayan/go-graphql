@@ -152,9 +152,9 @@ func convertRoleToGraphQL(role *dto.TNTRole) *models.Role {
 		RoleType:    models.RoleTypeEnum(role.RoleType),
 		Version:     role.Version,
 		CreatedAt:   role.CreatedAt.String(),
-		UpdatedAt:   ptr.String(role.UpdatedAt.String()),
-		UpdatedBy:   &role.UpdatedBy,
-		CreatedBy:   &role.CreatedBy,
+		UpdatedAt:   role.UpdatedAt.String(),
+		UpdatedBy:   role.UpdatedBy,
+		CreatedBy:   role.CreatedBy,
 	}
 
 	if res.RoleType == "D" {
@@ -187,9 +187,9 @@ func convertRoleToGraphQL(role *dto.TNTRole) *models.Role {
 		ID:        ParentResource.ResourceTypeID,
 		Name:      ParentResource.Name,
 		CreatedAt: ParentResource.CreatedAt.String(),
-		UpdatedAt: ptr.String(ParentResource.UpdatedAt.String()),
-		CreatedBy: &ParentResource.CreatedBy,
-		UpdatedBy: &ParentResource.UpdatedBy,
+		UpdatedAt: ParentResource.UpdatedAt.String(),
+		CreatedBy: ParentResource.CreatedBy,
+		UpdatedBy: ParentResource.UpdatedBy,
 	}
 
 	//logger.Log.Infof("Successfully converted Role ID: %s to GraphQL model", role.ResourceID)
@@ -227,9 +227,9 @@ func GetRolePermissions(id uuid.UUID) ([]*models.Permission, error) {
 			Name:      rolePermission.Name,
 			ServiceID: &rolePermission.ServiceID,
 			Action:    &rolePermission.Action,
-			CreatedAt: ptr.String(rolePermission.CreatedAt.String()),
-			UpdatedAt: ptr.String(rolePermission.UpdatedAt.String()),
-			UpdatedBy: &rolePermission.UpdatedBy,
+			CreatedAt: rolePermission.CreatedAt.String(),
+			UpdatedAt: rolePermission.UpdatedAt.String(),
+			UpdatedBy: rolePermission.UpdatedBy,
 			CreatedBy: rolePermission.CreatedBy,
 		})
 	}
@@ -269,10 +269,10 @@ func GetMSTRolePermission(id uuid.UUID) ([]*models.Permission, error) {
 			Name:      rolePermission.Name,
 			ServiceID: &rolePermission.ServiceID,
 			Action:    &rolePermission.Action,
-			CreatedAt: ptr.String(rolePermission.CreatedAt.String()),
-			UpdatedAt: ptr.String(rolePermission.UpdatedAt.String()),
-			UpdatedBy: &rolePermission.UpdatedBy,
-			CreatedBy: rolePermission.CreatedBy,
+			CreatedAt: rolePermission.CreatedAt.String(),
+			UpdatedAt: rolePermission.UpdatedAt.String(),
+			UpdatedBy: uuid.MustParse(rolePermission.UpdatedBy),
+			CreatedBy: uuid.MustParse(rolePermission.CreatedBy),
 		})
 	}
 
@@ -290,9 +290,9 @@ func convertMSTRoleToGraphQL(role *dto.MstRole) *models.Role {
 		RoleType:    models.RoleTypeEnumDefault,
 		Version:     role.Version,
 		CreatedAt:   role.CreatedAt.String(),
-		UpdatedAt:   ptr.String(role.UpdatedAt.String()),
-		UpdatedBy:   &role.UpdatedBy,
-		CreatedBy:   &role.CreatedBy,
+		UpdatedAt:   role.UpdatedAt.String(),
+		UpdatedBy:   uuid.MustParse(role.UpdatedBy),
+		CreatedBy:   uuid.MustParse(role.CreatedBy),
 	}
 
 	permissions, err := GetMSTRolePermission(role.RoleID)

@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "cmd/server/main.go",
-            "envFile": "C:/Users/patil/OneDrive/Desktop/graphql/go-graphql/.env"
+            "envFile": "C:/Users/patil/OneDrive/Desktop/graphql/go-graphql/iam_services_main_v1/.env"
         }
     ]
 }

@@ -1,0 +1,79 @@
+"Represents a Tenant entity"
+type Tenant implements Resource & Organization {
+  id: UUID!                   # Unique identifier of the tenant
+  name: String!               # Name of the tenant
+  description: String         # Description of the tenant (optional)
+  parentOrg: Organization!     # Parent organization of the tenant
+  contactInfo: ContactInfo   # Contact info associated with the tenant
+  createdAt: DateTime!       # Timestamp of creation
+  updatedAt: DateTime!       # Timestamp of last update
+  createdBy: UUID!           # Identifier of the user who created the record
+  updatedBy: UUID!           # Identifier of the user who last updated the record
+}
+
+
+"Represents a contact info entity associated with the Tenant"
+type ContactInfo {
+  email: String             # Email associated with the tenant
+  phoneNumber: String       # Phone number associated with the tenant
+  address: Address           # Address associated with the tenant
+}
+
+
+"Defines input fields for creating a contact info for a tenant"
+input ContactInfoInput {
+  email: String              # Email associated with the tenant
+  phoneNumber: String        # Phone number associated with the tenant
+  address: CreateAddressInput # Input type for address associated with the tenant
+}
+
+
+"Defines input fields for creating a tenant"
+input CreateTenantInput {
+  id: UUID!
+  name: String!              # Name of the tenant
+  description: String        # Description of the tenant (optional)
+  parentId: UUID!          # Associated parent organization ID
+  contactInfo: ContactInfoInput # Contact information input for the tenant
+}
+
+
+"Defines input fields for updating a tenant"
+input UpdateTenantInput {
+  id: UUID!                  # ID of the tenant to be updated
+  name: String               # Name of the tenant
+  description: String        # Description of the tenant (optional)
+  parentId: UUID!         # Associated parent organization ID (optional)
+  contactInfo: ContactInfoInput # Contact information input for updating the tenant
+}
+
+
+"Represents an address entity associated with the Tenant"
+type Address {
+  street: String             # Street name associated with the address
+  city: String               # City name associated with the address
+  state: String              # State name associated with the address
+  zipCode: String            # Zip code associated with the address
+  country: String            # Country associated with the address
+}
+
+
+"Defines input fields for creating an address for a tenant"
+input CreateAddressInput {
+  street: String             # Street name for the address
+  city: String               # City name for the address
+  state: String              # State name for the address
+  zipCode: String            # Zip code for the address
+  country: String            # Country for the address
+}
+
+
+"Defines input fields for updating an address for a tenant"
+input UpdateAddressInput {
+  street: String             # Updated street name for the address
+  city: String               # Updated city name for the address
+  state: String              # Updated state name for the address
+  zipCode: String            # Updated zip code for the address
+  country: String            # Updated country for the address
+}
+

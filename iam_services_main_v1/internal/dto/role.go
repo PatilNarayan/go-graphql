@@ -21,8 +21,8 @@ type TNTRole struct {
 	ScopeResourceTypeID uuid.UUID    `json:"scopeResourceTypeId" gorm:"type:char(36);column:scope_resource_type_id" db:"scope_resource_type_id"`
 	Description         string       `json:"description" gorm:"column:description;type:text" db:"description"`
 	RowStatus           int          `json:"rowStatus" gorm:"column:row_status" db:"row_status"`
-	CreatedBy           string       `json:"createdBy" gorm:"column:created_by;size:36" db:"created_by"`
-	UpdatedBy           string       `json:"updatedBy" gorm:"column:updated_by;size:36" db:"updated_by"`
+	CreatedBy           uuid.UUID    `json:"createdBy" gorm:"column:created_by;size:36" db:"created_by"`
+	UpdatedBy           uuid.UUID    `json:"updatedBy" gorm:"column:updated_by;size:36" db:"updated_by"`
 	CreatedAt           time.Time    `json:"createdAt" gorm:"column:created_at;autoCreateTime" db:"created_at"`
 	UpdatedAt           time.Time    `json:"updatedAt" gorm:"column:updated_at;autoUpdateTime" db:"updated_at"`
 }
@@ -38,8 +38,8 @@ type TNTPermission struct {
 	Name         string    `json:"name" gorm:"column:name;size:255" db:"name"`
 	Action       string    `json:"action" gorm:"column:action;size:100" db:"action"`
 	RowStatus    int       `json:"rowStatus" gorm:"column:row_status" db:"row_status"`
-	CreatedBy    string    `json:"createdBy" gorm:"column:created_by;size:36" db:"created_by"`
-	UpdatedBy    string    `json:"updatedBy" gorm:"column:updated_by;size:36" db:"updated_by"`
+	CreatedBy    uuid.UUID `json:"createdBy" gorm:"column:created_by;size:36" db:"created_by"`
+	UpdatedBy    uuid.UUID `json:"updatedBy" gorm:"column:updated_by;size:36" db:"updated_by"`
 	CreatedAt    time.Time `json:"createdAt" gorm:"column:created_at;autoCreateTime" db:"created_at"`
 	UpdatedAt    time.Time `json:"updatedAt" gorm:"column:updated_at;autoUpdateTime" db:"updated_at"`
 }
@@ -55,8 +55,8 @@ type TNTRolePermission struct {
 	RoleID       uuid.UUID `gorm:"column:role_id;type:varchar(36);not null" json:"roleId"`
 	PermissionID uuid.UUID `gorm:"column:permission_id;type:varchar(36);not null" json:"permissionId"`
 	RowStatus    int       `gorm:"column:row_status;type:tinyint(1);default:1" json:"rowStatus"`
-	CreatedBy    string    `gorm:"column:created_by;type:varchar(36)" json:"createdBy"`
-	UpdatedBy    string    `gorm:"column:updated_by;type:varchar(36)" json:"updatedBy"`
+	CreatedBy    uuid.UUID `gorm:"column:created_by;type:varchar(36)" json:"createdBy"`
+	UpdatedBy    uuid.UUID `gorm:"column:updated_by;type:varchar(36)" json:"updatedBy"`
 	CreatedAt    time.Time `gorm:"column:created_at;type:timestamp;default:CURRENT_TIMESTAMP" json:"createdAt"`
 	UpdatedAt    time.Time `gorm:"column:updated_at;type:timestamp;default:CURRENT_TIMESTAMP" json:"updatedAt"`
 }

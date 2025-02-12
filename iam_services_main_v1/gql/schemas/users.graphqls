@@ -1,0 +1,29 @@
+type User implements Principal & Resource {
+  id: UUID!
+  name: String!
+  firstName: String!
+  lastName: String!
+  email: String!
+  tenant: Tenant!
+  createdAt: DateTime! # Timestamp of creation
+  updatedAt: DateTime! # Timestamp of last update
+  createdBy: UUID! # Identifier of the user who created the record
+  updatedBy: UUID! # Identifier of the user who last updated the record
+}
+
+
+input CreateUserInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  tenantId: String!
+}
+
+
+input UpdateUserInput {
+  id: String!
+  firstName: String
+  lastName: String
+  email: String
+  tenantId: String
+}

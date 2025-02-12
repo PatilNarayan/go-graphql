@@ -1,0 +1,28 @@
+type ClientOrganizationUnit implements Resource & Organization {
+  id: UUID!
+  name: String!
+  description: String
+  tenant: Tenant!
+  parentOrg: Organization!
+  createdAt: DateTime! # Timestamp of creation
+  updatedAt: DateTime! # Timestamp of last update
+  createdBy: UUID! # Identifier of the user who created the record
+  updatedBy: UUID! # Identifier of the user who last updated the record
+}
+
+
+input CreateClientOrganizationUnitInput {
+  name: String!
+  description: String
+  tenantId: String!
+  parentOrgId: String!
+}
+
+
+input UpdateClientOrganizationUnitInput {
+  id: UUID!
+  name: String
+  description: String
+  tenantId: String
+  parentOrgId: String
+}

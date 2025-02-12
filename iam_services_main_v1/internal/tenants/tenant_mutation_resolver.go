@@ -26,7 +26,7 @@ type TenantMutationResolver struct {
 // CreateTenant resolver for adding a new Tenant
 func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.CreateTenantInput) (*models.Tenant, error) {
 
-	parentID, err := t.validateParentOrg(input.ParentOrgID)
+	parentID, err := t.validateParentOrg(input.ParentID)
 	if err != nil {
 		return nil, err
 	}
@@ -41,6 +41,8 @@ func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 	if err != nil {
 		return nil, err
 	}
+
+	userUUID := uuid.MustParse(UserID)
 
 	inputMap, err := helpers.StructToMap(input)
 	if err != nil {
@@ -78,13 +80,13 @@ func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 	}
 
 	// Create tenant resource
-	tenantResource, err := t.createTenantResource(input.Name, tenantUuid, *parentID, UserID)
+	tenantResource, err := t.createTenantResource(input.Name, tenantUuid, *parentID, userUUID)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create tenant metadata
-	if err := t.createTenantMetadata(tenantResource.ResourceID, input.Description, input.ContactInfo, UserID); err != nil {
+	if err := t.createTenantMetadata(tenantResource.ResourceID, input.Description, input.ContactInfo, userUUID); err != nil {
 		return nil, err
 	}
 
@@ -134,8 +136,8 @@ func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 	if input.Name != nil {
 		updates["name"] = *input.Name
 	}
-	if input.ParentOrgID != nil {
-		parentID, err := t.validateParentOrg(*input.ParentOrgID)
+	if input.ParentID != uuid.Nil {
+		parentID, err := t.validateParentOrg(input.ParentID)
 		if err != nil {
 			return nil, err
 		}
@@ -188,8 +190,8 @@ func (t *TenantMutationResolver) DeleteTenant(ctx context.Context, id uuid.UUID)
 	return true, nil
 }
 
-func (t *TenantMutationResolver) validateParentOrg(parentOrgID string) (*uuid.UUID, error) {
-	if parentOrgID == "" {
+func (t *TenantMutationResolver) validateParentOrg(parentOrgID uuid.UUID) (*uuid.UUID, error) {
+	if parentOrgID == uuid.Nil {
 		return nil, fmt.Errorf("parent organization ID is required")
 	}
 
@@ -209,7 +211,7 @@ func (t *TenantMutationResolver) validateParentOrg(parentOrgID string) (*uuid.UU
 	return &parentOrg.ResourceID, nil
 }
 
-func (t *TenantMutationResolver) createTenantResource(name string, resourceID, parentID uuid.UUID, UserID string) (*dto.TenantResources, error) {
+func (t *TenantMutationResolver) createTenantResource(name string, resourceID, parentID uuid.UUID, UserID uuid.UUID) (*dto.TenantResources, error) {
 	var resourceType dto.Mst_ResourceTypes
 	if err := t.DB.Where("name = ?", "Tenant").First(&resourceType).Error; err != nil {
 		return nil, fmt.Errorf("resource type not found: %w", err)
@@ -232,7 +234,7 @@ func (t *TenantMutationResolver) createTenantResource(name string, resourceID, p
 	return tenant, nil
 }
 
-func (t *TenantMutationResolver) createTenantMetadata(resourceID uuid.UUID, description *string, contactInfo *models.ContactInfoInput, UserID string) error {
+func (t *TenantMutationResolver) createTenantMetadata(resourceID uuid.UUID, description *string, contactInfo *models.ContactInfoInput, UserID uuid.UUID) error {
 	metadata := map[string]interface{}{
 		"description": description,
 		"contactInfo": contactInfo,

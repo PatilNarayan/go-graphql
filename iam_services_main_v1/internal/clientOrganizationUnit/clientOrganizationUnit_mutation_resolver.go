@@ -109,7 +109,7 @@ func (r *ClientOrganizationUnitMutationResolver) CreateClientOrganizationUnit(ct
 		ParentOrg:   nil,
 		Tenant:      nil,
 		CreatedAt:   currentDate.String(),
-		UpdatedAt:   nil,
+		UpdatedAt:   currentDate.String(),
 	}
 
 	return response, nil
@@ -194,7 +194,7 @@ func (r *ClientOrganizationUnitMutationResolver) UpdateClientOrganizationUnit(ct
 		ParentOrg:   nil,
 		Tenant:      nil,
 		CreatedAt:   resource.CreatedAt.String(),
-		UpdatedAt:   &updatedAt,
+		UpdatedAt:   updatedAt,
 	}
 	return response, nil
 }

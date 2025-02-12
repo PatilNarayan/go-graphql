@@ -9,6 +9,7 @@ import (
 	"iam_services_main_v1/helpers"
 	"iam_services_main_v1/internal/constants"
 	"iam_services_main_v1/internal/dto"
+	"iam_services_main_v1/internal/middlewares"
 	middleware "iam_services_main_v1/internal/middlewares"
 	"iam_services_main_v1/internal/permit"
 	"iam_services_main_v1/internal/utils"
@@ -28,10 +29,17 @@ type RoleMutationResolver struct {
 func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.CreateRoleInput) (*models.Role, error) {
 
 	// Extract gin.Context from GraphQL context
-	ginCtx, ok := ctx.Value(middleware.GinContextKey).(*gin.Context)
+	ginCtx, ok := ctx.Value(middlewares.GinContextKey).(*gin.Context)
 	if !ok {
 		return nil, fmt.Errorf("unable to get gin context")
 	}
+
+	UserID, err := helpers.GetUserID(ginCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	userUUID := uuid.MustParse(UserID)
 
 	tenantID, err := helpers.GetTenant(ginCtx)
 	if err != nil {
@@ -114,14 +122,14 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 		Name:           input.Name,
 		RowStatus:      1,
 		TenantID:       &tenantIDUUID,
-		CreatedBy:      constants.DefaltCreatedBy,
-		UpdatedBy:      constants.DefaltCreatedBy,
+		CreatedBy:      userUUID,
+		UpdatedBy:      userUUID,
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
 	}).Error; err != nil {
 		return nil, err
 	}
-	role := prepareRoleObject(input)
+	role := prepareRoleObject(input, userUUID)
 
 	role.ResourceID = newRoleID
 	if err := r.DB.Create(&role).Error; err != nil {
@@ -134,8 +142,8 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 			RoleID:       role.ResourceID,
 			PermissionID: uuid.MustParse(permissionID),
 			RowStatus:    1,
-			CreatedBy:    constants.DefaltCreatedBy,
-			UpdatedBy:    constants.DefaltCreatedBy,
+			CreatedBy:    userUUID,
+			UpdatedBy:    userUUID,
 		})
 
 		if tx.Error != nil {
@@ -155,10 +163,17 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.UpdateRoleInput) (*models.Role, error) {
 
 	// Extract gin.Context from GraphQL context
-	ginCtx, err := helpers.GetGinContext(ctx)
-	if err != nil {
+	ginCtx, ok := ctx.Value(middlewares.GinContextKey).(*gin.Context)
+	if !ok {
 		return nil, fmt.Errorf("unable to get gin context")
 	}
+
+	UserID, err := helpers.GetUserID(ginCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	userUUID := uuid.MustParse(UserID)
 
 	tenantID, err := helpers.GetTenant(ginCtx)
 	if err != nil {
@@ -265,8 +280,8 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 				RoleID:       input.ID,
 				PermissionID: uuid.MustParse(pid),
 				RowStatus:    1,
-				CreatedBy:    constants.DefaltCreatedBy,
-				UpdatedBy:    constants.DefaltCreatedBy,
+				CreatedBy:    userUUID,
+				UpdatedBy:    userUUID,
 			})
 
 			if tx.Error != nil {
@@ -441,115 +456,115 @@ func CheckPermissions(permissionsIds []string) error {
 	return nil
 }
 
-func CreateMstRole(tenantID uuid.UUID) error {
-	var mstRole []*dto.MstRole
+// func CreateMstRole(tenantID uuid.UUID) error {
+// 	var mstRole []*dto.MstRole
 
-	if err := config.DB.Find(&mstRole).Error; err != nil {
-		return err
-	}
+// 	if err := config.DB.Find(&mstRole).Error; err != nil {
+// 		return err
+// 	}
 
-	var mstRolePermissions []*dto.MstRolePermission
-	if err := config.DB.Find(&mstRolePermissions).Error; err != nil {
-		return err
-	}
-	resourceType := dto.Mst_ResourceTypes{}
-	if err := config.DB.Where("name = ? AND row_status = 1", "Role").First(&resourceType).Error; err != nil {
-		return fmt.Errorf("resource type not found: %w", err)
-	}
+// 	var mstRolePermissions []*dto.MstRolePermission
+// 	if err := config.DB.Find(&mstRolePermissions).Error; err != nil {
+// 		return err
+// 	}
+// 	resourceType := dto.Mst_ResourceTypes{}
+// 	if err := config.DB.Where("name = ? AND row_status = 1", "Role").First(&resourceType).Error; err != nil {
+// 		return fmt.Errorf("resource type not found: %w", err)
+// 	}
 
-	ResDefaultPermissions, err := AddDefaultPermissions()
-	if err != nil {
-		return err
-	}
+// 	ResDefaultPermissions, err := AddDefaultPermissions()
+// 	if err != nil {
+// 		return err
+// 	}
 
-	for _, mrole := range mstRole {
-		tenantResource := &dto.TenantResources{
-			ResourceID:       uuid.New(),
-			ParentResourceID: &tenantID,
-			ResourceTypeID:   resourceType.ResourceTypeID,
-			Name:             mrole.Name,
-			RowStatus:        1,
-			CreatedBy:        constants.DefaltCreatedBy,
-			UpdatedBy:        constants.DefaltCreatedBy,
-			CreatedAt:        time.Now(),
-			TenantID:         &tenantID,
-		}
+// 	for _, mrole := range mstRole {
+// 		tenantResource := &dto.TenantResources{
+// 			ResourceID:       uuid.New(),
+// 			ParentResourceID: &tenantID,
+// 			ResourceTypeID:   resourceType.ResourceTypeID,
+// 			Name:             mrole.Name,
+// 			RowStatus:        1,
+// 			CreatedBy:        userUUID,
+// 			UpdatedBy:        constants.DefaltCreatedBy,
+// 			CreatedAt:        time.Now(),
+// 			TenantID:         &tenantID,
+// 		}
 
-		if err := config.DB.Save(tenantResource).Error; err != nil {
-			return err
-		}
+// 		if err := config.DB.Save(tenantResource).Error; err != nil {
+// 			return err
+// 		}
 
-		role := dto.TNTRole{
-			ResourceID:          tenantResource.ResourceID,
-			Name:                mrole.Name,
-			Description:         mrole.Description,
-			RoleType:            dto.RoleTypeEnumDefault,
-			ScopeResourceTypeID: resourceType.ResourceTypeID,
-			Version:             mrole.Version,
-			CreatedAt:           mrole.CreatedAt,
-			CreatedBy:           mrole.CreatedBy,
-			UpdatedBy:           mrole.UpdatedBy,
-			UpdatedAt:           mrole.UpdatedAt,
-			RowStatus:           mrole.RowStatus,
-		}
+// 		role := dto.TNTRole{
+// 			ResourceID:          tenantResource.ResourceID,
+// 			Name:                mrole.Name,
+// 			Description:         mrole.Description,
+// 			RoleType:            dto.RoleTypeEnumDefault,
+// 			ScopeResourceTypeID: resourceType.ResourceTypeID,
+// 			Version:             mrole.Version,
+// 			CreatedAt:           mrole.CreatedAt,
+// 			CreatedBy:           mrole.CreatedBy,
+// 			UpdatedBy:           mrole.UpdatedBy,
+// 			UpdatedAt:           mrole.UpdatedAt,
+// 			RowStatus:           mrole.RowStatus,
+// 		}
 
-		if err := config.DB.Save(&role).Error; err != nil {
-			return err
-		}
+// 		if err := config.DB.Save(&role).Error; err != nil {
+// 			return err
+// 		}
 
-		for _, permissionID := range mstRolePermissions {
-			if permissionID.RoleID != mrole.RoleID {
-				continue
-			}
-			tx := config.DB.Create(&dto.TNTRolePermission{
-				ID:           uuid.New(),
-				RoleID:       role.ResourceID,
-				PermissionID: ResDefaultPermissions[permissionID.PermissionID],
-				RowStatus:    1,
-				CreatedBy:    constants.DefaltCreatedBy,
-				UpdatedBy:    constants.DefaltCreatedBy,
-			})
+// 		for _, permissionID := range mstRolePermissions {
+// 			if permissionID.RoleID != mrole.RoleID {
+// 				continue
+// 			}
+// 			tx := config.DB.Create(&dto.TNTRolePermission{
+// 				ID:           uuid.New(),
+// 				RoleID:       role.ResourceID,
+// 				PermissionID: ResDefaultPermissions[permissionID.PermissionID],
+// 				RowStatus:    1,
+// 				CreatedBy:    constants.DefaltCreatedBy,
+// 				UpdatedBy:    constants.DefaltCreatedBy,
+// 			})
 
-			if tx.Error != nil {
-				return tx.Error
-			}
-		}
-	}
+// 			if tx.Error != nil {
+// 				return tx.Error
+// 			}
+// 		}
+// 	}
 
-	return nil
+// 	return nil
 
-}
+// }
 
-func AddDefaultPermissions() (map[uuid.UUID]uuid.UUID, error) {
-	var mstPermissions []*dto.MstPermission
+// func AddDefaultPermissions() (map[uuid.UUID]uuid.UUID, error) {
+// 	var mstPermissions []*dto.MstPermission
 
-	if err := config.DB.Where("row_status = 1").Find(&mstPermissions).Error; err != nil {
-		return nil, err
-	}
+// 	if err := config.DB.Where("row_status = 1").Find(&mstPermissions).Error; err != nil {
+// 		return nil, err
+// 	}
 
-	res := make(map[uuid.UUID]uuid.UUID)
-	for _, mpermission := range mstPermissions {
-		permission := &dto.TNTPermission{
-			PermissionID: uuid.New(),
-			Name:         mpermission.Name,
-			ServiceID:    mpermission.ServiceID,
-			Action:       mpermission.Action,
-			RowStatus:    1,
-			// RoleID:       *input.RoleID,
-			CreatedBy: constants.DefaltCreatedBy,
-			UpdatedBy: constants.DefaltUpdatedBy,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		}
+// 	res := make(map[uuid.UUID]uuid.UUID)
+// 	for _, mpermission := range mstPermissions {
+// 		permission := &dto.TNTPermission{
+// 			PermissionID: uuid.New(),
+// 			Name:         mpermission.Name,
+// 			ServiceID:    mpermission.ServiceID,
+// 			Action:       mpermission.Action,
+// 			RowStatus:    1,
+// 			// RoleID:       *input.RoleID,
+// 			CreatedBy: constants.DefaltCreatedBy,
+// 			UpdatedBy: constants.DefaltUpdatedBy,
+// 			CreatedAt: time.Now(),
+// 			UpdatedAt: time.Now(),
+// 		}
 
-		res[mpermission.PermissionID] = permission.PermissionID
-		if err := config.DB.Create(permission).Error; err != nil {
-			return nil, err
-		}
-	}
+// 		res[mpermission.PermissionID] = permission.PermissionID
+// 		if err := config.DB.Create(permission).Error; err != nil {
+// 			return nil, err
+// 		}
+// 	}
 
-	return res, nil
-}
+// 	return res, nil
+// }
 
 func DeleteDefaultRole(tenantID uuid.UUID) error {
 	// Find resource type for Role
@@ -763,7 +778,7 @@ func validateCreateRoleInput(input models.CreateRoleInput) error {
 	return nil
 }
 
-func prepareRoleObject(input models.CreateRoleInput) dto.TNTRole {
+func prepareRoleObject(input models.CreateRoleInput, userID uuid.UUID) dto.TNTRole {
 	role := dto.TNTRole{}
 	role.Name = input.Name
 	if input.Description != nil {
@@ -774,8 +789,8 @@ func prepareRoleObject(input models.CreateRoleInput) dto.TNTRole {
 	role.Version = input.Version
 	role.CreatedAt = time.Now()
 	role.ScopeResourceTypeID = input.AssignableScopeRef
-	role.CreatedBy = constants.DefaltCreatedBy
-	role.UpdatedBy = constants.DefaltCreatedBy
+	role.CreatedBy = userID
+	role.UpdatedBy = userID
 	role.RowStatus = 1
 	return role
 }

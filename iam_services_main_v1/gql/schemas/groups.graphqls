@@ -1,0 +1,31 @@
+type Group implements Principal & Resource {
+  id: UUID!
+  name: String!
+  email: String!
+  tenant: Tenant!
+  description: String
+  members: [User!]!
+  createdAt: DateTime! # Timestamp of creation
+  updatedAt: DateTime! # Timestamp of last update
+  createdBy: UUID! # Identifier of the user who created the record
+  updatedBy: UUID! # Identifier of the user who last updated the record
+}
+
+
+input CreateGroupInput {
+  name: String!
+  email: String!
+  tenantId: String!
+  description: String
+  members: [String!]!
+}
+
+
+input UpdateGroupInput {
+  id: String!
+  name: String
+  email: String
+  tenantId: String!
+  description: String
+  members: [String!]!
+}

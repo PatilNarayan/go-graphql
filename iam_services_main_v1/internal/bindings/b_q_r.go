@@ -43,10 +43,10 @@ func (r *BindingsQueryResolver) GetBinding(ctx context.Context, id string) (*mod
 		ID:        binding.ResourceID.String(),
 		Name:      binding.Name,
 		Version:   binding.Version,
-		CreatedAt: &createdAt,
-		UpdatedAt: &updatedAt,
-		CreatedBy: &createdBy,
-		UpdatedBy: &updatedBy,
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
+		CreatedBy: createdBy,
+		UpdatedBy: updatedBy,
 		Role:      &models.Role{ID: binding.RoleID},
 	}
 
