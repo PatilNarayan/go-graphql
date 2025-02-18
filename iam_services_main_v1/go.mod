@@ -4,7 +4,6 @@ go 1.22.5
 
 require (
 	github.com/99designs/gqlgen v0.17.63
-	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/glebarez/sqlite v1.11.0
 	github.com/go-playground/validator/v10 v10.24.0

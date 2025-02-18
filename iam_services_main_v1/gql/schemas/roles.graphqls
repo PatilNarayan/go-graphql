@@ -1,81 +1,205 @@
-"Represents a Role entity"
+"""
+Defines the role type enumeration
+"""
 enum RoleTypeEnum {
-  DEFAULT    # Default role type
-  CUSTOM     # Custom role type
+  """
+  Custom role type
+  """
+  CUSTOM
+  """
+  Default role type
+  """
+  DEFAULT
 }
 
-
+"""
+Represents a Role entity
+"""
 type Role implements Resource {
-  id: UUID!                # Unique identifier of the role
-  name: String!            # Name of the role
-  version: String!         # Version of the role
-  description: String      # Description of the role
-  permissions: [Permission!]! # Permissions associated with the role
-  roleType: RoleTypeEnum!  # Role type: DEFAULT or CUSTOM
-  assignableScope: Resource # Scope to which the role can be assigned
-  createdAt: DateTime!     # Timestamp of creation
-  updatedAt: DateTime!     # Timestamp of last update
-  createdBy: UUID!         # Identifier of the user who created the record
-  updatedBy: UUID!         # Identifier of the user who last updated the record
+  """
+  Assignable scope of the role
+  """
+  assignableScope: Resource
+  """
+  Timestamp of creation
+  """
+  createdAt: DateTime!
+  """
+  Identifier of the user who created the record
+  """
+  createdBy: UUID!
+  """
+  Description of the role
+  """
+  description: String
+  """
+  Unique identifier of the role
+  """
+  id: UUID!
+  """
+  Name of the role
+  """
+  name: String!
+  """
+  Permissions associated with the role
+  """
+  permissions: [Permission!]!
+  """
+  Type of the role
+  """
+  roleType: RoleTypeEnum!
+  """
+  Timestamp of last update
+  """
+  updatedAt: DateTime!
+  """
+  Identifier of the user who last updated the record
+  """
+  updatedBy: UUID!
+  """
+  Version of the role
+  """
+  version: String!
 }
 
-
-"Input for creating a new Role"
+"""
+Defines input fields for creating a role
+"""
 input CreateRoleInput {
-  name: String!            # Name of the role
-  version: String!         # Version of the role
-  description: String      # Description of the role (optional)
-  permissions: [String!]!  # List of permission names for the role
-  roleType: RoleTypeEnum!  # Role type (DEFAULT or CUSTOM)
-  assignableScopeRef: UUID! # Reference ID for the scope to which the role can be assigned
+  """
+  Assignable scope reference ID
+  """
+  assignableScopeRef: UUID!
+  """
+  Description of the role
+  """
+  description: String
+  """
+  Name of the role
+  """
+  name: String!
+  """
+  Permissions associated with the role
+  """
+  permissions: [String!]!
+  """
+  Type of the role
+  """
+  roleType: RoleTypeEnum!
+  """
+  Version of the role
+  """
+  version: String!
 }
 
-
-"Input for updating an existing Role"
+"""
+Defines input fields for updating a role
+"""
 input UpdateRoleInput {
-  id: UUID!                # ID of the role to be updated
-  name: String!            # Name of the role
-  version: String!         # Version of the role
-  description: String      # Description of the role (optional)
-  permissions: [String!]!  # List of permission names for the role
-  roleType: RoleTypeEnum!  # Role type (DEFAULT or CUSTOM)
-  assignableScopeRef: UUID! # Reference ID for the scope to which the role can be assigned
+  """
+  Updated assignable scope reference ID
+  """
+  assignableScopeRef: UUID!
+  """
+  Updated description of the role
+  """
+  description: String
+  """
+  Unique identifier of the role
+  """
+  id: UUID!
+  """
+  Updated name of the role
+  """
+  name: String!
+  """
+  Updated permissions associated with the role
+  """
+  permissions: [String!]!
+  """
+  Updated type of the role
+  """
+  roleType: RoleTypeEnum!
+  """
+  Updated version of the role
+  """
+  version: String!
 }
 
-
-"Represents a Permission entity"
+"""
+Represents a Permission entity
+"""
 type Permission {
-  id: UUID!                # Unique identifier of the permission
-  name: String!            # Name of the permission
-  serviceId: String        # Service ID associated with the permission (optional)
-  action: String           # Action associated with the permission (optional)
-  createdAt: DateTime!     # Timestamp of creation
-  updatedAt: DateTime!     # Timestamp of last update
-  createdBy: UUID!         # Identifier of the user who created the record
-  updatedBy: UUID!         # Identifier of the user who last updated the record
+  """
+  Action associated with the permission
+  """
+  action: String
+  """
+  Timestamp of creation
+  """
+  createdAt: DateTime!
+  """
+  Identifier of the user who created the record
+  """
+  createdBy: UUID!
+  """
+  Unique identifier of the permission
+  """
+  id: UUID!
+  """
+  Name of the permission
+  """
+  name: String!
+  """
+  Service ID associated with the permission
+  """
+  serviceId: String
+  """
+  Timestamp of last update
+  """
+  updatedAt: DateTime!
+  """
+  Identifier of the user who last updated the record
+  """
+  updatedBy: UUID!
 }
 
-
-"Represents a Service entity associated with Permissions"
-type Service {
-  id: String!              # Unique identifier for the service
-  name: String!            # Name of the service
+"""
+Defines input fields for creating a permission
+"""
+input CreatePermissionInput {
+  """
+  Action associated with the permission
+  """
+  action: String
+  """
+  Name of the permission
+  """
+  name: String!
+  """
+  Service ID associated with the permission
+  """
+  serviceId: UUID
 }
 
-
-"Input for creating a new Permission"
-input CreatePermission {
-  name: String!            # Name of the permission
-  serviceId: String        # Service ID associated with the permission (optional)
-  action: String           # Action associated with the permission (optional)
+"""
+Defines input fields for updating a permission
+"""
+input UpdatePermissionInput {
+  """
+  Updated action associated with the permission
+  """
+  action: String
+  """
+  Unique identifier of the permission
+  """
+  id: UUID!
+  """
+  Updated name of the permission
+  """
+  name: String!
+  """
+  Updated service ID associated with the permission
+  """
+  serviceId: UUID
 }
-
-
-"Input for updating an existing Permission"
-input UpdatePermission {
-  id: UUID!                # ID of the permission to be updated
-  name: String!            # Name of the permission
-  serviceId: String        # Service ID associated with the permission (optional)
-  action: String           # Action associated with the permission (optional)
-}
-

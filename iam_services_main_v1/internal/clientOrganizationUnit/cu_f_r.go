@@ -1,4 +1,4 @@
-package clientorganizationunit
+package clientorganizationunits
 
 import (
 	"context"

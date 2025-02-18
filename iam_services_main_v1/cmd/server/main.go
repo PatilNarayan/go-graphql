@@ -2,7 +2,7 @@ package main
 
 import (
 	config "iam_services_main_v1/config"
-	gql "iam_services_main_v1/gql"
+	"iam_services_main_v1/gql"
 	"iam_services_main_v1/gql/generated"
 	"iam_services_main_v1/internal/middlewares"
 	"iam_services_main_v1/internal/permit"
@@ -28,11 +28,16 @@ func main() {
 	db := config.InitDB()
 
 	//Initialize permit
-	permitClient := permit.NewPermitClient()
+	pc := permit.NewPermitClient()
 
 	// Initialize resolver and GraphQL server
-	resolver := &gql.Resolver{DB: db, Permit: permitClient}
+	resolver := &gql.Resolver{DB: db, PC: pc}
 	gqlServer := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: resolver}))
+
+	// Set custom error formatting globally
+	// gqlServer.SetErrorPresenter(func(ctx context.Context, err error) *gqlerror.Error {
+	// 	return utils.FormatError(ctx, err) // Call your custom error formatting function
+	// })
 
 	// Set up routes
 

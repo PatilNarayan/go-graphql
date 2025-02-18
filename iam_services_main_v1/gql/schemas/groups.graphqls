@@ -1,31 +1,45 @@
+"""
+Represents a Group entity
+"""
 type Group implements Principal & Resource {
+  """
+  Timestamp of creation
+  """
+  createdAt: DateTime!
+  """
+  Identifier of the user who created the record
+  """
+  createdBy: UUID!
+  """
+  Description of the group
+  """
+  description: String
+  """
+  Email of the group
+  """
+  email: String!
+  """
+  Unique identifier of the group
+  """
   id: UUID!
-  name: String!
-  email: String!
-  tenant: Tenant!
-  description: String
+  """
+  Members of the group
+  """
   members: [User!]!
-  createdAt: DateTime! # Timestamp of creation
-  updatedAt: DateTime! # Timestamp of last update
-  createdBy: UUID! # Identifier of the user who created the record
-  updatedBy: UUID! # Identifier of the user who last updated the record
-}
-
-
-input CreateGroupInput {
+  """
+  Name of the group
+  """
   name: String!
-  email: String!
-  tenantId: String!
-  description: String
-  members: [String!]!
-}
-
-
-input UpdateGroupInput {
-  id: String!
-  name: String
-  email: String
-  tenantId: String!
-  description: String
-  members: [String!]!
+  """
+  Tenant associated with the group
+  """
+  tenant: Tenant!
+  """
+  Timestamp of last update
+  """
+  updatedAt: DateTime!
+  """
+  Identifier of the user who last updated the record
+  """
+  updatedBy: UUID!
 }

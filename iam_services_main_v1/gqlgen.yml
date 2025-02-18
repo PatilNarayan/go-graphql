@@ -15,11 +15,9 @@ exec:
   package: generated
 
 
-
 model:
   filename: gql/models/models_gen.go
   package: models
-
 
 
 resolver:
@@ -39,29 +37,3 @@ models:
     fields:
       billingInfo:
         resolver: true        
-  Binding:
-      fields:
-        principal:
-          resolver: true
-        role:
-          resolver: true
-        scopeRef:
-          resolver: true
-  Role:
-      fields:
-        tenant:
-          resolver: true
-  ClientOrganizationUnit:
-      fields:
-        tenant:
-          resolver: true
-        parentOrg:
-          resolver: true
-  Tenant:
-      fields:
-        organizationUnits:
-          resolver: true
-        contactInfo:
-          resolver: true
-    
-

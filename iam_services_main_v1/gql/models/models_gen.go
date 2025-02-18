@@ -10,263 +10,440 @@ import (
 	"github.com/google/uuid"
 )
 
+// Define a union for the possible 'data' types
 type Data interface {
 	IsData()
 }
 
+// Define a union for the possible operation results
 type OperationResult interface {
 	IsOperationResult()
 }
 
+// Represents an Organization entity
 type Organization interface {
 	IsOrganization()
-	GetID() uuid.UUID
-	GetName() string
-	GetDescription() *string
-	GetParentOrg() Organization
+	// Timestamp of creation
 	GetCreatedAt() string
-	GetUpdatedAt() string
+	// Identifier of the user who created the record
 	GetCreatedBy() uuid.UUID
+	// Description of the organization
+	GetDescription() *string
+	// Unique identifier of the organization
+	GetID() uuid.UUID
+	// Name of the organization
+	GetName() string
+	// Parent organization
+	GetParentOrg() Organization
+	// Timestamp of last update
+	GetUpdatedAt() string
+	// Identifier of the user who last updated the record
 	GetUpdatedBy() uuid.UUID
 }
 
+// Represents a Principal entity
 type Principal interface {
 	IsPrincipal()
-	GetID() uuid.UUID
-	GetName() string
+	// Email of the principal
 	GetEmail() string
+	// Unique identifier of the principal
+	GetID() uuid.UUID
+	// Name of the principal
+	GetName() string
+	// Tenant associated with the principal
 	GetTenant() *Tenant
 }
 
+// Represents a Resource entity
 type Resource interface {
 	IsResource()
-	GetID() uuid.UUID
-	GetName() string
+	// Timestamp of creation
 	GetCreatedAt() string
-	GetUpdatedAt() string
+	// Identifier of the user who created the record
 	GetCreatedBy() uuid.UUID
+	// Unique identifier of the resource
+	GetID() uuid.UUID
+	// Name of the resource
+	GetName() string
+	// Timestamp of last update
+	GetUpdatedAt() string
+	// Identifier of the user who last updated the record
 	GetUpdatedBy() uuid.UUID
 }
 
+// Standard Response Interface for both success and error responses
 type Response interface {
 	IsResponse()
 	// Indicates if the operation was successful.
-	GetSuccess() bool
+	GetIsSuccess() bool
 	// A message providing additional context or information about the operation.
 	GetMessage() string
 }
 
-// Represents a Account entity
+// Represents an Account entity
 type Account struct {
-	ID          uuid.UUID    `json:"id"`
-	Name        string       `json:"name"`
-	Description *string      `json:"description,omitempty"`
-	ParentOrg   Organization `json:"parentOrg,omitempty"`
+	// Billing Info entity
 	BillingInfo *BillingInfo `json:"billingInfo,omitempty"`
-	CreatedAt   string       `json:"createdAt"`
-	UpdatedAt   string       `json:"updatedAt"`
-	CreatedBy   uuid.UUID    `json:"createdBy"`
-	UpdatedBy   uuid.UUID    `json:"updatedBy"`
+	// Timestamp of creation
+	CreatedAt string `json:"createdAt"`
+	// Identifier of the user who created the record
+	CreatedBy uuid.UUID `json:"createdBy"`
+	// Description of the account
+	Description *string `json:"description,omitempty"`
+	// Unique identifier of the account
+	ID uuid.UUID `json:"id"`
+	// Name of the account
+	Name string `json:"name"`
+	// Parent organization
+	ParentOrg Organization `json:"parentOrg,omitempty"`
+	// Timestamp of last update
+	UpdatedAt string `json:"updatedAt"`
+	// Identifier of the user who last updated the record
+	UpdatedBy uuid.UUID `json:"updatedBy"`
 }
 
 func (Account) IsData() {}
 
-func (Account) IsResource()                  {}
-func (this Account) GetID() uuid.UUID        { return this.ID }
-func (this Account) GetName() string         { return this.Name }
-func (this Account) GetCreatedAt() string    { return this.CreatedAt }
-func (this Account) GetUpdatedAt() string    { return this.UpdatedAt }
-func (this Account) GetCreatedBy() uuid.UUID { return this.CreatedBy }
-func (this Account) GetUpdatedBy() uuid.UUID { return this.UpdatedBy }
-
 func (Account) IsOrganization() {}
 
-func (this Account) GetDescription() *string    { return this.Description }
+// Timestamp of creation
+func (this Account) GetCreatedAt() string { return this.CreatedAt }
+
+// Identifier of the user who created the record
+func (this Account) GetCreatedBy() uuid.UUID { return this.CreatedBy }
+
+// Description of the organization
+func (this Account) GetDescription() *string { return this.Description }
+
+// Unique identifier of the organization
+func (this Account) GetID() uuid.UUID { return this.ID }
+
+// Name of the organization
+func (this Account) GetName() string { return this.Name }
+
+// Parent organization
 func (this Account) GetParentOrg() Organization { return this.ParentOrg }
 
-// Represents an address entity associated with the Tenant
+// Timestamp of last update
+func (this Account) GetUpdatedAt() string { return this.UpdatedAt }
+
+// Identifier of the user who last updated the record
+func (this Account) GetUpdatedBy() uuid.UUID { return this.UpdatedBy }
+
+func (Account) IsResource() {}
+
+// Timestamp of creation
+
+// Identifier of the user who created the record
+
+// Unique identifier of the resource
+
+// Name of the resource
+
+// Timestamp of last update
+
+// Identifier of the user who last updated the record
+
+// Represents an address
 type Address struct {
-	Street  *string `json:"street,omitempty"`
-	City    *string `json:"city,omitempty"`
-	State   *string `json:"state,omitempty"`
-	ZipCode *string `json:"zipCode,omitempty"`
+	// City of the address
+	City *string `json:"city,omitempty"`
+	// Country of the address
 	Country *string `json:"country,omitempty"`
+	// State of the address
+	State *string `json:"state,omitempty"`
+	// Street of the address
+	Street *string `json:"street,omitempty"`
+	// Zip code of the address
+	ZipCode *string `json:"zipCode,omitempty"`
+}
+
+// Defines input fields for creating an address
+type AddressInput struct {
+	// City of the address
+	City *string `json:"city,omitempty"`
+	// Country of the address
+	Country *string `json:"country,omitempty"`
+	// State of the address
+	State *string `json:"state,omitempty"`
+	// Street of the address
+	Street *string `json:"street,omitempty"`
+	// Zip code of the address
+	ZipCode *string `json:"zipCode,omitempty"`
 }
 
 // Represents a billing address entity associated to account
 type BillingAddress struct {
-	Street  string `json:"street"`
-	City    string `json:"city"`
-	State   string `json:"state"`
-	Zipcode string `json:"zipcode"`
+	// Name of the city associated to billing address
+	City string `json:"city"`
+	// Name of the country associated to billing address
 	Country string `json:"country"`
+	// Name of the state associated to billing address
+	State string `json:"state"`
+	// Name of the street associated to billing address
+	Street string `json:"street"`
+	// Name of the zipcode associated to billing address
+	Zipcode string `json:"zipcode"`
 }
 
 // Represents a billing info entity associated to account
 type BillingInfo struct {
-	CreditCardNumber string          `json:"creditCardNumber"`
-	CreditCardType   string          `json:"creditCardType"`
-	ExpirationDate   string          `json:"expirationDate"`
-	Cvv              string          `json:"cvv"`
-	BillingAddress   *BillingAddress `json:"billingAddress"`
+	// Billing Address associated to account
+	BillingAddress *BillingAddress `json:"billingAddress"`
+	// Credit card number associated to account
+	CreditCardNumber string `json:"creditCardNumber"`
+	// Credit card type associated to account
+	CreditCardType string `json:"creditCardType"`
+	// CVV associated to account
+	Cvv string `json:"cvv"`
+	// Expiration date associated to account
+	ExpirationDate string `json:"expirationDate"`
 }
 
+// Represents a Binding entity
 type Binding struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Principal Principal `json:"principal"`
-	Role      *Role     `json:"role"`
-	ScopeRef  Resource  `json:"scopeRef"`
-	Version   string    `json:"version"`
-	CreatedAt string    `json:"createdAt"`
-	UpdatedAt string    `json:"updatedAt"`
+	// Timestamp of creation
+	CreatedAt string `json:"createdAt"`
+	// Identifier of the user who created the record
 	CreatedBy uuid.UUID `json:"createdBy"`
+	// Unique identifier of the binding
+	ID uuid.UUID `json:"id"`
+	// Name of the binding
+	Name string `json:"name"`
+	// Principal associated with the binding
+	Principal Principal `json:"principal"`
+	// Role associated with the binding
+	Role *Role `json:"role"`
+	// Scope reference associated with the binding
+	ScopeRef Resource `json:"scopeRef"`
+	// Timestamp of last update
+	UpdatedAt string `json:"updatedAt"`
+	// Identifier of the user who last updated the record
 	UpdatedBy uuid.UUID `json:"updatedBy"`
+	// Version of the binding
+	Version string `json:"version"`
 }
 
+func (Binding) IsData() {}
+
+// Represents a Client Organization Unit entity
 type ClientOrganizationUnit struct {
-	ID          uuid.UUID    `json:"id"`
-	Name        string       `json:"name"`
-	Description *string      `json:"description,omitempty"`
-	Tenant      *Tenant      `json:"tenant"`
-	ParentOrg   Organization `json:"parentOrg"`
-	CreatedAt   string       `json:"createdAt"`
-	UpdatedAt   string       `json:"updatedAt"`
-	CreatedBy   uuid.UUID    `json:"createdBy"`
-	UpdatedBy   uuid.UUID    `json:"updatedBy"`
+	// Timestamp of creation
+	CreatedAt string `json:"createdAt"`
+	// Identifier of the user who created the record
+	CreatedBy uuid.UUID `json:"createdBy"`
+	// Description of the client organization unit
+	Description *string `json:"description,omitempty"`
+	// Unique identifier of the client organization unit
+	ID uuid.UUID `json:"id"`
+	// Name of the client organization unit
+	Name string `json:"name"`
+	// Parent organization
+	ParentOrg Organization `json:"parentOrg"`
+	// Tenant associated with the client organization unit
+	Tenant *Tenant `json:"tenant"`
+	// Timestamp of last update
+	UpdatedAt string `json:"updatedAt"`
+	// Identifier of the user who last updated the record
+	UpdatedBy uuid.UUID `json:"updatedBy"`
 }
 
 func (ClientOrganizationUnit) IsData() {}
 
-func (ClientOrganizationUnit) IsResource()                  {}
-func (this ClientOrganizationUnit) GetID() uuid.UUID        { return this.ID }
-func (this ClientOrganizationUnit) GetName() string         { return this.Name }
-func (this ClientOrganizationUnit) GetCreatedAt() string    { return this.CreatedAt }
-func (this ClientOrganizationUnit) GetUpdatedAt() string    { return this.UpdatedAt }
-func (this ClientOrganizationUnit) GetCreatedBy() uuid.UUID { return this.CreatedBy }
-func (this ClientOrganizationUnit) GetUpdatedBy() uuid.UUID { return this.UpdatedBy }
-
 func (ClientOrganizationUnit) IsOrganization() {}
 
-func (this ClientOrganizationUnit) GetDescription() *string    { return this.Description }
+// Timestamp of creation
+func (this ClientOrganizationUnit) GetCreatedAt() string { return this.CreatedAt }
+
+// Identifier of the user who created the record
+func (this ClientOrganizationUnit) GetCreatedBy() uuid.UUID { return this.CreatedBy }
+
+// Description of the organization
+func (this ClientOrganizationUnit) GetDescription() *string { return this.Description }
+
+// Unique identifier of the organization
+func (this ClientOrganizationUnit) GetID() uuid.UUID { return this.ID }
+
+// Name of the organization
+func (this ClientOrganizationUnit) GetName() string { return this.Name }
+
+// Parent organization
 func (this ClientOrganizationUnit) GetParentOrg() Organization { return this.ParentOrg }
 
-// Represents a contact info entity associated with the Tenant
+// Timestamp of last update
+func (this ClientOrganizationUnit) GetUpdatedAt() string { return this.UpdatedAt }
+
+// Identifier of the user who last updated the record
+func (this ClientOrganizationUnit) GetUpdatedBy() uuid.UUID { return this.UpdatedBy }
+
+func (ClientOrganizationUnit) IsResource() {}
+
+// Timestamp of creation
+
+// Identifier of the user who created the record
+
+// Unique identifier of the resource
+
+// Name of the resource
+
+// Timestamp of last update
+
+// Identifier of the user who last updated the record
+
+// Represents contact information
 type ContactInfo struct {
-	Email       *string  `json:"email,omitempty"`
-	PhoneNumber *string  `json:"phoneNumber,omitempty"`
-	Address     *Address `json:"address,omitempty"`
+	// Address of the contact
+	Address *Address `json:"address,omitempty"`
+	// Email of the contact
+	Email *string `json:"email,omitempty"`
+	// Phone number of the contact
+	PhoneNumber *string `json:"phoneNumber,omitempty"`
 }
 
-// Defines input fields for creating a contact info for a tenant
+// Defines input fields for contact information
 type ContactInfoInput struct {
-	Email       *string             `json:"email,omitempty"`
-	PhoneNumber *string             `json:"phoneNumber,omitempty"`
-	Address     *CreateAddressInput `json:"address,omitempty"`
+	// Address of the contact
+	Address *AddressInput `json:"address,omitempty"`
+	// Email of the contact
+	Email *string `json:"email,omitempty"`
+	// Phone number of the contact
+	PhoneNumber *string `json:"phoneNumber,omitempty"`
 }
 
+// Defines input fields for creating an account
 type CreateAccountInput struct {
-	ID          uuid.UUID               `json:"id"`
-	Name        string                  `json:"name"`
-	Description *string                 `json:"description,omitempty"`
-	TenantID    uuid.UUID               `json:"tenantId"`
-	ParentID    uuid.UUID               `json:"parentId"`
+	// Scope of billing info
 	BillingInfo *CreateBillingInfoInput `json:"billingInfo,omitempty"`
+	// Description of the account
+	Description *string `json:"description,omitempty"`
+	// Unique identifier of the account
+	ID uuid.UUID `json:"id"`
+	// Name of the account
+	Name string `json:"name"`
+	// Associated parent organization
+	ParentID uuid.UUID `json:"parentId"`
+	// Associated tenant
+	TenantID uuid.UUID `json:"tenantId"`
 }
 
-// Defines input fields for creating an address for a tenant
-type CreateAddressInput struct {
-	Street  *string `json:"street,omitempty"`
-	City    *string `json:"city,omitempty"`
-	State   *string `json:"state,omitempty"`
-	ZipCode *string `json:"zipCode,omitempty"`
-	Country *string `json:"country,omitempty"`
-}
-
-// Defines input fields for create a billing address for an account
+// Defines input fields for creating a billing address for an account
 type CreateBillingAddressInput struct {
-	Street  string `json:"street"`
-	City    string `json:"city"`
-	State   string `json:"state"`
-	Zipcode string `json:"zipcode"`
+	// Name of the city associated to billing address
+	City string `json:"city"`
+	// Name of the country associated to billing address
 	Country string `json:"country"`
+	// Name of the state associated to billing address
+	State string `json:"state"`
+	// Name of the street associated to billing address
+	Street string `json:"street"`
+	// Name of the zipcode associated to billing address
+	Zipcode string `json:"zipcode"`
 }
 
-// Defines input fields for create a billing info for an account
+// Defines input fields for creating billing info for an account
 type CreateBillingInfoInput struct {
-	CreditCardNumber string                     `json:"creditCardNumber"`
-	CreditCardType   string                     `json:"creditCardType"`
-	ExpirationDate   string                     `json:"expirationDate"`
-	Cvv              string                     `json:"cvv"`
-	BillingAddress   *CreateBillingAddressInput `json:"billingAddress"`
+	// Billing Address associated to account
+	BillingAddress *CreateBillingAddressInput `json:"billingAddress"`
+	// Credit card number associated to account
+	CreditCardNumber string `json:"creditCardNumber"`
+	// Credit card type associated to account
+	CreditCardType string `json:"creditCardType"`
+	// CVV associated to account
+	Cvv string `json:"cvv"`
+	// Expiration date associated to account
+	ExpirationDate string `json:"expirationDate"`
 }
 
+// Defines input fields for creating a binding
 type CreateBindingInput struct {
-	Name        string `json:"name"`
-	PrincipalID string `json:"principalId"`
-	RoleID      string `json:"roleId"`
-	ScopeRefID  string `json:"scopeRefId"`
-	Version     string `json:"version"`
+	// Name of the binding
+	Name string `json:"name"`
+	// Principal ID associated with the binding
+	PrincipalID uuid.UUID `json:"principalId"`
+	// Role ID associated with the binding
+	RoleID uuid.UUID `json:"roleId"`
+	// Scope reference ID associated with the binding
+	ScopeRefID uuid.UUID `json:"scopeRefId"`
+	// Version of the binding
+	Version string `json:"version"`
 }
 
+// Defines input fields for creating a client organization unit
 type CreateClientOrganizationUnitInput struct {
-	Name        string  `json:"name"`
+	// Description of the client organization unit
 	Description *string `json:"description,omitempty"`
-	TenantID    string  `json:"tenantId"`
-	ParentOrgID string  `json:"parentOrgId"`
+	// Name of the client organization unit
+	Name string `json:"name"`
+	// Parent organization ID
+	ParentOrgID uuid.UUID `json:"parentOrgId"`
+	// Tenant ID
+	TenantID uuid.UUID `json:"tenantId"`
 }
 
-type CreateGroupInput struct {
-	Name        string   `json:"name"`
-	Email       string   `json:"email"`
-	TenantID    string   `json:"tenantId"`
-	Description *string  `json:"description,omitempty"`
-	Members     []string `json:"members"`
+// Defines input fields for creating a permission
+type CreatePermissionInput struct {
+	// Action associated with the permission
+	Action *string `json:"action,omitempty"`
+	// Name of the permission
+	Name string `json:"name"`
+	// Service ID associated with the permission
+	ServiceID *uuid.UUID `json:"serviceId,omitempty"`
 }
 
-// Input for creating a new Permission
-type CreatePermission struct {
-	Name      string  `json:"name"`
-	ServiceID *string `json:"serviceId,omitempty"`
-	Action    *string `json:"action,omitempty"`
-}
-
-// Input for creating a new Role
+// Defines input fields for creating a role
 type CreateRoleInput struct {
-	Name               string       `json:"name"`
-	Version            string       `json:"version"`
-	Description        *string      `json:"description,omitempty"`
-	Permissions        []string     `json:"permissions"`
-	RoleType           RoleTypeEnum `json:"roleType"`
-	AssignableScopeRef uuid.UUID    `json:"assignableScopeRef"`
+	// Assignable scope reference ID
+	AssignableScopeRef uuid.UUID `json:"assignableScopeRef"`
+	// Description of the role
+	Description *string `json:"description,omitempty"`
+	// Name of the role
+	Name string `json:"name"`
+	// Permissions associated with the role
+	Permissions []string `json:"permissions"`
+	// Type of the role
+	RoleType RoleTypeEnum `json:"roleType"`
+	// Version of the role
+	Version string `json:"version"`
 }
 
+// Defines input fields for creating a root
 type CreateRootInput struct {
-	Name        string  `json:"name"`
+	// Description of the root
 	Description *string `json:"description,omitempty"`
+	// Name of the root
+	Name string `json:"name"`
 }
 
 // Defines input fields for creating a tenant
 type CreateTenantInput struct {
-	ID          uuid.UUID         `json:"id"`
-	Name        string            `json:"name"`
-	Description *string           `json:"description,omitempty"`
-	ParentID    uuid.UUID         `json:"parentId"`
+	// Contact information of the tenant
 	ContactInfo *ContactInfoInput `json:"contactInfo,omitempty"`
+	// Description of the tenant
+	Description *string `json:"description,omitempty"`
+	// Unique identifier of the account
+	ID uuid.UUID `json:"id"`
+	// Name of the tenant
+	Name string `json:"name"`
+	// Parent organization ID
+	ParentID *uuid.UUID `json:"parentId,omitempty"`
 }
 
-type CreateUserInput struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Email     string `json:"email"`
-	TenantID  string `json:"tenantId"`
+// Defines input fields for deleting a resource
+type DeleteInput struct {
+	// Unique identifier of the resource
+	ID uuid.UUID `json:"id"`
 }
 
+// Define ErrorResponse for error cases
 type ErrorResponse struct {
-	Success      bool    `json:"success"`
-	Message      string  `json:"message"`
-	ErrorCode    string  `json:"errorCode"`
+	// Error code representing the type of error.
+	ErrorCode string `json:"errorCode"`
+	// Details about the error.
 	ErrorDetails *string `json:"errorDetails,omitempty"`
+	// Indicates if the operation was successful.
+	IsSuccess bool `json:"isSuccess"`
+	// A message providing additional context or information about the operation.
+	Message string `json:"message"`
 }
 
 func (ErrorResponse) IsOperationResult() {}
@@ -274,114 +451,209 @@ func (ErrorResponse) IsOperationResult() {}
 func (ErrorResponse) IsResponse() {}
 
 // Indicates if the operation was successful.
-func (this ErrorResponse) GetSuccess() bool { return this.Success }
+func (this ErrorResponse) GetIsSuccess() bool { return this.IsSuccess }
 
 // A message providing additional context or information about the operation.
 func (this ErrorResponse) GetMessage() string { return this.Message }
 
+// Represents a Group entity
 type Group struct {
-	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"name"`
-	Email       string    `json:"email"`
-	Tenant      *Tenant   `json:"tenant"`
-	Description *string   `json:"description,omitempty"`
-	Members     []*User   `json:"members"`
-	CreatedAt   string    `json:"createdAt"`
-	UpdatedAt   string    `json:"updatedAt"`
-	CreatedBy   uuid.UUID `json:"createdBy"`
-	UpdatedBy   uuid.UUID `json:"updatedBy"`
+	// Timestamp of creation
+	CreatedAt string `json:"createdAt"`
+	// Identifier of the user who created the record
+	CreatedBy uuid.UUID `json:"createdBy"`
+	// Description of the group
+	Description *string `json:"description,omitempty"`
+	// Email of the group
+	Email string `json:"email"`
+	// Unique identifier of the group
+	ID uuid.UUID `json:"id"`
+	// Members of the group
+	Members []*User `json:"members"`
+	// Name of the group
+	Name string `json:"name"`
+	// Tenant associated with the group
+	Tenant *Tenant `json:"tenant"`
+	// Timestamp of last update
+	UpdatedAt string `json:"updatedAt"`
+	// Identifier of the user who last updated the record
+	UpdatedBy uuid.UUID `json:"updatedBy"`
 }
 
-func (Group) IsPrincipal()            {}
-func (this Group) GetID() uuid.UUID   { return this.ID }
-func (this Group) GetName() string    { return this.Name }
-func (this Group) GetEmail() string   { return this.Email }
+func (Group) IsData() {}
+
+func (Group) IsPrincipal() {}
+
+// Email of the principal
+func (this Group) GetEmail() string { return this.Email }
+
+// Unique identifier of the principal
+func (this Group) GetID() uuid.UUID { return this.ID }
+
+// Name of the principal
+func (this Group) GetName() string { return this.Name }
+
+// Tenant associated with the principal
 func (this Group) GetTenant() *Tenant { return this.Tenant }
 
 func (Group) IsResource() {}
 
-func (this Group) GetCreatedAt() string    { return this.CreatedAt }
-func (this Group) GetUpdatedAt() string    { return this.UpdatedAt }
+// Timestamp of creation
+func (this Group) GetCreatedAt() string { return this.CreatedAt }
+
+// Identifier of the user who created the record
 func (this Group) GetCreatedBy() uuid.UUID { return this.CreatedBy }
+
+// Unique identifier of the resource
+
+// Name of the resource
+
+// Timestamp of last update
+func (this Group) GetUpdatedAt() string { return this.UpdatedAt }
+
+// Identifier of the user who last updated the record
 func (this Group) GetUpdatedBy() uuid.UUID { return this.UpdatedBy }
 
 // Represents a Permission entity
 type Permission struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	ServiceID *string   `json:"serviceId,omitempty"`
-	Action    *string   `json:"action,omitempty"`
-	CreatedAt string    `json:"createdAt"`
-	UpdatedAt string    `json:"updatedAt"`
+	// Action associated with the permission
+	Action *string `json:"action,omitempty"`
+	// Timestamp of creation
+	CreatedAt string `json:"createdAt"`
+	// Identifier of the user who created the record
 	CreatedBy uuid.UUID `json:"createdBy"`
+	// Unique identifier of the permission
+	ID uuid.UUID `json:"id"`
+	// Name of the permission
+	Name string `json:"name"`
+	// Service ID associated with the permission
+	ServiceID *string `json:"serviceId,omitempty"`
+	// Timestamp of last update
+	UpdatedAt string `json:"updatedAt"`
+	// Identifier of the user who last updated the record
 	UpdatedBy uuid.UUID `json:"updatedBy"`
 }
 
 func (Permission) IsData() {}
 
+// Represents a Role entity
 type Role struct {
-	ID              uuid.UUID     `json:"id"`
-	Name            string        `json:"name"`
-	Version         string        `json:"version"`
-	Description     *string       `json:"description,omitempty"`
-	Permissions     []*Permission `json:"permissions"`
-	RoleType        RoleTypeEnum  `json:"roleType"`
-	AssignableScope Resource      `json:"assignableScope,omitempty"`
-	CreatedAt       string        `json:"createdAt"`
-	UpdatedAt       string        `json:"updatedAt"`
-	CreatedBy       uuid.UUID     `json:"createdBy"`
-	UpdatedBy       uuid.UUID     `json:"updatedBy"`
+	// Assignable scope of the role
+	AssignableScope Resource `json:"assignableScope,omitempty"`
+	// Timestamp of creation
+	CreatedAt string `json:"createdAt"`
+	// Identifier of the user who created the record
+	CreatedBy uuid.UUID `json:"createdBy"`
+	// Description of the role
+	Description *string `json:"description,omitempty"`
+	// Unique identifier of the role
+	ID uuid.UUID `json:"id"`
+	// Name of the role
+	Name string `json:"name"`
+	// Permissions associated with the role
+	Permissions []*Permission `json:"permissions"`
+	// Type of the role
+	RoleType RoleTypeEnum `json:"roleType"`
+	// Timestamp of last update
+	UpdatedAt string `json:"updatedAt"`
+	// Identifier of the user who last updated the record
+	UpdatedBy uuid.UUID `json:"updatedBy"`
+	// Version of the role
+	Version string `json:"version"`
 }
 
 func (Role) IsData() {}
 
-func (Role) IsResource()                  {}
-func (this Role) GetID() uuid.UUID        { return this.ID }
-func (this Role) GetName() string         { return this.Name }
-func (this Role) GetCreatedAt() string    { return this.CreatedAt }
-func (this Role) GetUpdatedAt() string    { return this.UpdatedAt }
+func (Role) IsResource() {}
+
+// Timestamp of creation
+func (this Role) GetCreatedAt() string { return this.CreatedAt }
+
+// Identifier of the user who created the record
 func (this Role) GetCreatedBy() uuid.UUID { return this.CreatedBy }
+
+// Unique identifier of the resource
+func (this Role) GetID() uuid.UUID { return this.ID }
+
+// Name of the resource
+func (this Role) GetName() string { return this.Name }
+
+// Timestamp of last update
+func (this Role) GetUpdatedAt() string { return this.UpdatedAt }
+
+// Identifier of the user who last updated the record
 func (this Role) GetUpdatedBy() uuid.UUID { return this.UpdatedBy }
 
+// Represents a Root entity
 type Root struct {
-	ID          uuid.UUID    `json:"id"`
-	Name        string       `json:"name"`
-	Description *string      `json:"description,omitempty"`
-	ParentOrg   Organization `json:"parentOrg,omitempty"`
-	CreatedAt   string       `json:"createdAt"`
-	UpdatedAt   string       `json:"updatedAt"`
-	CreatedBy   uuid.UUID    `json:"createdBy"`
-	UpdatedBy   uuid.UUID    `json:"updatedBy"`
+	// Timestamp of creation
+	CreatedAt string `json:"createdAt"`
+	// Identifier of the user who created the record
+	CreatedBy uuid.UUID `json:"createdBy"`
+	// Description of the root
+	Description *string `json:"description,omitempty"`
+	// Unique identifier of the root
+	ID uuid.UUID `json:"id"`
+	// Name of the root
+	Name string `json:"name"`
+	// Parent organization
+	ParentOrg Organization `json:"parentOrg,omitempty"`
+	// Timestamp of last update
+	UpdatedAt string `json:"updatedAt"`
+	// Identifier of the user who last updated the record
+	UpdatedBy uuid.UUID `json:"updatedBy"`
 }
 
 func (Root) IsData() {}
 
-func (Root) IsResource()                  {}
-func (this Root) GetID() uuid.UUID        { return this.ID }
-func (this Root) GetName() string         { return this.Name }
-func (this Root) GetCreatedAt() string    { return this.CreatedAt }
-func (this Root) GetUpdatedAt() string    { return this.UpdatedAt }
-func (this Root) GetCreatedBy() uuid.UUID { return this.CreatedBy }
-func (this Root) GetUpdatedBy() uuid.UUID { return this.UpdatedBy }
-
 func (Root) IsOrganization() {}
 
-func (this Root) GetDescription() *string    { return this.Description }
+// Timestamp of creation
+func (this Root) GetCreatedAt() string { return this.CreatedAt }
+
+// Identifier of the user who created the record
+func (this Root) GetCreatedBy() uuid.UUID { return this.CreatedBy }
+
+// Description of the organization
+func (this Root) GetDescription() *string { return this.Description }
+
+// Unique identifier of the organization
+func (this Root) GetID() uuid.UUID { return this.ID }
+
+// Name of the organization
+func (this Root) GetName() string { return this.Name }
+
+// Parent organization
 func (this Root) GetParentOrg() Organization { return this.ParentOrg }
 
-// Represents a Service entity associated with Permissions
-type Service struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
+// Timestamp of last update
+func (this Root) GetUpdatedAt() string { return this.UpdatedAt }
 
+// Identifier of the user who last updated the record
+func (this Root) GetUpdatedBy() uuid.UUID { return this.UpdatedBy }
+
+func (Root) IsResource() {}
+
+// Timestamp of creation
+
+// Identifier of the user who created the record
+
+// Unique identifier of the resource
+
+// Name of the resource
+
+// Timestamp of last update
+
+// Identifier of the user who last updated the record
+
+// Success Response for a generic operation
 type SuccessResponse struct {
-	// Indicates if the operation was successful.
-	Success bool `json:"success"`
-	// A message providing additional context or information about the operation.
-	Message string `json:"message"`
 	// The data returned from the operation.
 	Data []Data `json:"data,omitempty"`
+	// Indicates if the operation was successful.
+	IsSuccess bool `json:"isSuccess"`
+	// A message providing additional context or information about the operation.
+	Message string `json:"message"`
 }
 
 func (SuccessResponse) IsOperationResult() {}
@@ -389,186 +661,279 @@ func (SuccessResponse) IsOperationResult() {}
 func (SuccessResponse) IsResponse() {}
 
 // Indicates if the operation was successful.
-func (this SuccessResponse) GetSuccess() bool { return this.Success }
+func (this SuccessResponse) GetIsSuccess() bool { return this.IsSuccess }
 
 // A message providing additional context or information about the operation.
 func (this SuccessResponse) GetMessage() string { return this.Message }
 
 // Represents a Tenant entity
 type Tenant struct {
-	ID          uuid.UUID    `json:"id"`
-	Name        string       `json:"name"`
-	Description *string      `json:"description,omitempty"`
-	ParentOrg   Organization `json:"parentOrg"`
+	// Contact information of the tenant
 	ContactInfo *ContactInfo `json:"contactInfo,omitempty"`
-	CreatedAt   string       `json:"createdAt"`
-	UpdatedAt   string       `json:"updatedAt"`
-	CreatedBy   uuid.UUID    `json:"createdBy"`
-	UpdatedBy   uuid.UUID    `json:"updatedBy"`
+	// Timestamp of creation
+	CreatedAt string `json:"createdAt"`
+	// Identifier of the user who created the record
+	CreatedBy uuid.UUID `json:"createdBy"`
+	// Description of the tenant
+	Description *string `json:"description,omitempty"`
+	// Unique identifier of the tenant
+	ID uuid.UUID `json:"id"`
+	// Name of the tenant
+	Name string `json:"name"`
+	// Parent organization
+	ParentOrg Organization `json:"parentOrg,omitempty"`
+	// Timestamp of last update
+	UpdatedAt string `json:"updatedAt"`
+	// Identifier of the user who last updated the record
+	UpdatedBy uuid.UUID `json:"updatedBy"`
 }
 
 func (Tenant) IsData() {}
 
-func (Tenant) IsResource()                  {}
-func (this Tenant) GetID() uuid.UUID        { return this.ID }
-func (this Tenant) GetName() string         { return this.Name }
-func (this Tenant) GetCreatedAt() string    { return this.CreatedAt }
-func (this Tenant) GetUpdatedAt() string    { return this.UpdatedAt }
-func (this Tenant) GetCreatedBy() uuid.UUID { return this.CreatedBy }
-func (this Tenant) GetUpdatedBy() uuid.UUID { return this.UpdatedBy }
-
 func (Tenant) IsOrganization() {}
 
-func (this Tenant) GetDescription() *string    { return this.Description }
+// Timestamp of creation
+func (this Tenant) GetCreatedAt() string { return this.CreatedAt }
+
+// Identifier of the user who created the record
+func (this Tenant) GetCreatedBy() uuid.UUID { return this.CreatedBy }
+
+// Description of the organization
+func (this Tenant) GetDescription() *string { return this.Description }
+
+// Unique identifier of the organization
+func (this Tenant) GetID() uuid.UUID { return this.ID }
+
+// Name of the organization
+func (this Tenant) GetName() string { return this.Name }
+
+// Parent organization
 func (this Tenant) GetParentOrg() Organization { return this.ParentOrg }
 
-// Defines input fields for updating a account
-type UpdateAccountInput struct {
-	ID          uuid.UUID               `json:"id"`
-	Name        *string                 `json:"name,omitempty"`
-	Description *string                 `json:"description,omitempty"`
-	TenantID    *uuid.UUID              `json:"tenantId,omitempty"`
-	ParentID    *uuid.UUID              `json:"parentId,omitempty"`
-	BillingInfo *UpdateBillingInfoInput `json:"billingInfo,omitempty"`
-}
+// Timestamp of last update
+func (this Tenant) GetUpdatedAt() string { return this.UpdatedAt }
 
-// Defines input fields for updating an address for a tenant
-type UpdateAddressInput struct {
-	Street  *string `json:"street,omitempty"`
-	City    *string `json:"city,omitempty"`
-	State   *string `json:"state,omitempty"`
-	ZipCode *string `json:"zipCode,omitempty"`
-	Country *string `json:"country,omitempty"`
+// Identifier of the user who last updated the record
+func (this Tenant) GetUpdatedBy() uuid.UUID { return this.UpdatedBy }
+
+func (Tenant) IsResource() {}
+
+// Timestamp of creation
+
+// Identifier of the user who created the record
+
+// Unique identifier of the resource
+
+// Name of the resource
+
+// Timestamp of last update
+
+// Identifier of the user who last updated the record
+
+// Defines input fields for updating an account
+type UpdateAccountInput struct {
+	// Scope of billing info
+	BillingInfo *UpdateBillingInfoInput `json:"billingInfo,omitempty"`
+	// Updated description of the account
+	Description *string `json:"description,omitempty"`
+	// Unique identifier of the account
+	ID uuid.UUID `json:"id"`
+	// Updated name of the account
+	Name *string `json:"name,omitempty"`
+	// Associated parent organization
+	ParentID *uuid.UUID `json:"parentId,omitempty"`
+	// Associated tenant
+	TenantID *uuid.UUID `json:"tenantId,omitempty"`
 }
 
 // Defines input fields for updating a billing address for an account
 type UpdateBillingAddressInput struct {
-	Street  *string `json:"street,omitempty"`
-	City    *string `json:"city,omitempty"`
-	State   *string `json:"state,omitempty"`
-	Zipcode *string `json:"zipcode,omitempty"`
+	// Name of the city associated to billing address
+	City *string `json:"city,omitempty"`
+	// Name of the country associated to billing address
 	Country *string `json:"country,omitempty"`
+	// Name of the state associated to billing address
+	State *string `json:"state,omitempty"`
+	// Name of the street associated to billing address
+	Street *string `json:"street,omitempty"`
+	// Name of the zipcode associated to billing address
+	Zipcode *string `json:"zipcode,omitempty"`
 }
 
-// Defines input fields for updating a billing info for an account
+// Defines input fields for updating billing info for an account
 type UpdateBillingInfoInput struct {
-	CreditCardNumber *string                    `json:"creditCardNumber,omitempty"`
-	CreditCardType   *string                    `json:"creditCardType,omitempty"`
-	ExpirationDate   *string                    `json:"expirationDate,omitempty"`
-	Cvv              *string                    `json:"cvv,omitempty"`
-	BillingAddress   *UpdateBillingAddressInput `json:"billingAddress,omitempty"`
+	// Billing Address associated to account
+	BillingAddress *UpdateBillingAddressInput `json:"billingAddress,omitempty"`
+	// Credit card number associated to account
+	CreditCardNumber *string `json:"creditCardNumber,omitempty"`
+	// Credit card type associated to account
+	CreditCardType *string `json:"creditCardType,omitempty"`
+	// CVV associated to account
+	Cvv *string `json:"cvv,omitempty"`
+	// Expiration date associated to account
+	ExpirationDate *string `json:"expirationDate,omitempty"`
 }
 
+// Defines input fields for updating a binding
 type UpdateBindingInput struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	PrincipalID string `json:"principalId"`
-	RoleID      string `json:"roleId"`
-	ScopeRefID  string `json:"scopeRefId"`
-	Version     string `json:"version"`
+	// Unique identifier of the binding
+	ID uuid.UUID `json:"id"`
+	// Updated name of the binding
+	Name string `json:"name"`
+	// Updated principal ID associated with the binding
+	PrincipalID uuid.UUID `json:"principalId"`
+	// Updated role ID associated with the binding
+	RoleID uuid.UUID `json:"roleId"`
+	// Updated scope reference ID associated with the binding
+	ScopeRefID uuid.UUID `json:"scopeRefId"`
+	// Updated version of the binding
+	Version string `json:"version"`
 }
 
+// Defines input fields for updating a client organization unit
 type UpdateClientOrganizationUnitInput struct {
-	ID          uuid.UUID `json:"id"`
-	Name        *string   `json:"name,omitempty"`
-	Description *string   `json:"description,omitempty"`
-	TenantID    *string   `json:"tenantId,omitempty"`
-	ParentOrgID *string   `json:"parentOrgId,omitempty"`
+	// Updated description of the client organization unit
+	Description *string `json:"description,omitempty"`
+	// Unique identifier of the client organization unit
+	ID uuid.UUID `json:"id"`
+	// Updated name of the client organization unit
+	Name *string `json:"name,omitempty"`
+	// Updated parent organization ID
+	ParentOrgID *uuid.UUID `json:"parentOrgId,omitempty"`
+	// Updated tenant ID
+	TenantID *uuid.UUID `json:"tenantId,omitempty"`
 }
 
-type UpdateGroupInput struct {
-	ID          string   `json:"id"`
-	Name        *string  `json:"name,omitempty"`
-	Email       *string  `json:"email,omitempty"`
-	TenantID    string   `json:"tenantId"`
-	Description *string  `json:"description,omitempty"`
-	Members     []string `json:"members"`
+// Defines input fields for updating a permission
+type UpdatePermissionInput struct {
+	// Updated action associated with the permission
+	Action *string `json:"action,omitempty"`
+	// Unique identifier of the permission
+	ID uuid.UUID `json:"id"`
+	// Updated name of the permission
+	Name string `json:"name"`
+	// Updated service ID associated with the permission
+	ServiceID *uuid.UUID `json:"serviceId,omitempty"`
 }
 
-// Input for updating an existing Permission
-type UpdatePermission struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	ServiceID *string   `json:"serviceId,omitempty"`
-	Action    *string   `json:"action,omitempty"`
-}
-
-// Input for updating an existing Role
+// Defines input fields for updating a role
 type UpdateRoleInput struct {
-	ID                 uuid.UUID    `json:"id"`
-	Name               string       `json:"name"`
-	Version            string       `json:"version"`
-	Description        *string      `json:"description,omitempty"`
-	Permissions        []string     `json:"permissions"`
-	RoleType           RoleTypeEnum `json:"roleType"`
-	AssignableScopeRef uuid.UUID    `json:"assignableScopeRef"`
+	// Updated assignable scope reference ID
+	AssignableScopeRef uuid.UUID `json:"assignableScopeRef"`
+	// Updated description of the role
+	Description *string `json:"description,omitempty"`
+	// Unique identifier of the role
+	ID uuid.UUID `json:"id"`
+	// Updated name of the role
+	Name string `json:"name"`
+	// Updated permissions associated with the role
+	Permissions []string `json:"permissions"`
+	// Updated type of the role
+	RoleType RoleTypeEnum `json:"roleType"`
+	// Updated version of the role
+	Version string `json:"version"`
 }
 
+// Defines input fields for updating a root
 type UpdateRootInput struct {
-	ID          uuid.UUID `json:"id"`
-	Name        *string   `json:"name,omitempty"`
-	Description *string   `json:"description,omitempty"`
+	// Updated description of the root
+	Description *string `json:"description,omitempty"`
+	// Unique identifier of the root
+	ID uuid.UUID `json:"id"`
+	// Updated name of the root
+	Name *string `json:"name,omitempty"`
 }
 
 // Defines input fields for updating a tenant
 type UpdateTenantInput struct {
-	ID          uuid.UUID         `json:"id"`
-	Name        *string           `json:"name,omitempty"`
-	Description *string           `json:"description,omitempty"`
-	ParentID    uuid.UUID         `json:"parentId"`
+	// Updated contact information of the tenant
 	ContactInfo *ContactInfoInput `json:"contactInfo,omitempty"`
+	// Updated description of the tenant
+	Description *string `json:"description,omitempty"`
+	// Unique identifier of the tenant
+	ID uuid.UUID `json:"id"`
+	// Updated name of the tenant
+	Name *string `json:"name,omitempty"`
+	// Updated parent organization ID
+	ParentID *uuid.UUID `json:"parentId,omitempty"`
 }
 
-type UpdateUserInput struct {
-	ID        string  `json:"id"`
-	FirstName *string `json:"firstName,omitempty"`
-	LastName  *string `json:"lastName,omitempty"`
-	Email     *string `json:"email,omitempty"`
-	TenantID  *string `json:"tenantId,omitempty"`
-}
-
+// Represents a User entity
 type User struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	FirstName string    `json:"firstName"`
-	LastName  string    `json:"lastName"`
-	Email     string    `json:"email"`
-	Tenant    *Tenant   `json:"tenant"`
-	CreatedAt string    `json:"createdAt"`
-	UpdatedAt string    `json:"updatedAt"`
+	// Timestamp of creation
+	CreatedAt string `json:"createdAt"`
+	// Identifier of the user who created the record
 	CreatedBy uuid.UUID `json:"createdBy"`
+	// Email of the user
+	Email string `json:"email"`
+	// First name of the user
+	FirstName string `json:"firstName"`
+	// Unique identifier of the user
+	ID uuid.UUID `json:"id"`
+	// Last name of the user
+	LastName string `json:"lastName"`
+	// Name of the user
+	Name string `json:"name"`
+	// Tenant associated with the user
+	Tenant *Tenant `json:"tenant"`
+	// Timestamp of last update
+	UpdatedAt string `json:"updatedAt"`
+	// Identifier of the user who last updated the record
 	UpdatedBy uuid.UUID `json:"updatedBy"`
 }
 
-func (User) IsPrincipal()            {}
-func (this User) GetID() uuid.UUID   { return this.ID }
-func (this User) GetName() string    { return this.Name }
-func (this User) GetEmail() string   { return this.Email }
+func (User) IsData() {}
+
+func (User) IsPrincipal() {}
+
+// Email of the principal
+func (this User) GetEmail() string { return this.Email }
+
+// Unique identifier of the principal
+func (this User) GetID() uuid.UUID { return this.ID }
+
+// Name of the principal
+func (this User) GetName() string { return this.Name }
+
+// Tenant associated with the principal
 func (this User) GetTenant() *Tenant { return this.Tenant }
 
 func (User) IsResource() {}
 
-func (this User) GetCreatedAt() string    { return this.CreatedAt }
-func (this User) GetUpdatedAt() string    { return this.UpdatedAt }
+// Timestamp of creation
+func (this User) GetCreatedAt() string { return this.CreatedAt }
+
+// Identifier of the user who created the record
 func (this User) GetCreatedBy() uuid.UUID { return this.CreatedBy }
+
+// Unique identifier of the resource
+
+// Name of the resource
+
+// Timestamp of last update
+func (this User) GetUpdatedAt() string { return this.UpdatedAt }
+
+// Identifier of the user who last updated the record
 func (this User) GetUpdatedBy() uuid.UUID { return this.UpdatedBy }
 
-// Represents a Role entity
+// Defines the role type enumeration
 type RoleTypeEnum string
 
 const (
+	// Custom role type
+	RoleTypeEnumCustom RoleTypeEnum = "CUSTOM"
+	// Default role type
 	RoleTypeEnumDefault RoleTypeEnum = "DEFAULT"
-	RoleTypeEnumCustom  RoleTypeEnum = "CUSTOM"
 )
 
 var AllRoleTypeEnum = []RoleTypeEnum{
-	RoleTypeEnumDefault,
 	RoleTypeEnumCustom,
+	RoleTypeEnumDefault,
 }
 
 func (e RoleTypeEnum) IsValid() bool {
 	switch e {
-	case RoleTypeEnumDefault, RoleTypeEnumCustom:
+	case RoleTypeEnumCustom, RoleTypeEnumDefault:
 		return true
 	}
 	return false

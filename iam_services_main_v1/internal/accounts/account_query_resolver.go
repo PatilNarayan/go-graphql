@@ -13,7 +13,7 @@ type AccountQueryResolver struct {
 }
 
 // Tenants resolver for fetching all Tenants
-func (r *AccountQueryResolver) AllAccounts(ctx context.Context) ([]*models.Account, error) {
+func (r *AccountQueryResolver) Accounts(ctx context.Context) (models.OperationResult, error) {
 	// resourceType, err := dao.GetResourceTypeByName("Account")
 	// if err != nil {
 	// 	return nil, fmt.Errorf("resource type not found: %w", err)
@@ -45,7 +45,7 @@ func (r *AccountQueryResolver) AllAccounts(ctx context.Context) ([]*models.Accou
 }
 
 // GetTenant resolver for fetching a single Tenant by ID
-func (r *AccountQueryResolver) GetAccount(ctx context.Context, id uuid.UUID) (*models.Account, error) {
+func (r *AccountQueryResolver) Account(ctx context.Context, id uuid.UUID) (models.OperationResult, error) {
 	// resourceType, err := dao.GetResourceTypeByName("Account")
 	// if err != nil {
 	// 	return nil, fmt.Errorf("resource type not found: %w", err)

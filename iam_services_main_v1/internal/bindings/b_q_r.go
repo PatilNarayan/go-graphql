@@ -16,7 +16,7 @@ type BindingsQueryResolver struct {
 	DB *gorm.DB
 }
 
-func (r *BindingsQueryResolver) GetBinding(ctx context.Context, id string) (*models.Binding, error) {
+func (r *BindingsQueryResolver) Binding(ctx context.Context, id uuid.UUID) (models.OperationResult, error) {
 	logger := log.WithContext(ctx).WithFields(log.Fields{
 		"className": "binding_query_resolver",
 		"method":    "GetBinding",
@@ -24,7 +24,7 @@ func (r *BindingsQueryResolver) GetBinding(ctx context.Context, id string) (*mod
 	})
 
 	logger.Infof("getbinding request received with Id %v", id)
-	if id == "" {
+	if id == uuid.Nil {
 		logger.Error("invalid binding id provided")
 		return nil, errors.New("binding id is mandatory")
 	}
@@ -40,7 +40,7 @@ func (r *BindingsQueryResolver) GetBinding(ctx context.Context, id string) (*mod
 	createdBy := binding.CreatedBy
 	updatedBy := binding.UpdatedBy
 	bindingData := &models.Binding{
-		ID:        binding.ResourceID.String(),
+		// ID:        binding.ResourceID.String(),
 		Name:      binding.Name,
 		Version:   binding.Version,
 		CreatedAt: createdAt,
@@ -63,11 +63,11 @@ func (r *BindingsQueryResolver) GetBinding(ctx context.Context, id string) (*mod
 		bindingData.Principal = group
 	}
 
-	return bindingData, nil
+	return nil, nil
 }
 
 // AllBindings is the resolver for the allBindings field.
-func (r *BindingsQueryResolver) AllBindings(ctx context.Context) ([]*models.Binding, error) {
+func (r *BindingsQueryResolver) Bindings(ctx context.Context) (models.OperationResult, error) {
 	logger := log.WithContext(ctx).WithFields(log.Fields{
 		"className": "binding_query_resolver",
 		"method":    "AllBindings",
@@ -89,7 +89,7 @@ func (r *BindingsQueryResolver) AllBindings(ctx context.Context) ([]*models.Bind
 		principalType := r.FetchPrincipalBasedOnPrincipalId(ctx, binding.PrincipalID)
 
 		bindingData := &models.Binding{
-			ID:      binding.ResourceID.String(),
+			// ID:      binding.ResourceID.String(),
 			Name:    binding.Name,
 			Version: binding.Version,
 			// CreatedAt: &createdAt,
@@ -112,7 +112,7 @@ func (r *BindingsQueryResolver) AllBindings(ctx context.Context) ([]*models.Bind
 		}
 		bindings = append(bindings, bindingData)
 	}
-	return bindings, nil
+	return nil, nil
 
 }
 

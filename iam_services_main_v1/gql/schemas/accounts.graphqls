@@ -1,94 +1,257 @@
-"Represents a Account entity"
-type Account implements Resource & Organization {
-  id: UUID! # Unique identifier of the account
-  name: String! # Name of the account
-  description: String # Description of the account
-  parentOrg : Organization # Parent organization
-  billingInfo: BillingInfo  # Billing Info entity
-  createdAt: DateTime! # Timestamp of creation
-  updatedAt: DateTime! # Timestamp of last update
-  createdBy: UUID! # Identifier of the user who created the record
-  updatedBy: UUID! # Identifier of the user who last updated the record
+"""
+Represents an Account entity
+"""
+type Account implements Organization & Resource {
+  """
+  Billing Info entity
+  """
+  billingInfo: BillingInfo
+  """
+  Timestamp of creation
+  """
+  createdAt: DateTime!
+  """
+  Identifier of the user who created the record
+  """
+  createdBy: UUID!
+  """
+  Description of the account
+  """
+  description: String
+  """
+  Unique identifier of the account
+  """
+  id: UUID!
+  """
+  Name of the account
+  """
+  name: String!
+  """
+  Parent organization
+  """
+  parentOrg: Organization
+  """
+  Timestamp of last update
+  """
+  updatedAt: DateTime!
+  """
+  Identifier of the user who last updated the record
+  """
+  updatedBy: UUID!
 }
 
-
-"Represents a billing info entity associated to account" 
-type BillingInfo {
-  creditCardNumber: String! # Credit card number associated to account
-  creditCardType: String! # Credit card type associated to account
-  expirationDate: String! # Expiration date associated to account
-  cvv: String! # CVV associated to account
-  billingAddress: BillingAddress! # Billing Address associated to account
-}
-
-
-"Represents a billing address entity associated to account" 
+"""
+Represents a billing address entity associated to account
+"""
 type BillingAddress {
-  street: String! # Name of the street associated to billing address 
-  city: String! # Name of the city associated to billing address
-  state: String! # Name of the state associated to billing address
-  zipcode: String! # Name of the zipcode associated to billing address
-  country: String! # Name of the country associated to billing address
+  """
+  Name of the city associated to billing address
+  """
+  city: String!
+  """
+  Name of the country associated to billing address
+  """
+  country: String!
+  """
+  Name of the state associated to billing address
+  """
+  state: String!
+  """
+  Name of the street associated to billing address
+  """
+  street: String!
+  """
+  Name of the zipcode associated to billing address
+  """
+  zipcode: String!
 }
 
+"""
+Represents a billing info entity associated to account
+"""
+type BillingInfo {
+  """
+  Billing Address associated to account
+  """
+  billingAddress: BillingAddress!
+  """
+  Credit card number associated to account
+  """
+  creditCardNumber: String!
+  """
+  Credit card type associated to account
+  """
+  creditCardType: String!
+  """
+  CVV associated to account
+  """
+  cvv: String!
+  """
+  Expiration date associated to account
+  """
+  expirationDate: String!
+}
 
+"""
+Defines input fields for creating an account
+"""
 input CreateAccountInput {
-  id: UUID! # Unique identifier of the account
-  name: String! # Name of the account
-  description: String # Description of the account
-  tenantId: UUID! # Associated tenant
-  parentId: UUID! # Associated parent organization
-  billingInfo: CreateBillingInfoInput # Scope of billing info 
+  """
+  Scope of billing info
+  """
+  billingInfo: CreateBillingInfoInput
+  """
+  Description of the account
+  """
+  description: String
+  """
+  Unique identifier of the account
+  """
+  id: UUID!
+  """
+  Name of the account
+  """
+  name: String!
+  """
+  Associated parent organization
+  """
+  parentId: UUID!
+  """
+  Associated tenant
+  """
+  tenantId: UUID!
 }
 
-
-"Defines input fields for create a billing info for an account"  
-input CreateBillingInfoInput {
-  creditCardNumber: String! # Credit card number associated to account
-  creditCardType: String! # Credit card type associated to account
-  expirationDate: String! # Expiration date associated to account
-  cvv: String! # CVV associated to account
-  billingAddress: CreateBillingAddressInput!  # Billing Address associated to account
-}
-
-
-"Defines input fields for create a billing address for an account"   
+"""
+Defines input fields for creating a billing address for an account
+"""
 input CreateBillingAddressInput {
-  street: String! # Name of the street associated to billing address 
-  city: String! # Name of the city associated to billing address
-  state: String! # Name of the state associated to billing address
-  zipcode: String! # Name of the zipcode associated to billing address
-  country: String! # Name of the country associated to billing address
+  """
+  Name of the city associated to billing address
+  """
+  city: String!
+  """
+  Name of the country associated to billing address
+  """
+  country: String!
+  """
+  Name of the state associated to billing address
+  """
+  state: String!
+  """
+  Name of the street associated to billing address
+  """
+  street: String!
+  """
+  Name of the zipcode associated to billing address
+  """
+  zipcode: String!
 }
 
+"""
+Defines input fields for creating billing info for an account
+"""
+input CreateBillingInfoInput {
+  """
+  Billing Address associated to account
+  """
+  billingAddress: CreateBillingAddressInput!
+  """
+  Credit card number associated to account
+  """
+  creditCardNumber: String!
+  """
+  Credit card type associated to account
+  """
+  creditCardType: String!
+  """
+  CVV associated to account
+  """
+  cvv: String!
+  """
+  Expiration date associated to account
+  """
+  expirationDate: String!
+}
 
-"Defines input fields for updating a account"  
+"""
+Defines input fields for updating an account
+"""
 input UpdateAccountInput {
-  id: UUID! # Unique identifier of the account
-  name: String # Updated name of the account
-  description: String # Updated description of the account
-  tenantId: UUID # Associated tenant
-  parentId: UUID # Associated parent organization
-  billingInfo: UpdateBillingInfoInput # Scope of billing info 
+  """
+  Scope of billing info
+  """
+  billingInfo: UpdateBillingInfoInput
+  """
+  Updated description of the account
+  """
+  description: String
+  """
+  Unique identifier of the account
+  """
+  id: UUID!
+  """
+  Updated name of the account
+  """
+  name: String
+  """
+  Associated parent organization
+  """
+  parentId: UUID
+  """
+  Associated tenant
+  """
+  tenantId: UUID
 }
 
-
-"Defines input fields for updating a billing info for an account"  
-input UpdateBillingInfoInput {
-  creditCardNumber: String # Credit card number associated to account
-  creditCardType: String # Credit card type associated to account
-  expirationDate: String # Expiration date associated to account
-  cvv: String # CVV associated to account
-  billingAddress: UpdateBillingAddressInput # Billing Address associated to account
-}
-
-
-"Defines input fields for updating a billing address for an account"  
+"""
+Defines input fields for updating a billing address for an account
+"""
 input UpdateBillingAddressInput {
-  street: String # Name of the street associated to billing address 
-  city: String # Name of the city associated to billing address
-  state: String # Name of the state associated to billing address
-  zipcode: String # Name of the zipcode associated to billing address
-  country: String # Name of the country associated to billing address
+  """
+  Name of the city associated to billing address
+  """
+  city: String
+  """
+  Name of the country associated to billing address
+  """
+  country: String
+  """
+  Name of the state associated to billing address
+  """
+  state: String
+  """
+  Name of the street associated to billing address
+  """
+  street: String
+  """
+  Name of the zipcode associated to billing address
+  """
+  zipcode: String
 }
 
+"""
+Defines input fields for updating billing info for an account
+"""
+input UpdateBillingInfoInput {
+  """
+  Billing Address associated to account
+  """
+  billingAddress: UpdateBillingAddressInput
+  """
+  Credit card number associated to account
+  """
+  creditCardNumber: String
+  """
+  Credit card type associated to account
+  """
+  creditCardType: String
+  """
+  CVV associated to account
+  """
+  cvv: String
+  """
+  Expiration date associated to account
+  """
+  expirationDate: String
+}

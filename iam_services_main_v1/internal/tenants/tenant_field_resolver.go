@@ -1,10 +1,6 @@
 package tenants
 
 import (
-	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
 	"iam_services_main_v1/gql/models"
 	"iam_services_main_v1/internal/dto"
 
@@ -15,35 +11,6 @@ import (
 type TenantFieldResolver struct {
 	DB *gorm.DB
 }
-
-// ContactInfo resolves the contactInfo field for a tenant
-func (t *TenantFieldResolver) ContactInfo(ctx context.Context, obj *models.Tenant) (*models.ContactInfo, error) {
-	if obj == nil {
-		return nil, errors.New("tenant object is nil")
-	}
-
-	var metadata dto.TenantMetadata
-	if err := t.DB.Where("resource_id = ?", obj.ID).First(&metadata).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil // Return nil if no metadata exists
-		}
-		return nil, fmt.Errorf("failed to fetch tenant metadata: %w", err)
-	}
-
-	var meta map[string]interface{}
-	if err := json.Unmarshal(metadata.Metadata, &meta); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal metadata: %w", err)
-	}
-
-	contactInfo, ok := meta["contactInfo"].(map[string]interface{})
-	if !ok {
-		return nil, nil // Return nil if no contact info exists
-	}
-
-	return buildContactInfo(contactInfo), nil
-}
-
-// File: shared_utils.go
 
 // buildContactInfo creates a ContactInfo model from raw contact data
 func buildContactInfo(data map[string]interface{}) *models.ContactInfo {
@@ -87,7 +54,7 @@ func buildAddress(data map[string]interface{}) *models.Address {
 }
 
 // Helper functions (can be in either file or separate utils file)
-func convertTenantToGraphQL(tenant *dto.TenantResources, parentOrg *dto.TenantResources) *models.Tenant {
+func convertTenantToGraphQL(tenant *dto.TenantResource, parentOrg *dto.TenantResource) *models.Tenant {
 	if tenant == nil {
 		return nil
 	}

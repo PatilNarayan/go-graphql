@@ -1,28 +1,89 @@
-type ClientOrganizationUnit implements Resource & Organization {
-  id: UUID!
-  name: String!
+"""
+Represents a Client Organization Unit entity
+"""
+type ClientOrganizationUnit implements Organization & Resource {
+  """
+  Timestamp of creation
+  """
+  createdAt: DateTime!
+  """
+  Identifier of the user who created the record
+  """
+  createdBy: UUID!
+  """
+  Description of the client organization unit
+  """
   description: String
-  tenant: Tenant!
+  """
+  Unique identifier of the client organization unit
+  """
+  id: UUID!
+  """
+  Name of the client organization unit
+  """
+  name: String!
+  """
+  Parent organization
+  """
   parentOrg: Organization!
-  createdAt: DateTime! # Timestamp of creation
-  updatedAt: DateTime! # Timestamp of last update
-  createdBy: UUID! # Identifier of the user who created the record
-  updatedBy: UUID! # Identifier of the user who last updated the record
+  """
+  Tenant associated with the client organization unit
+  """
+  tenant: Tenant!
+  """
+  Timestamp of last update
+  """
+  updatedAt: DateTime!
+  """
+  Identifier of the user who last updated the record
+  """
+  updatedBy: UUID!
 }
 
-
+"""
+Defines input fields for creating a client organization unit
+"""
 input CreateClientOrganizationUnitInput {
-  name: String!
+  """
+  Description of the client organization unit
+  """
   description: String
-  tenantId: String!
-  parentOrgId: String!
+  """
+  Name of the client organization unit
+  """
+  name: String!
+  """
+  Parent organization ID
+  """
+  parentOrgId: UUID!
+  """
+  Tenant ID
+  """
+  tenantId: UUID!
 }
 
-
+"""
+Defines input fields for updating a client organization unit
+"""
 input UpdateClientOrganizationUnitInput {
-  id: UUID!
-  name: String
+  """
+  Updated description of the client organization unit
+  """
   description: String
-  tenantId: String
-  parentOrgId: String
+  """
+  Unique identifier of the client organization unit
+  """
+  id: UUID!
+  """
+  Updated name of the client organization unit
+  """
+  name: String
+  """
+  Updated parent organization ID
+  """
+  parentOrgId: UUID
+  """
+  Updated tenant ID
+  """
+  tenantId: UUID
 }
