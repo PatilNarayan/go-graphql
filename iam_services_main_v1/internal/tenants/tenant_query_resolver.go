@@ -6,14 +6,15 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/uuid"
-	"go.uber.org/thriftrw/ptr"
-	"gorm.io/gorm"
-
+	"iam_services_main_v1/gormlogger"
 	"iam_services_main_v1/gql/models"
 	"iam_services_main_v1/internal/dto"
 	"iam_services_main_v1/internal/permit"
 	"iam_services_main_v1/internal/utils"
+
+	"github.com/google/uuid"
+	"go.uber.org/thriftrw/ptr"
+	"gorm.io/gorm"
 )
 
 var (
@@ -25,136 +26,180 @@ var (
 
 // TenantQueryResolver handles tenant-related GraphQL queries
 type TenantQueryResolver struct {
-	DB *gorm.DB
-	PC *permit.PermitClient
+	DB     *gorm.DB
+	PC     *permit.PermitClient
+	Logger *gormlogger.GORMLogger
 }
 
 // getTenantResourceType retrieves the resource type for tenants
 func (r *TenantQueryResolver) getTenantResourceType() (*dto.Mst_ResourceTypes, error) {
 	var resourceType dto.Mst_ResourceTypes
-	if err := r.DB.Where("name = ?", "Tenant").First(&resourceType).Error; err != nil {
+	// startTime := time.Now()
+	err := r.DB.Where("name = ?", "Tenant").First(&resourceType).Error
+	if err != nil {
+		// r.Logger.Trace(context.Background(), startTime, func() (string, int64) {
+		// 	return "SELECT * FROM mst_resource_types WHERE name = 'Tenant'", 0
+		// }, err)
 		return nil, fmt.Errorf("%w: %v", ErrResourceTypeNotFound, err)
 	}
+
+	// r.Logger.Trace(context.Background(), startTime, func() (string, int64) {
+	// 	return "SELECT * FROM mst_resource_types WHERE name = 'Tenant'", 1
+	// }, nil)
 	return &resourceType, nil
 }
 
-// AllTenants retrieves all tenants with their associated metadata
 func (r *TenantQueryResolver) Tenants(ctx context.Context) (models.OperationResult, error) {
-	// Get all tenants from permit
-	allTenants, err := r.PC.SendRequest(ctx, "GET", "tenants", nil)
-	if err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to retrieve tenants from permit system",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
+	var tenants []models.Data
+	page := 1
+	pageCount := 1
+	// r.Logger.Info(ctx, "Fetching tenants with pagination")
+
+	for page <= pageCount {
+		response, err := r.PC.SendRequest(ctx, "GET", fmt.Sprintf("tenants?page=%d", page), nil)
+		if err != nil {
+			// r.Logger.Error(ctx, "Failed to retrieve tenants from permit system", err)
+			return utils.FormatError(&dto.CustomError{
+				ErrorMessage: "Failed to retrieve tenants from permit system",
+				ErrorCode:    "500",
+				ErrorDetails: err.Error(),
+			}), nil
 		}
-		return utils.FormatError(&errMsg), nil
+
+		pageData, ok := response["data"].([]interface{})
+		if !ok {
+			// r.Logger.Warn(ctx, "Invalid tenant data format received")
+			return utils.FormatError(&dto.CustomError{
+				ErrorMessage: "Invalid tenant data format",
+				ErrorCode:    "400",
+				ErrorDetails: "Failed to parse tenant data",
+			}), nil
+		}
+
+		for _, rawTenant := range pageData {
+			tenantMap, ok := rawTenant.(map[string]interface{})
+			if !ok {
+				// r.Logger.Warn(ctx, "Skipping invalid tenant format")
+				continue
+			}
+
+			tenant, err := r.extractTenantAttributes(tenantMap)
+			if err != nil {
+				r.Logger.Error(ctx, "Failed to extract tenant attributes", err)
+				continue
+			}
+			tenants = append(tenants, tenant)
+		}
+
+		if count, ok := response["page_count"].(float64); ok {
+			pageCount = int(count)
+		}
+		page++
 	}
 
-	fmt.Println(r.extractTenants(allTenants.([]interface{})))
-	response, err := r.extractTenants(allTenants.([]interface{}))
-	if err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to process tenant data",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
-	}
-
-	return response, nil
+	return utils.FormatSuccess(tenants)
 }
 
-// GetTenant retrieves a single tenant by ID with its metadata
+// Tenant retrieves a single tenant by ID with its metadata
 func (r *TenantQueryResolver) Tenant(ctx context.Context, id uuid.UUID) (models.OperationResult, error) {
 	if id == uuid.Nil {
-		errMsg := dto.CustomError{
+		// r.Logger.Warn(ctx, "Tenant ID is required")
+		return utils.FormatError(&dto.CustomError{
 			ErrorMessage: "Tenant ID is required",
 			ErrorCode:    "400",
 			ErrorDetails: ErrTenantIDRequired.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		}), nil
 	}
 
-	// Get tenant from permit
 	tenant, err := r.PC.SendRequest(ctx, "GET", fmt.Sprintf("tenants/%s", id), nil)
 	if err != nil {
-		errMsg := dto.CustomError{
+		// r.Logger.Error(ctx, "Failed to retrieve tenant from permit system", err)
+		return utils.FormatError(&dto.CustomError{
 			ErrorMessage: "Failed to retrieve tenant from permit system",
 			ErrorCode:    "500",
 			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		}), nil
 	}
 
-	data, err := r.extractTenantAttributes(tenant.(map[string]interface{}))
+	data, err := r.extractTenantAttributes(tenant)
 	if err != nil {
-		errMsg := dto.CustomError{
+		r.Logger.Error(ctx, "Failed to process tenant attributes", err)
+		return utils.FormatError(&dto.CustomError{
 			ErrorMessage: "Failed to process tenant attributes",
 			ErrorCode:    "500",
 			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		}), nil
 	}
 
-	// Return success response with tenant
+	// r.Logger.Info(ctx, "Successfully retrieved tenant data", data)
 	return utils.FormatSuccess(data)
 }
 
-// processTenantResources processes a slice of tenant resources and returns GraphQL tenant models
-func (r *TenantQueryResolver) processTenantResources(resources []dto.TenantResource) ([]*models.Tenant, error) {
-	tenants := make([]*models.Tenant, 0, len(resources))
-
-	for _, tr := range resources {
-		var parentOrg *dto.TenantResource
-		if tr.ParentResourceID != nil {
-			if err := r.DB.Where(&dto.TenantResource{
-				ResourceID: *tr.ParentResourceID,
-			}).First(&parentOrg).Error; err != nil {
-				return nil, fmt.Errorf("%w: %v", ErrParentOrgNotFound, err)
-			}
-		}
-
-		tenant := convertTenantToGraphQL(&tr, parentOrg)
-		if err := r.enrichTenantWithMetadata(tenant); err != nil {
-			// Log error but continue processing other tenants
-			continue
-		}
-		tenants = append(tenants, tenant)
-	}
-
-	return nil, nil
-}
-
+// enrichTenantWithMetadata fetches additional metadata for a tenant
 func (r *TenantQueryResolver) enrichTenantWithMetadata(tenant *models.Tenant) error {
 	if tenant == nil {
 		return nil
 	}
 
+	// startTime := time.Now()
 	var metadata dto.TenantMetadata
-	if err := r.DB.Where("resource_id = ?", tenant.ID).First(&metadata).Error; err != nil {
+	err := r.DB.Where("resource_id = ?", tenant.ID).First(&metadata).Error
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil // Not finding metadata is not an error
+			return nil
 		}
+		// r.Logger.Trace(context.Background(), startTime, func() (string, int64) {
+		// 	return "SELECT * FROM tenant_metadata WHERE resource_id = ?", 0
+		// }, err)
 		return fmt.Errorf("failed to fetch tenant metadata: %w", err)
 	}
 
+	// r.Logger.Trace(context.Background(), startTime, func() (string, int64) {
+	// 	return "SELECT * FROM tenant_metadata WHERE resource_id = ?", 1
+	// }, nil)
+
 	var meta map[string]interface{}
 	if err := json.Unmarshal(metadata.Metadata, &meta); err != nil {
+		// r.Logger.Error(context.Background(), "Failed to unmarshal metadata", err)
 		return fmt.Errorf("failed to unmarshal metadata: %w", err)
 	}
 
-	// Update description
 	if description, ok := meta["description"].(string); ok {
 		tenant.Description = ptr.String(description)
 	}
 
-	// Update contact info
-	if contactData, ok := meta["contactInfo"].(map[string]interface{}); ok {
-		tenant.ContactInfo = buildContactInfo(contactData)
+	return nil
+}
+
+// extractTenants processes raw tenant data
+func (r *TenantQueryResolver) extractTenants(rawTenants map[string]interface{}) (models.OperationResult, error) {
+	var tenants []models.Data
+
+	for _, rawTenant := range rawTenants["data"].([]interface{}) {
+		tenantMap, ok := rawTenant.(map[string]interface{})
+		if !ok {
+			// r.Logger.Warn(context.Background(), "Invalid tenant format received")
+			return utils.FormatError(&dto.CustomError{
+				ErrorMessage: "Failed to parse tenant data",
+				ErrorCode:    "400",
+				ErrorDetails: "Invalid tenant format received",
+			}), nil
+		}
+
+		tenant, err := r.extractTenantAttributes(tenantMap)
+		if err != nil {
+			// r.Logger.Error(context.Background(), "Failed to extract tenant attributes", err)
+			return utils.FormatError(&dto.CustomError{
+				ErrorMessage: "Failed to extract tenant attributes",
+				ErrorCode:    "500",
+				ErrorDetails: err.Error(),
+			}), nil
+		}
+
+		tenants = append(tenants, tenant)
 	}
 
-	return nil
+	return utils.FormatSuccess(tenants)
 }
 
 func (r *TenantQueryResolver) extractTenantAttributes(data map[string]interface{}) (*models.Tenant, error) {
@@ -224,37 +269,6 @@ func (r *TenantQueryResolver) extractTenantAttributes(data map[string]interface{
 	return tenant, nil
 }
 
-func (r *TenantQueryResolver) extractTenants(rawTenants []interface{}) (models.OperationResult, error) {
-	var tenants []models.Data
-
-	for _, rawTenant := range rawTenants {
-		tenantMap, ok := rawTenant.(map[string]interface{})
-		if !ok {
-			errMsg := dto.CustomError{
-				ErrorMessage: "Failed to parse tenant data",
-				ErrorCode:    "400", // Changed from PARSING_ERROR to 400 for consistency
-				ErrorDetails: "Invalid tenant format received",
-			}
-			return utils.FormatError(&errMsg), nil
-		}
-
-		tenant, err := r.extractTenantAttributes(tenantMap)
-		if err != nil {
-			errMsg := dto.CustomError{
-				ErrorMessage: "Failed to extract tenant attributes",
-				ErrorCode:    "500",
-				ErrorDetails: err.Error(),
-			}
-			return utils.FormatError(&errMsg), nil
-		}
-		// Add to tenants slice
-		tenants = append(tenants, tenant)
-	}
-
-	// Return success response with tenants
-	return utils.FormatSuccess(tenants)
-}
-
 func (r *TenantQueryResolver) ETenant(ctx context.Context, id uuid.UUID) (*models.Tenant, error) {
 	// Get tenant from permit
 	tenant, err := r.PC.SendRequest(ctx, "GET", fmt.Sprintf("tenants/%s", id), nil)
@@ -262,7 +276,7 @@ func (r *TenantQueryResolver) ETenant(ctx context.Context, id uuid.UUID) (*model
 		return nil, fmt.Errorf("failed to retrieve tenant from permit: %w", err)
 	}
 
-	data, err := r.extractTenantAttributes(tenant.(map[string]interface{}))
+	data, err := r.extractTenantAttributes(tenant)
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract tenant attributes: %w", err)
 	}

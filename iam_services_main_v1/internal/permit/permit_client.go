@@ -38,8 +38,8 @@ func NewPermitClient() *PermitClient {
 }
 
 // SendRequest sends an HTTP request without retry logic.
-func (pc *PermitClient) SendRequest(ctx context.Context, method, endpoint string, payload interface{}) (interface{}, error) {
-	var result interface{}
+func (pc *PermitClient) SendRequest(ctx context.Context, method, endpoint string, payload interface{}) (map[string]interface{}, error) {
+	var result map[string]interface{}
 
 	// Serialize payload to JSON
 	var body io.Reader

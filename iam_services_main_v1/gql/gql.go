@@ -1,6 +1,7 @@
 package gql
 
 import (
+	"iam_services_main_v1/gormlogger"
 	"iam_services_main_v1/gql/generated"
 	"iam_services_main_v1/internal/accounts"
 	"iam_services_main_v1/internal/permit"
@@ -11,14 +12,15 @@ import (
 
 // Resolver holds references to the DB and acts as a central resolver
 type Resolver struct {
-	DB *gorm.DB
-	PC *permit.PermitClient
+	DB     *gorm.DB
+	PC     *permit.PermitClient
+	Logger *gormlogger.GORMLogger
 }
 
 // Query returns the root query resolvers, delegating to feature-based resolvers
 func (r *Resolver) Query() generated.QueryResolver {
 	return &queryResolver{
-		TenantQueryResolver: &tenants.TenantQueryResolver{DB: r.DB, PC: r.PC},
+		TenantQueryResolver: &tenants.TenantQueryResolver{DB: r.DB, PC: r.PC, Logger: r.Logger},
 		// AccountQueryResolver:                &accounts.AccountQueryResolver{DB: r.DB, PC: r.PC},
 		// ClientOrganizationUnitQueryResolver: &clientorganizationunits.ClientOrganizationUnitQueryResolver{DB: r.DB},
 		// RoleQueryResolver:                   &role.RoleQueryResolver{DB: r.DB},

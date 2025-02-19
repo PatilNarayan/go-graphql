@@ -15,7 +15,7 @@ import (
 
 func main() {
 	// Initialize logger
-	logger.InitLogger()
+
 	// Initialize Gin router
 	r := gin.Default()
 
@@ -29,6 +29,8 @@ func main() {
 
 	//Initialize permit
 	pc := permit.NewPermitClient()
+
+	// logger := gormlogger.NewGORMLogger()
 
 	// Initialize resolver and GraphQL server
 	resolver := &gql.Resolver{DB: db, PC: pc}

@@ -2,8 +2,7 @@ package config
 
 import (
 	"fmt"
-	"iam_services_main_v1/gormlogger" // Import your custom logger
-
+	// Import your custom logger
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -13,10 +12,10 @@ var DB *gorm.DB
 func InitDB() *gorm.DB {
 	dsn := GetDSN()
 	// Initialize the custom GORM logger
-	customLogger := gormlogger.NewGORMLogger()
+	// customLogger := gormlogger.NewGORMLogger()
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger: customLogger,
+		// Logger: customLogger,
 	})
 	if err != nil {
 		panic("failed to connect database")
