@@ -1,7 +1,6 @@
 package config
 
 import (
-	"iam_services_main_v1/pkg/logger"
 	"log"
 	"os"
 
@@ -10,9 +9,9 @@ import (
 
 // Initialize environment variables from .env file
 func LoadEnv() error {
-	err := godotenv.Load()
+	err := godotenv.Load("C:/Users/patil/OneDrive/Desktop/graphql/go-graphql/iam_services_main_v1/config/.env")
 	if err != nil {
-		logger.LogFatal("Error loading .env file")
+		// log.Fatal("Error loading .env file")
 		return err
 	}
 	return nil

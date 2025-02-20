@@ -136,8 +136,11 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		CreateRole   func(childComplexity int, input models.CreateRoleInput) int
 		CreateTenant func(childComplexity int, input models.CreateTenantInput) int
+		DeleteRole   func(childComplexity int, input models.DeleteInput) int
 		DeleteTenant func(childComplexity int, input models.DeleteInput) int
+		UpdateRole   func(childComplexity int, input models.UpdateRoleInput) int
 		UpdateTenant func(childComplexity int, input models.UpdateTenantInput) int
 	}
 
@@ -153,6 +156,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		Role    func(childComplexity int, id uuid.UUID) int
+		Roles   func(childComplexity int) int
 		Tenant  func(childComplexity int, id uuid.UUID) int
 		Tenants func(childComplexity int) int
 	}
@@ -218,11 +223,16 @@ type AccountResolver interface {
 	BillingInfo(ctx context.Context, obj *models.Account) (*models.BillingInfo, error)
 }
 type MutationResolver interface {
+	CreateRole(ctx context.Context, input models.CreateRoleInput) (models.OperationResult, error)
 	CreateTenant(ctx context.Context, input models.CreateTenantInput) (models.OperationResult, error)
+	DeleteRole(ctx context.Context, input models.DeleteInput) (models.OperationResult, error)
 	DeleteTenant(ctx context.Context, input models.DeleteInput) (models.OperationResult, error)
+	UpdateRole(ctx context.Context, input models.UpdateRoleInput) (models.OperationResult, error)
 	UpdateTenant(ctx context.Context, input models.UpdateTenantInput) (models.OperationResult, error)
 }
 type QueryResolver interface {
+	Role(ctx context.Context, id uuid.UUID) (models.OperationResult, error)
+	Roles(ctx context.Context) (models.OperationResult, error)
 	Tenant(ctx context.Context, id uuid.UUID) (models.OperationResult, error)
 	Tenants(ctx context.Context) (models.OperationResult, error)
 }
@@ -666,6 +676,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Group.UpdatedBy(childComplexity), true
 
+	case "Mutation.createRole":
+		if e.complexity.Mutation.CreateRole == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createRole_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateRole(childComplexity, args["input"].(models.CreateRoleInput)), true
+
 	case "Mutation.createTenant":
 		if e.complexity.Mutation.CreateTenant == nil {
 			break
@@ -678,6 +700,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateTenant(childComplexity, args["input"].(models.CreateTenantInput)), true
 
+	case "Mutation.deleteRole":
+		if e.complexity.Mutation.DeleteRole == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteRole_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteRole(childComplexity, args["input"].(models.DeleteInput)), true
+
 	case "Mutation.deleteTenant":
 		if e.complexity.Mutation.DeleteTenant == nil {
 			break
@@ -689,6 +723,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteTenant(childComplexity, args["input"].(models.DeleteInput)), true
+
+	case "Mutation.updateRole":
+		if e.complexity.Mutation.UpdateRole == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateRole_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateRole(childComplexity, args["input"].(models.UpdateRoleInput)), true
 
 	case "Mutation.updateTenant":
 		if e.complexity.Mutation.UpdateTenant == nil {
@@ -757,6 +803,25 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Permission.UpdatedBy(childComplexity), true
+
+	case "Query.role":
+		if e.complexity.Query.Role == nil {
+			break
+		}
+
+		args, err := ec.field_Query_role_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Role(childComplexity, args["id"].(uuid.UUID)), true
+
+	case "Query.roles":
+		if e.complexity.Query.Roles == nil {
+			break
+		}
+
+		return e.complexity.Query.Roles(childComplexity), true
 
 	case "Query.tenant":
 		if e.complexity.Query.Tenant == nil {
@@ -1441,21 +1506,6 @@ type Query {
   # organizations: OperationResult
 
   # """
-  # Fetch a specific permission by its ID.
-  # """
-  # permission(
-  #   """
-  #   Unique identifier of the permission
-  #   """
-  #   id: UUID!
-  # ): OperationResult
-
-  # """
-  # Fetch all permissions.
-  # """
-  # permissions: OperationResult
-
-  # """
   # Fetch a specific resource by its ID.
   # """
   # resource(
@@ -1470,20 +1520,20 @@ type Query {
   # """
   # resources: OperationResult
 
-  # """
-  # Fetch a specific role by its ID.
-  # """
-  # role(
-  #   """
-  #   Unique identifier of the role
-  #   """
-  #   id: UUID!
-  # ): OperationResult
+  """
+  Fetch a specific role by its ID.
+  """
+  role(
+    """
+    Unique identifier of the role
+    """
+    id: UUID!
+  ): OperationResult
 
-  # """
-  # Fetch all roles.
-  # """
-  # roles: OperationResult
+  """
+  Fetch all roles.
+  """
+  roles: OperationResult
 
   # """
   # Fetch a specific root by its ID.
@@ -1555,15 +1605,15 @@ type Mutation {
   #   input: CreatePermissionInput!
   # ): OperationResult!
 
-  # """
-  # Create a new role.
-  # """
-  # createRole(
-  #   """
-  #   Input data for creating a role
-  #   """
-  #   input: CreateRoleInput!
-  # ): OperationResult!
+  """
+  Create a new role.
+  """
+  createRole(
+    """
+    Input data for creating a role
+    """
+    input: CreateRoleInput!
+  ): OperationResult!
 
   # """
   # Create a new root.
@@ -1625,15 +1675,15 @@ type Mutation {
   #   input: DeleteInput!
   # ): OperationResult!
 
-  # """
-  # Delete an existing role.
-  # """
-  # deleteRole(
-  #   """
-  #   Input data for deleting a role
-  #   """
-  #   input: DeleteInput!
-  # ): OperationResult!
+  """
+  Delete an existing role.
+  """
+  deleteRole(
+    """
+    Input data for deleting a role
+    """
+    input: DeleteInput!
+  ): OperationResult!
 
   # """
   # Delete an existing root.
@@ -1695,15 +1745,15 @@ type Mutation {
   #   input: UpdatePermissionInput!
   # ): OperationResult!
 
-  # """
-  # Update an existing role.
-  # """
-  # updateRole(
-  #   """
-  #   Input data for updating a role
-  #   """
-  #   input: UpdateRoleInput!
-  # ): OperationResult!
+  """
+  Update an existing role.
+  """
+  updateRole(
+    """
+    Input data for updating a role
+    """
+    input: UpdateRoleInput!
+  ): OperationResult!
 
   # """
   # Update an existing root.
@@ -2724,6 +2774,34 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
+func (ec *executionContext) field_Mutation_createRole_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_createRole_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_createRole_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (models.CreateRoleInput, error) {
+	if _, ok := rawArgs["input"]; !ok {
+		var zeroVal models.CreateRoleInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNCreateRoleInput2iam_services_main_v1ᚋgqlᚋmodelsᚐCreateRoleInput(ctx, tmp)
+	}
+
+	var zeroVal models.CreateRoleInput
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Mutation_createTenant_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -2752,6 +2830,34 @@ func (ec *executionContext) field_Mutation_createTenant_argsInput(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_Mutation_deleteRole_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_deleteRole_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_deleteRole_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (models.DeleteInput, error) {
+	if _, ok := rawArgs["input"]; !ok {
+		var zeroVal models.DeleteInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNDeleteInput2iam_services_main_v1ᚋgqlᚋmodelsᚐDeleteInput(ctx, tmp)
+	}
+
+	var zeroVal models.DeleteInput
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Mutation_deleteTenant_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -2777,6 +2883,34 @@ func (ec *executionContext) field_Mutation_deleteTenant_argsInput(
 	}
 
 	var zeroVal models.DeleteInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateRole_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_updateRole_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_updateRole_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (models.UpdateRoleInput, error) {
+	if _, ok := rawArgs["input"]; !ok {
+		var zeroVal models.UpdateRoleInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNUpdateRoleInput2iam_services_main_v1ᚋgqlᚋmodelsᚐUpdateRoleInput(ctx, tmp)
+	}
+
+	var zeroVal models.UpdateRoleInput
 	return zeroVal, nil
 }
 
@@ -2833,6 +2967,34 @@ func (ec *executionContext) field_Query___type_argsName(
 	}
 
 	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_role_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Query_role_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Query_role_argsID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (uuid.UUID, error) {
+	if _, ok := rawArgs["id"]; !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
 	return zeroVal, nil
 }
 
@@ -5648,6 +5810,61 @@ func (ec *executionContext) fieldContext_Group_updatedBy(_ context.Context, fiel
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createRole(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createRole(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateRole(rctx, fc.Args["input"].(models.CreateRoleInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.OperationResult)
+	fc.Result = res
+	return ec.marshalNOperationResult2iam_services_main_v1ᚋgqlᚋmodelsᚐOperationResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createRole(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type OperationResult does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createRole_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createTenant(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createTenant(ctx, field)
 	if err != nil {
@@ -5703,6 +5920,61 @@ func (ec *executionContext) fieldContext_Mutation_createTenant(ctx context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_deleteRole(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteRole(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteRole(rctx, fc.Args["input"].(models.DeleteInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.OperationResult)
+	fc.Result = res
+	return ec.marshalNOperationResult2iam_services_main_v1ᚋgqlᚋmodelsᚐOperationResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteRole(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type OperationResult does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteRole_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_deleteTenant(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_deleteTenant(ctx, field)
 	if err != nil {
@@ -5752,6 +6024,61 @@ func (ec *executionContext) fieldContext_Mutation_deleteTenant(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteTenant_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateRole(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateRole(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateRole(rctx, fc.Args["input"].(models.UpdateRoleInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.OperationResult)
+	fc.Result = res
+	return ec.marshalNOperationResult2iam_services_main_v1ᚋgqlᚋmodelsᚐOperationResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateRole(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type OperationResult does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateRole_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -6154,6 +6481,99 @@ func (ec *executionContext) fieldContext_Permission_updatedBy(_ context.Context,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_role(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_role(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Role(rctx, fc.Args["id"].(uuid.UUID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(models.OperationResult)
+	fc.Result = res
+	return ec.marshalOOperationResult2iam_services_main_v1ᚋgqlᚋmodelsᚐOperationResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_role(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type OperationResult does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_role_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_roles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_roles(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Roles(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(models.OperationResult)
+	fc.Result = res
+	return ec.marshalOOperationResult2iam_services_main_v1ᚋgqlᚋmodelsᚐOperationResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_roles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type OperationResult does not have child fields")
 		},
 	}
 	return fc, nil
@@ -11930,6 +12350,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
+		case "createRole":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createRole(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createTenant":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createTenant(ctx, field)
@@ -11937,9 +12364,23 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "deleteRole":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteRole(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "deleteTenant":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteTenant(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateRole":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateRole(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -12061,6 +12502,44 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "role":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_role(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "roles":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_roles(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "tenant":
 			field := field
 
@@ -12837,6 +13316,11 @@ func (ec *executionContext) unmarshalNCreateBillingAddressInput2ᚖiam_services_
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreateRoleInput2iam_services_main_v1ᚋgqlᚋmodelsᚐCreateRoleInput(ctx context.Context, v any) (models.CreateRoleInput, error) {
+	res, err := ec.unmarshalInputCreateRoleInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateTenantInput2iam_services_main_v1ᚋgqlᚋmodelsᚐCreateTenantInput(ctx context.Context, v any) (models.CreateTenantInput, error) {
 	res, err := ec.unmarshalInputCreateTenantInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -13046,6 +13530,11 @@ func (ec *executionContext) marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNUpdateRoleInput2iam_services_main_v1ᚋgqlᚋmodelsᚐUpdateRoleInput(ctx context.Context, v any) (models.UpdateRoleInput, error) {
+	res, err := ec.unmarshalInputUpdateRoleInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNUpdateTenantInput2iam_services_main_v1ᚋgqlᚋmodelsᚐUpdateTenantInput(ctx context.Context, v any) (models.UpdateTenantInput, error) {

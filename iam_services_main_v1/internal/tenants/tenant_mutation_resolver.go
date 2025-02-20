@@ -147,7 +147,9 @@ func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 		return utils.FormatError(&errMsg), nil
 	}
 
-	return utils.FormatSuccess(res)
+	var data []models.Data
+	data = append(data, res)
+	return utils.FormatSuccess(data)
 }
 
 // UpdateTenant resolver for updating a Tenant
@@ -247,8 +249,11 @@ func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 		return utils.FormatError(&errMsg), nil
 	}
 
+	var data []models.Data
+	data = append(data, res)
+
 	// Return success response with tenants
-	return utils.FormatSuccess(res)
+	return utils.FormatSuccess(data)
 }
 
 // DeleteTenant resolver for deleting a Tenant

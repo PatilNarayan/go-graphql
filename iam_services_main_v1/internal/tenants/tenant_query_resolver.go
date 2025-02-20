@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 
-	"iam_services_main_v1/gormlogger"
 	"iam_services_main_v1/gql/models"
 	"iam_services_main_v1/internal/dto"
 	"iam_services_main_v1/internal/permit"
@@ -26,9 +25,9 @@ var (
 
 // TenantQueryResolver handles tenant-related GraphQL queries
 type TenantQueryResolver struct {
-	DB     *gorm.DB
-	PC     *permit.PermitClient
-	Logger *gormlogger.GORMLogger
+	DB *gorm.DB
+	PC *permit.PermitClient
+	// Logger *gormlogger.GORMLogger\
 }
 
 // getTenantResourceType retrieves the resource type for tenants
@@ -52,11 +51,11 @@ func (r *TenantQueryResolver) getTenantResourceType() (*dto.Mst_ResourceTypes, e
 func (r *TenantQueryResolver) Tenants(ctx context.Context) (models.OperationResult, error) {
 	var tenants []models.Data
 	page := 1
-	pageCount := 1
+	per_page := 100
 	// r.Logger.Info(ctx, "Fetching tenants with pagination")
 
-	for page <= pageCount {
-		response, err := r.PC.SendRequest(ctx, "GET", fmt.Sprintf("tenants?page=%d", page), nil)
+	for page <= per_page {
+		response, err := r.PC.SendRequest(ctx, "GET", fmt.Sprintf("tenants?page=%d&per_page=%d&include_total_count=true", page, per_page), nil)
 		if err != nil {
 			// r.Logger.Error(ctx, "Failed to retrieve tenants from permit system", err)
 			return utils.FormatError(&dto.CustomError{
@@ -85,14 +84,14 @@ func (r *TenantQueryResolver) Tenants(ctx context.Context) (models.OperationResu
 
 			tenant, err := r.extractTenantAttributes(tenantMap)
 			if err != nil {
-				r.Logger.Error(ctx, "Failed to extract tenant attributes", err)
+				// r.Logger.Error(ctx, "Failed to extract tenant attributes", err)
 				continue
 			}
 			tenants = append(tenants, tenant)
 		}
 
 		if count, ok := response["page_count"].(float64); ok {
-			pageCount = int(count)
+			per_page = int(count)
 		}
 		page++
 	}
@@ -123,7 +122,7 @@ func (r *TenantQueryResolver) Tenant(ctx context.Context, id uuid.UUID) (models.
 
 	data, err := r.extractTenantAttributes(tenant)
 	if err != nil {
-		r.Logger.Error(ctx, "Failed to process tenant attributes", err)
+		// r.Logger.Error(ctx, "Failed to process tenant attributes", err)
 		return utils.FormatError(&dto.CustomError{
 			ErrorMessage: "Failed to process tenant attributes",
 			ErrorCode:    "500",

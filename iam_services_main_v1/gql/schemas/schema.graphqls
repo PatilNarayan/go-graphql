@@ -249,21 +249,6 @@ type Query {
   # organizations: OperationResult
 
   # """
-  # Fetch a specific permission by its ID.
-  # """
-  # permission(
-  #   """
-  #   Unique identifier of the permission
-  #   """
-  #   id: UUID!
-  # ): OperationResult
-
-  # """
-  # Fetch all permissions.
-  # """
-  # permissions: OperationResult
-
-  # """
   # Fetch a specific resource by its ID.
   # """
   # resource(
@@ -278,20 +263,20 @@ type Query {
   # """
   # resources: OperationResult
 
-  # """
-  # Fetch a specific role by its ID.
-  # """
-  # role(
-  #   """
-  #   Unique identifier of the role
-  #   """
-  #   id: UUID!
-  # ): OperationResult
+  """
+  Fetch a specific role by its ID.
+  """
+  role(
+    """
+    Unique identifier of the role
+    """
+    id: UUID!
+  ): OperationResult
 
-  # """
-  # Fetch all roles.
-  # """
-  # roles: OperationResult
+  """
+  Fetch all roles.
+  """
+  roles: OperationResult
 
   # """
   # Fetch a specific root by its ID.
@@ -363,15 +348,15 @@ type Mutation {
   #   input: CreatePermissionInput!
   # ): OperationResult!
 
-  # """
-  # Create a new role.
-  # """
-  # createRole(
-  #   """
-  #   Input data for creating a role
-  #   """
-  #   input: CreateRoleInput!
-  # ): OperationResult!
+  """
+  Create a new role.
+  """
+  createRole(
+    """
+    Input data for creating a role
+    """
+    input: CreateRoleInput!
+  ): OperationResult!
 
   # """
   # Create a new root.
@@ -433,15 +418,15 @@ type Mutation {
   #   input: DeleteInput!
   # ): OperationResult!
 
-  # """
-  # Delete an existing role.
-  # """
-  # deleteRole(
-  #   """
-  #   Input data for deleting a role
-  #   """
-  #   input: DeleteInput!
-  # ): OperationResult!
+  """
+  Delete an existing role.
+  """
+  deleteRole(
+    """
+    Input data for deleting a role
+    """
+    input: DeleteInput!
+  ): OperationResult!
 
   # """
   # Delete an existing root.
@@ -503,15 +488,15 @@ type Mutation {
   #   input: UpdatePermissionInput!
   # ): OperationResult!
 
-  # """
-  # Update an existing role.
-  # """
-  # updateRole(
-  #   """
-  #   Input data for updating a role
-  #   """
-  #   input: UpdateRoleInput!
-  # ): OperationResult!
+  """
+  Update an existing role.
+  """
+  updateRole(
+    """
+    Input data for updating a role
+    """
+    input: UpdateRoleInput!
+  ): OperationResult!
 
   # """
   # Update an existing root.

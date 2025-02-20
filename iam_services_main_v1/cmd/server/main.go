@@ -2,11 +2,12 @@ package main
 
 import (
 	config "iam_services_main_v1/config"
+	"iam_services_main_v1/gormlogger"
 	"iam_services_main_v1/gql"
 	"iam_services_main_v1/gql/generated"
 	"iam_services_main_v1/internal/middlewares"
 	"iam_services_main_v1/internal/permit"
-	"iam_services_main_v1/pkg/logger"
+	"log"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -21,7 +22,7 @@ func main() {
 
 	// Load environment variables
 	if err := config.LoadEnv(); err != nil {
-		logger.LogFatal("Failed to load environment variables")
+		log.Fatal(err)
 	}
 
 	// Initialize database connection
@@ -30,7 +31,9 @@ func main() {
 	//Initialize permit
 	pc := permit.NewPermitClient()
 
-	// logger := gormlogger.NewGORMLogger()
+	logger := gormlogger.NewGORMLogger()
+
+	logger.Logger.Info("Starting server...")
 
 	// Initialize resolver and GraphQL server
 	resolver := &gql.Resolver{DB: db, PC: pc}
@@ -47,7 +50,7 @@ func main() {
 
 	r.Use(middlewares.AuthMiddleware())
 	r.Use(middlewares.GinContextToContextMiddleware())
-	r.Use(middlewares.RequestLogger())
+	// r.Use(middlewares.RequestLogger())
 
 	r.POST("/graphql", func(ctx *gin.Context) {
 		ctx.Writer.Header().Set("Content-Type", "application/json")

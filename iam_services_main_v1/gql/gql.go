@@ -5,6 +5,7 @@ import (
 	"iam_services_main_v1/gql/generated"
 	"iam_services_main_v1/internal/accounts"
 	"iam_services_main_v1/internal/permit"
+	"iam_services_main_v1/internal/roles"
 	"iam_services_main_v1/internal/tenants"
 
 	"gorm.io/gorm"
@@ -20,10 +21,10 @@ type Resolver struct {
 // Query returns the root query resolvers, delegating to feature-based resolvers
 func (r *Resolver) Query() generated.QueryResolver {
 	return &queryResolver{
-		TenantQueryResolver: &tenants.TenantQueryResolver{DB: r.DB, PC: r.PC, Logger: r.Logger},
+		TenantQueryResolver: &tenants.TenantQueryResolver{DB: r.DB, PC: r.PC},
 		// AccountQueryResolver:                &accounts.AccountQueryResolver{DB: r.DB, PC: r.PC},
 		// ClientOrganizationUnitQueryResolver: &clientorganizationunits.ClientOrganizationUnitQueryResolver{DB: r.DB},
-		// RoleQueryResolver:                   &role.RoleQueryResolver{DB: r.DB},
+		RoleQueryResolver: &roles.RoleQueryResolver{DB: r.DB},
 		// PermissionQueryResolver:             &permissions.PermissionQueryResolver{DB: r.DB},
 		// BindingsQueryResolver:               &bindings.BindingsQueryResolver{DB: r.DB},
 		// ResourceQueryResolver:               &resources.ResourceQueryResolver{DB: r.DB},
@@ -40,7 +41,7 @@ func (r *Resolver) Mutation() generated.MutationResolver {
 		TenantMutationResolver: &tenants.TenantMutationResolver{DB: r.DB, PermitClient: r.PC},
 		// AccountMutationResolver:                &accounts.AccountMutationResolver{DB: r.DB, PC: r.PC},
 		// ClientOrganizationUnitMutationResolver: &clientorganizationunits.ClientOrganizationUnitMutationResolver{r.DB},
-		// RoleMutationResolver:                   &role.RoleMutationResolver{DB: r.DB},
+		RoleMutationResolver: &roles.RoleMutationResolver{DB: r.DB},
 		// PermissionMutationResolver:             &permissions.PermissionMutationResolver{DB: r.DB},
 		// BindingsMutationResolver:               &bindings.BindingsMutationResolver{DB: r.DB},
 		// RootMutationResolver:                   &root.RootMutationResolver{DB: r.DB},
@@ -58,7 +59,7 @@ type AccountResolver struct{ *Resolver }
 type queryResolver struct {
 	*tenants.TenantQueryResolver
 	// *accounts.AccountQueryResolver
-	// *role.RoleQueryResolver
+	*roles.RoleQueryResolver
 	// *clientorganizationunits.ClientOrganizationUnitQueryResolver
 	// *permissions.PermissionQueryResolver
 	// *bindings.BindingsQueryResolver
@@ -72,7 +73,7 @@ type mutationResolver struct {
 	*tenants.TenantMutationResolver
 	// *accounts.AccountMutationResolver
 	// *clientorganizationunits.ClientOrganizationUnitMutationResolver
-	// *role.RoleMutationResolver
+	*roles.RoleMutationResolver
 	// *permissions.PermissionMutationResolver
 	// *bindings.BindingsMutationResolver
 	// *root.RootMutationResolver

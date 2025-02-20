@@ -1,7 +1,7 @@
 query GetAllTenants {
-  allTenants {
+  tenants {
     ... on SuccessResponse {
-      success
+      isSuccess
       message
       data {
         ... on Tenant {
@@ -31,7 +31,7 @@ query GetAllTenants {
       }
     }
     ... on ErrorResponse {
-      success
+      isSuccess
       message
       errorCode
       errorDetails
