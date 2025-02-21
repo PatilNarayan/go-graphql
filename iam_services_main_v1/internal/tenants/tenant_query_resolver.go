@@ -53,7 +53,6 @@ func (r *TenantQueryResolver) Tenants(ctx context.Context) (models.OperationResu
 	page := 1
 	per_page := 100
 	// r.Logger.Info(ctx, "Fetching tenants with pagination")
-
 	for page <= per_page {
 		response, err := r.PC.SendRequest(ctx, "GET", fmt.Sprintf("tenants?page=%d&per_page=%d&include_total_count=true", page, per_page), nil)
 		if err != nil {

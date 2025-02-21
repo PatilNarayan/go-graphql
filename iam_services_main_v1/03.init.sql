@@ -4,7 +4,7 @@ TRUNCATE mst_role_permissions;
 TRUNCATE mst_permissions;
 
 INSERT INTO mst_roles (
-    role_id, name, version,resource_type_id, row_status, created_by, updated_by, created_at, updated_at
+    role_id, name, version,scope_resource_type_id, row_status, created_by, updated_by, created_at, updated_at
 ) VALUES
     ('bfe2d3a4-fc1a-4b7d-b4a3-4e8f44fba0f1', 'Admin', 'v1','550e8400-e29b-41d4-a716-446655440003', 1, 'system', 'system', NOW(), NOW()),
     ('a8e7f2d6-3d2f-49f6-bcf1-1d0b7a70fcd2', 'Editor', 'v1','550e8400-e29b-41d4-a716-446655440003', 1, 'system', 'system', NOW(), NOW()),
@@ -14,10 +14,10 @@ INSERT INTO mst_roles (
 INSERT INTO mst_permissions (
     permission_id, service_id, name, action, row_status, created_by, updated_by, created_at, updated_at
 ) VALUES
-    ('f1e3d9a7-7d6c-4f2a-9b1e-2a3d7c6b9f4e', 'a2d6e3b7-cf1d-4f9a-b7d2-1f3a7e6c9b11', 'View Dashboard', 'view_dashboard', 1, 'system', 'system', NOW(), NOW()),
-    ('a2d6e3b7-cf1d-4f9a-b7d2-1f3a7e6c9b4f', 'a2d6e3b7-cf1d-4f9a-b7d2-1f3a7e6c9b12', 'Edit Dashboard', 'edit_dashboard', 1, 'system', 'system', NOW(), NOW()),
-    ('b7d9e1f2-a6d3-4f7a-b2d6-9f1a3e7c4b2f', 'a2d6e3b7-cf1d-4f9a-b7d2-1f3a7e6c9b13', 'Manage Users', 'manage_users', 1, 'system', 'system', NOW(), NOW()),
-    ('d6f9e3a2-7b1f-4c6a-b9d7-2f3a6e1c9b7f', 'a2d6e3b7-cf1d-4f9a-b7d2-1f3a7e6c9b14', 'Delete Records', 'delete_records', 1, 'system', 'system', NOW(), NOW());
+    ('f1e3d9a7-7d6c-4f2a-9b1e-2a3d7c6b9f4e', 'a2d6e3b7-cf1d-4f9a-b7d2-1f3a7e6c9b11', 'View Dashboard', 'viewdashboard', 1, 'system', 'system', NOW(), NOW()),
+    ('a2d6e3b7-cf1d-4f9a-b7d2-1f3a7e6c9b4f', 'a2d6e3b7-cf1d-4f9a-b7d2-1f3a7e6c9b12', 'Edit Dashboard', 'editdashboard', 1, 'system', 'system', NOW(), NOW()),
+    ('b7d9e1f2-a6d3-4f7a-b2d6-9f1a3e7c4b2f', 'a2d6e3b7-cf1d-4f9a-b7d2-1f3a7e6c9b13', 'Manage Users', 'manageusers', 1, 'system', 'system', NOW(), NOW()),
+    ('d6f9e3a2-7b1f-4c6a-b9d7-2f3a6e1c9b7f', 'a2d6e3b7-cf1d-4f9a-b7d2-1f3a7e6c9b14', 'Delete Records', 'deleterecords', 1, 'system', 'system', NOW(), NOW());
 
 -- Insert dummy data into mst_role_permissions
 INSERT INTO mst_role_permissions (

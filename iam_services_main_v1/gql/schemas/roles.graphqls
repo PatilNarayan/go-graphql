@@ -19,7 +19,7 @@ type Role implements Resource {
   """
   Assignable scope of the role
   """
-  assignableScope: Resource
+  assignableScope: Resource!
   """
   Timestamp of creation
   """
@@ -74,6 +74,10 @@ input CreateRoleInput {
   Description of the role
   """
   description: String
+  """
+  Unique identifier of the role
+  """
+  id: UUID!
   """
   Name of the role
   """
@@ -133,7 +137,7 @@ type Permission {
   """
   Action associated with the permission
   """
-  action: String
+  action: String!
   """
   Timestamp of creation
   """
@@ -153,7 +157,7 @@ type Permission {
   """
   Service ID associated with the permission
   """
-  serviceId: String
+  serviceId: String!
   """
   Timestamp of last update
   """
@@ -171,7 +175,11 @@ input CreatePermissionInput {
   """
   Action associated with the permission
   """
-  action: String
+  action: String!
+   """
+  Unique identifier of the permission
+  """
+  id: UUID!
   """
   Name of the permission
   """
@@ -179,7 +187,7 @@ input CreatePermissionInput {
   """
   Service ID associated with the permission
   """
-  serviceId: UUID
+  serviceId: UUID!
 }
 
 """
@@ -189,7 +197,7 @@ input UpdatePermissionInput {
   """
   Updated action associated with the permission
   """
-  action: String
+  action: String!
   """
   Unique identifier of the permission
   """
@@ -201,5 +209,5 @@ input UpdatePermissionInput {
   """
   Updated service ID associated with the permission
   """
-  serviceId: UUID
+  serviceId: UUID!
 }

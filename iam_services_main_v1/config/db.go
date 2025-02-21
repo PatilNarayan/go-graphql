@@ -2,6 +2,8 @@ package config
 
 import (
 	"fmt"
+	"iam_services_main_v1/internal/dto"
+
 	// Import your custom logger
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -21,10 +23,10 @@ func InitDB() *gorm.DB {
 		panic("failed to connect database")
 	}
 
-	// err = db.AutoMigrate(&dto.TenantResource{}, &dto.TenantMetadata{}, &dto.TNTRole{}, &dto.TNTPermission{}, &dto.TNTRolePermission{}, &dto.MstRole{}, &dto.MstPermission{}, &dto.MstRolePermission{})
-	// if err != nil {
-	// 	panic(err)
-	// }
+	err = db.AutoMigrate(&dto.TenantResource{}, &dto.TenantMetadata{}, &dto.TNTRole{}, &dto.TNTRolePermission{}, &dto.MstRole{}, &dto.MstPermission{}, &dto.MstRolePermission{})
+	if err != nil {
+		panic(err)
+	}
 
 	DB = db
 

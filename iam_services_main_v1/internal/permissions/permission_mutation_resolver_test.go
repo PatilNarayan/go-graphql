@@ -13,7 +13,7 @@ func setupTestDB(t *testing.T) *gorm.DB {
 	if err != nil {
 		t.Fatalf("Failed to open database: %v", err)
 	}
-	if err := db.AutoMigrate(&dto.TNTPermission{}); err != nil {
+	if err := db.AutoMigrate(&dto.MstPermission{}); err != nil {
 		t.Fatalf("Failed to migrate database: %v", err)
 	}
 	return db

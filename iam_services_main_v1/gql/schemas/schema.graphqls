@@ -21,7 +21,7 @@ union Data = Account | Binding | ClientOrganizationUnit | Group | Permission | R
 """
 Define a union for the possible operation results
 """
-union OperationResult = ErrorResponse | SuccessResponse
+union OperationResult = ResponseError | SuccessResponse
 
 """
 Standard Response Interface for both success and error responses
@@ -59,9 +59,34 @@ type SuccessResponse implements Response {
 }
 
 """
-Define ErrorResponse for error cases
+Standard Error Interface for the error responses
 """
-type ErrorResponse implements Response {
+interface Error {
+  """
+  Error code representing the type of error.
+  """
+  errorCode: String!
+
+  """
+  Details about the error.
+  """
+  errorDetails: JSON
+
+  """
+  A message providing information about the operation to the user.
+  """
+  message: String!
+
+  """
+  A message providing additional context or information about the operation for the logging.
+  """
+  systemMessage: String!
+}
+
+"""
+Define ResponseError for error cases
+"""
+type ResponseError implements Response & Error {
   """
   Error code representing the type of error.
   """
@@ -81,6 +106,11 @@ type ErrorResponse implements Response {
   A message providing additional context or information about the operation.
   """
   message: String!
+
+  """
+  A message providing additional context or information about the operation for the logging.
+  """
+  systemMessage: String!
 }
 
 
@@ -247,6 +277,21 @@ type Query {
   # Fetch all organizations.
   # """
   # organizations: OperationResult
+
+  # """
+  # Fetch a specific permission by its ID.
+  # """
+  # permission(
+  #   """
+  #   Unique identifier of the permission
+  #   """
+  #   id: UUID!
+  # ): OperationResult
+
+  # """
+  # Fetch all permissions.
+  # """
+  # permissions: OperationResult
 
   # """
   # Fetch a specific resource by its ID.

@@ -15,6 +15,19 @@ type Data interface {
 	IsData()
 }
 
+// Standard Error Interface for the error responses
+type Error interface {
+	IsError()
+	// Error code representing the type of error.
+	GetErrorCode() string
+	// Details about the error.
+	GetErrorDetails() *string
+	// A message providing information about the operation to the user.
+	GetMessage() string
+	// A message providing additional context or information about the operation for the logging.
+	GetSystemMessage() string
+}
+
 // Define a union for the possible operation results
 type OperationResult interface {
 	IsOperationResult()
@@ -383,11 +396,13 @@ type CreateClientOrganizationUnitInput struct {
 // Defines input fields for creating a permission
 type CreatePermissionInput struct {
 	// Action associated with the permission
-	Action *string `json:"action,omitempty"`
+	Action string `json:"action"`
+	// Unique identifier of the permission
+	ID uuid.UUID `json:"id"`
 	// Name of the permission
 	Name string `json:"name"`
 	// Service ID associated with the permission
-	ServiceID *uuid.UUID `json:"serviceId,omitempty"`
+	ServiceID uuid.UUID `json:"serviceId"`
 }
 
 // Defines input fields for creating a role
@@ -396,6 +411,8 @@ type CreateRoleInput struct {
 	AssignableScopeRef uuid.UUID `json:"assignableScopeRef"`
 	// Description of the role
 	Description *string `json:"description,omitempty"`
+	// Unique identifier of the role
+	ID uuid.UUID `json:"id"`
 	// Name of the role
 	Name string `json:"name"`
 	// Permissions associated with the role
@@ -433,28 +450,6 @@ type DeleteInput struct {
 	// Unique identifier of the resource
 	ID uuid.UUID `json:"id"`
 }
-
-// Define ErrorResponse for error cases
-type ErrorResponse struct {
-	// Error code representing the type of error.
-	ErrorCode string `json:"errorCode"`
-	// Details about the error.
-	ErrorDetails *string `json:"errorDetails,omitempty"`
-	// Indicates if the operation was successful.
-	IsSuccess bool `json:"isSuccess"`
-	// A message providing additional context or information about the operation.
-	Message string `json:"message"`
-}
-
-func (ErrorResponse) IsOperationResult() {}
-
-func (ErrorResponse) IsResponse() {}
-
-// Indicates if the operation was successful.
-func (this ErrorResponse) GetIsSuccess() bool { return this.IsSuccess }
-
-// A message providing additional context or information about the operation.
-func (this ErrorResponse) GetMessage() string { return this.Message }
 
 // Represents a Group entity
 type Group struct {
@@ -517,7 +512,7 @@ func (this Group) GetUpdatedBy() uuid.UUID { return this.UpdatedBy }
 // Represents a Permission entity
 type Permission struct {
 	// Action associated with the permission
-	Action *string `json:"action,omitempty"`
+	Action string `json:"action"`
 	// Timestamp of creation
 	CreatedAt string `json:"createdAt"`
 	// Identifier of the user who created the record
@@ -527,7 +522,7 @@ type Permission struct {
 	// Name of the permission
 	Name string `json:"name"`
 	// Service ID associated with the permission
-	ServiceID *string `json:"serviceId,omitempty"`
+	ServiceID string `json:"serviceId"`
 	// Timestamp of last update
 	UpdatedAt string `json:"updatedAt"`
 	// Identifier of the user who last updated the record
@@ -536,10 +531,47 @@ type Permission struct {
 
 func (Permission) IsData() {}
 
+// Define ResponseError for error cases
+type ResponseError struct {
+	// Error code representing the type of error.
+	ErrorCode string `json:"errorCode"`
+	// Details about the error.
+	ErrorDetails *string `json:"errorDetails,omitempty"`
+	// Indicates if the operation was successful.
+	IsSuccess bool `json:"isSuccess"`
+	// A message providing additional context or information about the operation.
+	Message string `json:"message"`
+	// A message providing additional context or information about the operation for the logging.
+	SystemMessage string `json:"systemMessage"`
+}
+
+func (ResponseError) IsOperationResult() {}
+
+func (ResponseError) IsResponse() {}
+
+// Indicates if the operation was successful.
+func (this ResponseError) GetIsSuccess() bool { return this.IsSuccess }
+
+// A message providing additional context or information about the operation.
+func (this ResponseError) GetMessage() string { return this.Message }
+
+func (ResponseError) IsError() {}
+
+// Error code representing the type of error.
+func (this ResponseError) GetErrorCode() string { return this.ErrorCode }
+
+// Details about the error.
+func (this ResponseError) GetErrorDetails() *string { return this.ErrorDetails }
+
+// A message providing information about the operation to the user.
+
+// A message providing additional context or information about the operation for the logging.
+func (this ResponseError) GetSystemMessage() string { return this.SystemMessage }
+
 // Represents a Role entity
 type Role struct {
 	// Assignable scope of the role
-	AssignableScope Resource `json:"assignableScope,omitempty"`
+	AssignableScope Resource `json:"assignableScope"`
 	// Timestamp of creation
 	CreatedAt string `json:"createdAt"`
 	// Identifier of the user who created the record
@@ -807,13 +839,13 @@ type UpdateClientOrganizationUnitInput struct {
 // Defines input fields for updating a permission
 type UpdatePermissionInput struct {
 	// Updated action associated with the permission
-	Action *string `json:"action,omitempty"`
+	Action string `json:"action"`
 	// Unique identifier of the permission
 	ID uuid.UUID `json:"id"`
 	// Updated name of the permission
 	Name string `json:"name"`
 	// Updated service ID associated with the permission
-	ServiceID *uuid.UUID `json:"serviceId,omitempty"`
+	ServiceID uuid.UUID `json:"serviceId"`
 }
 
 // Defines input fields for updating a role

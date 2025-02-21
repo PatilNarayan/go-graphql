@@ -1,10 +1,7 @@
 package logger
 
 import (
-	"os"
-	"path/filepath"
 	"runtime"
-	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -26,7 +23,7 @@ type LogEntry struct {
 func InitLogger() {
 	log = logrus.New()
 	// Create logs directory if it doesn't exist
-	if err := os.MkdirAll("logs", 0755); err != nil {
+	/*if err := os.MkdirAll("logs", 0750); err != nil {
 		log.Fatal("Failed to create logs directory:", err)
 	}
 
@@ -35,12 +32,12 @@ func InitLogger() {
 	file, err := os.OpenFile(
 		filepath.Join("logs", currentTime+".log"),
 		os.O_CREATE|os.O_WRONLY|os.O_APPEND,
-		0666,
+		0600,
 	)
 	if err != nil {
 		log.Fatal("Failed to open log file:", err)
 	}
-	log.SetOutput(file)
+	log.SetOutput(file)*/
 	log.SetFormatter(&logrus.JSONFormatter{})
 	log.SetLevel(logrus.TraceLevel) // Default level can be adjusted
 	//log.SetReportCaller(true)       // Include caller information (filename, function, line number)
@@ -64,10 +61,11 @@ func GenerateStackTrace() string {
 // }
 
 // logMessage is a generic function to log messages at different levels.
-func logMessage(level logrus.Level, message string, logFields logrus.Fields, errorMessage string) {
+func logMessage(level logrus.Level, message string, logFields logrus.Fields) {
+	log.Println(logFields)
 	// Add error and stack trace info if it's an error log
 	if level == logrus.ErrorLevel || level == logrus.FatalLevel || level == logrus.PanicLevel {
-		logFields["error"] = errorMessage
+		//logFields["error"] = errorMessage
 		logFields["stack_trace"] = GenerateStackTrace()
 	}
 	log.WithFields(logFields).Log(level, message)
@@ -92,35 +90,54 @@ func LogRequest(requestID, userID, ip string, statusCode int, duration int64, er
 		"status_code": logEntry.StatusCode,
 		"duration":    logEntry.Duration,
 		"error":       logEntry.Error,
-	}, logEntry.Error)
+	})
 }
 
 // LogInfo logs general info messages at INFO level.
 func LogInfo(message string) {
-	logMessage(logrus.InfoLevel, message, logrus.Fields{}, "")
+	logMessage(logrus.InfoLevel, message, logrus.Fields{})
 }
 
 // LogWarn logs warnings at WARN level.
 func LogWarn(message string) {
-	logMessage(logrus.WarnLevel, message, logrus.Fields{}, "")
+	logMessage(logrus.WarnLevel, message, logrus.Fields{})
 }
 
 // LogDebug logs debug messages at DEBUG level.
 func LogDebug(message string) {
-	logMessage(logrus.DebugLevel, message, logrus.Fields{}, "")
+	logMessage(logrus.DebugLevel, message, logrus.Fields{})
 }
 
 // LogFatal logs fatal messages at FATAL level.
 func LogFatal(message string) {
-	logMessage(logrus.FatalLevel, message, logrus.Fields{}, "")
+	logMessage(logrus.FatalLevel, message, logrus.Fields{})
 }
 
 // LogError logs error messages at FATAL level.
-func LogError(message string) {
-	logMessage(logrus.ErrorLevel, message, logrus.Fields{}, "")
+func LogError(message string, fields ...interface{}) {
+	logMessage(logrus.ErrorLevel, message, ParseFields(fields...))
 }
 
 // LogError logs error messages at FATAL level.
 func LogPanic(message string) {
-	logMessage(logrus.PanicLevel, message, logrus.Fields{}, "")
+	logMessage(logrus.PanicLevel, message, logrus.Fields{})
+}
+
+// Helper func to convert variadic fields into structured logging fields
+func ParseFields(fields ...interface{}) logrus.Fields {
+	logFields := logrus.Fields{}
+
+	for i := 0; i < len(fields)-1; i += 2 {
+		key, ok := fields[i].(string)
+		if !ok {
+			continue // skip the non-string keys
+		}
+		//if the field is an error, log its error message
+		if err, isErr := fields[i+1].(error); isErr {
+			logFields[key] = err.Error()
+		} else {
+			logFields[key] = fields[i+1]
+		}
+	}
+	return logFields
 }

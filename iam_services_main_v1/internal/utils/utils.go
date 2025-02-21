@@ -36,14 +36,8 @@ func CreateActionMap(store map[string]interface{}, actions []string) map[string]
 	return store
 }
 
-func GetActionMap(data []interface{}, key string) map[string]interface{} {
-	actionMap := make(map[string]interface{})
-	for _, d := range data {
-		d := d.(map[string]interface{})
-		if d["key"].(string) == key {
-			actionMap = d["actions"].(map[string]interface{})
-		}
-	}
+func GetActionMap(data map[string]interface{}, key string) map[string]interface{} {
+	actionMap := data["actions"].(map[string]interface{})
 	for _, value := range actionMap {
 		value := value.(map[string]interface{})
 		for key1 := range value {
@@ -73,7 +67,7 @@ func FormatError(err error) models.OperationResult {
 	}
 
 	// Return the custom ErrorResponse
-	errorResponse := &models.ErrorResponse{
+	errorResponse := &models.ResponseError{
 		IsSuccess:    false,
 		Message:      errorMessage,
 		ErrorCode:    errorCode,
