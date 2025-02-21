@@ -67,19 +67,20 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 		return nil, fmt.Errorf("invalid TenantID")
 	}
 
-	permissionActions, err := GetPermissionAction(input.Permissions)
+	permissionActions, permissionData, err := GetPermissionAction(input.AssignableScopeRef.String(), input.Permissions)
 	if err != nil {
 		return nil, err
 	}
 	inputMap := helpers.StructToMap(input)
 	inputMap["actions"] = permissionActions
-	inputMap["created_by"] = userUUID.String()
-	inputMap["updated_by"] = userUUID.String()
-	inputMap["created_at"] = time.Now().Format(time.RFC3339)
-	inputMap["updated_at"] = time.Now().Format(time.RFC3339)
+	inputMap["AssignableScopeRef"] = assignableScopeRef
+	inputMap["Permissions"] = permissionData
+	inputMap["createdBy"] = userUUID.String()
+	inputMap["updatedBy"] = userUUID.String()
+	inputMap["createdAt"] = time.Now().Format(time.RFC3339)
+	inputMap["updatedAt"] = time.Now().Format(time.RFC3339)
 
-	permitMap := make(map[string]interface{})
-	permitMap = map[string]interface{}{
+	permitMap := map[string]interface{}{
 		"name":        input.Name,
 		"key":         input.ID,
 		"attributes":  inputMap,
@@ -97,22 +98,6 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 	if err != nil {
 		return nil, err
 	}
-
-	// resource, err := pc.SendRequest(ctx, "GET", fmt.Sprintf("resources/%s/roles/%s", assignableScopeRef.ResourceTypeID, input.ID), nil)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// actions := utils.GetActionMap(resource, assignableScopeRef.ResourceTypeID.String())
-
-	// res := utils.CreateActionMap(actions, permissionActions)
-	// update := map[string]interface{}{
-	// 	"actions": res,
-	// }
-	// _, err = pc.SendRequest(ctx, "PATCH", fmt.Sprintf("resources/%s", assignableScopeRef.ResourceTypeID), update)
-	// if err != nil {
-	// 	return nil, err
-	// }
 
 	if err := r.DB.Create(&dto.TenantResource{
 		ResourceID:     input.ID,
@@ -148,27 +133,229 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 			return nil, tx.Error
 		}
 	}
-	// if len(input.Permissions) > 0 {
-	// 	err = SetPermission(ctx, role.ResourceID.String(), assignableScopeRef.ResourceTypeID.String(), permissionActions)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// }
-	// data := convertRoleToGraphQL(&role)
 
-	return &models.SuccessResponse{
-		IsSuccess: true,
-		Message:   "Role created successfully",
-		Data:      []models.Data{},
-	}, nil
+	RoleQueryResolver := &RoleQueryResolver{DB: r.DB}
+	data, err := RoleQueryResolver.Role(ctx, input.ID)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.UpdateRoleInput) (models.OperationResult, error) {
-	return nil, nil
+	// Extract gin.Context from GraphQL context
+	//ginCtx, ok := ctx.Value(middlewares.GinContextKey).(*gin.Context)
+	// if !ok {
+	// 	return nil, fmt.Errorf("unable to get gin context")
+	// }
+	//UserID := ginCtx.MustGet("userID").(string)
+	//userUUID := uuid.MustParse(UserID)
+	// userUUID := uuid.New()
+
+	// tenantID, err := helpers.GetTenant(ginCtx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// if err := ValidateTenantID(uuid.MustParse(tenantID)); err != nil {
+	// 	return nil, err
+	// }
+
+	// if err := ValidateTenantID(uuid.MustParse(tenantID)); err != nil {
+	// 	return nil, err
+	// }
+
+	var role dto.TNTRole
+	if err := r.DB.Where("resource_id = ? AND row_status = 1", input.ID).First(&role).Error; err != nil {
+		return nil, fmt.Errorf("role not found: %w", err)
+	}
+
+	if err := r.validateUpdateRoleInput(input); err != nil {
+		return nil, err
+	}
+
+	// Update fields
+	if input.Name != "" {
+		role.Name = input.Name
+	}
+
+	var assignableScopeRefData dto.Mst_ResourceTypes
+	if err := r.DB.Where(&dto.Mst_ResourceTypes{ResourceTypeID: input.AssignableScopeRef, RowStatus: 1}).First(&assignableScopeRefData).Error; err != nil {
+		return nil, fmt.Errorf("invalid TenantID")
+	}
+
+	resourceType := dto.Mst_ResourceTypes{}
+	if err := r.DB.Where("name = ? AND row_status = 1", "Role").First(&resourceType).Error; err != nil {
+		return nil, fmt.Errorf("resource type not found: %w", err)
+	}
+
+	permissionActions, permissionData, err := GetPermissionAction(input.AssignableScopeRef.String(), input.Permissions)
+	if err != nil {
+		return nil, err
+	}
+	inputMap := helpers.StructToMap(input)
+	inputMap["Permissions"] = permissionData
+	inputMap["AssignableScopeRef"] = assignableScopeRefData
+	inputMap["actions"] = permissionActions
+	inputMap["created_by"] = role.CreatedBy
+	inputMap["updated_by"] = role.UpdatedBy
+	inputMap["created_at"] = time.Now().Format(time.RFC3339)
+	inputMap["updated_at"] = time.Now().Format(time.RFC3339)
+
+	permitMap := map[string]interface{}{
+		"name":        input.Name,
+		"attributes":  inputMap,
+		"permissions": permissionActions,
+	}
+
+	if input.Description != nil {
+		permitMap["description"] = *input.Description
+	}
+	//create role in permit
+	pc := permit.NewPermitClient()
+
+	if _, err := pc.SendRequest(ctx, "PATCH", fmt.Sprintf("resources/%s/roles/%s", input.AssignableScopeRef, input.ID.String()), permitMap); err != nil {
+		return nil, err
+	}
+
+	var assignableScopeRef dto.Mst_ResourceTypes
+	if err := r.DB.Where("resource_type_id = ? AND row_status = 1", input.AssignableScopeRef).First(&assignableScopeRef).Error; err != nil {
+		return nil, fmt.Errorf("invalid TenantID")
+	}
+
+	updateData := map[string]interface{}{
+		"name":       input.Name,
+		"version":    input.Version,
+		"role_type":  dto.RoleTypeEnumCustom,
+		"updated_by": role.UpdatedBy,
+		"updated_at": time.Now(),
+	}
+
+	if input.Name != "" {
+		updateData["name"] = input.Name
+	}
+	if input.Description != nil {
+		updateData["description"] = *input.Description
+	}
+
+	if err := r.DB.Model(&role).Where("resource_id = ? AND row_status = 1", input.ID).UpdateColumns(updateData).Error; err != nil {
+		return nil, err
+	}
+
+	var pdata []dto.TNTRolePermission
+	if err := r.DB.Where("role_id = ? AND row_status = 1", input.ID).Find(&pdata).Error; err != nil {
+		return nil, err
+	}
+	newPermissions := make([]string, 0)
+	for _, pid := range input.Permissions {
+		exists := false
+		for _, p := range pdata {
+			if p.PermissionID.String() == pid {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			newPermissions = append(newPermissions, pid)
+			tx := r.DB.Create(&dto.TNTRolePermission{
+				ID:           uuid.New(),
+				RoleID:       input.ID,
+				PermissionID: uuid.MustParse(pid),
+				RowStatus:    1,
+				CreatedBy:    role.CreatedBy,
+				UpdatedBy:    role.UpdatedBy,
+			})
+
+			if tx.Error != nil {
+				return nil, tx.Error
+			}
+
+		}
+	}
+
+	removeIDs := make([]uuid.UUID, 0)
+	removeIDsList := make([]string, 0)
+	for _, p := range pdata {
+		exists := false
+		for _, pid := range input.Permissions {
+			if p.PermissionID.String() == pid {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			removeIDs = append(removeIDs, p.ID)
+			removeIDsList = append(removeIDsList, p.PermissionID.String())
+		}
+	}
+
+	for _, id := range removeIDs {
+		if err := r.DB.Model(&dto.TNTRolePermission{}).Where("role_permission_id = ? AND row_status = 1", id).Updates(utils.UpdateDeletedMap()).Error; err != nil {
+			return nil, fmt.Errorf("failed to delete role: %w", err)
+		}
+	}
+
+	RoleQueryResolver := &RoleQueryResolver{DB: r.DB}
+	data, err := RoleQueryResolver.Role(ctx, input.ID)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 func (r *RoleMutationResolver) DeleteRole(ctx context.Context, input models.DeleteInput) (models.OperationResult, error) {
-	return nil, nil
+	// Extract gin.Context from GraphQL context
+	//ginCtx, ok := ctx.Value(middlewares.GinContextKey).(*gin.Context)
+	// if !ok {
+	// 	return nil, fmt.Errorf("unable to get gin context")
+	// }
+	//UserID := ginCtx.MustGet("userID").(string)
+	//userUUID := uuid.MustParse(UserID)
+	// userUUID := uuid.New()
+
+	// tenantID, err := helpers.GetTenant(ginCtx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// if err := ValidateTenantID(uuid.MustParse(tenantID)); err != nil {
+	// 	return nil, err
+	// }
+
+	// if err := ValidateTenantID(uuid.MustParse(tenantID)); err != nil {
+	// 	return nil, err
+	// }
+
+	var roleDB dto.TNTRole
+	if err := r.DB.First(&roleDB, "resource_id = ? AND row_status = 1", input.ID).Error; err != nil {
+		return nil, errors.New("role not found")
+	}
+
+	var assignableScopeRef dto.Mst_ResourceTypes
+	if err := r.DB.Where("resource_type_id = ? AND row_status = 1", roleDB.ScopeResourceTypeID).First(&assignableScopeRef).Error; err != nil {
+		return nil, fmt.Errorf("invalid TenantID")
+	}
+
+	pc := permit.NewPermitClient()
+
+	if _, err := pc.SendRequest(ctx, "DELETE", fmt.Sprintf("resources/%s/roles/%s", assignableScopeRef.ResourceTypeID, roleDB.ResourceID.String()), nil); err != nil {
+		return nil, err
+	}
+
+	if err := r.DB.Model(&dto.TNTRole{}).Where("resource_id = ? AND row_status = 1", input.ID).UpdateColumns(utils.UpdateDeletedMap()).Error; err != nil {
+		return nil, err
+	}
+
+	if err := r.DB.Model(&dto.TNTRolePermission{}).Where("role_id = ? AND row_status = 1", input.ID).UpdateColumns(utils.UpdateDeletedMap()).Error; err != nil {
+		return nil, fmt.Errorf("failed to delete role: %w", err)
+	}
+
+	RoleQueryResolver := &RoleQueryResolver{DB: r.DB}
+	data, err := RoleQueryResolver.Role(ctx, input.ID)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 func (r *RoleMutationResolver) validateUpdateRoleInput(input models.UpdateRoleInput) error {
@@ -242,17 +429,43 @@ func ValidatePermissionID(permissionId string) error {
 	return nil
 }
 
-func GetPermissionAction(permissionsIds []string) ([]string, error) {
+func GetPermissionAction(resourceID string, permissionsIds []string) ([]string, []dto.MstPermission, error) {
 	var actions []string
 	//validate permissionIds
+	var res []dto.MstPermission
 	for _, permissionID := range permissionsIds {
 		var data dto.MstPermission
 		if err := config.DB.Model(&dto.MstPermission{}).Where("permission_id = ? AND row_status = 1", permissionID).First(&data).Error; err != nil {
-			return nil, err
+			return nil, nil, err
 		}
+		res = append(res, data)
 		actions = append(actions, data.Action)
 	}
-	return actions, nil
+
+	pc := permit.NewPermitClient()
+
+	resourceData, err := pc.SendRequest(context.Background(), "GET", fmt.Sprintf("resources/%s", resourceID), nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	actionsData := resourceData["actions"].(map[string]interface{})
+	for _, val := range actions {
+		valied := false
+		for key := range actionsData {
+			fmt.Println(key, val)
+			if key == val {
+				valied = true
+				break
+			}
+		}
+
+		if !valied {
+			return nil, nil, errors.New("invalid permission action")
+		}
+	}
+
+	return actions, res, nil
 }
 
 func prepareRoleObject(input models.CreateRoleInput, userID uuid.UUID) dto.TNTRole {
