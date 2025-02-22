@@ -27,8 +27,9 @@ func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 	parentID, err := t.validateParentOrg(*input.ParentID)
 	if err != nil {
 		em := fmt.Sprint(err)
+
 		errMsg := dto.CustomError{
-			ErrorCode:    "400", // Changed from 404 to 400 as this is invalid input
+			ErrorCode:    "404",
 			ErrorDetails: em,
 			ErrorMessage: "Invalid parent organization",
 		}
