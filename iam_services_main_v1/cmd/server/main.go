@@ -2,11 +2,11 @@ package main
 
 import (
 	config "iam_services_main_v1/config"
-	"iam_services_main_v1/gormlogger"
 	"iam_services_main_v1/gql"
 	"iam_services_main_v1/gql/generated"
 	"iam_services_main_v1/internal/middlewares"
 	"iam_services_main_v1/internal/permit"
+	"iam_services_main_v1/logger"
 	"log"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -16,6 +16,7 @@ import (
 
 func main() {
 	// Initialize logger
+	logger.InitLogger()
 
 	// Initialize Gin router
 	r := gin.Default()
@@ -30,10 +31,6 @@ func main() {
 
 	//Initialize permit
 	pc := permit.NewPermitClient()
-
-	logger := gormlogger.NewGORMLogger()
-
-	logger.Logger.Info("Starting server...")
 
 	// Initialize resolver and GraphQL server
 	resolver := &gql.Resolver{DB: db, PC: pc}

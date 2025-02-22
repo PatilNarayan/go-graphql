@@ -22,22 +22,6 @@ type LogEntry struct {
 // InitLogger configures the logger for structured JSON logging.
 func InitLogger() {
 	log = logrus.New()
-	// Create logs directory if it doesn't exist
-	/*if err := os.MkdirAll("logs", 0750); err != nil {
-		log.Fatal("Failed to create logs directory:", err)
-	}
-
-	// Create log file with timestamp
-	currentTime := time.Now().Format("2006-01-02")
-	file, err := os.OpenFile(
-		filepath.Join("logs", currentTime+".log"),
-		os.O_CREATE|os.O_WRONLY|os.O_APPEND,
-		0600,
-	)
-	if err != nil {
-		log.Fatal("Failed to open log file:", err)
-	}
-	log.SetOutput(file)*/
 	log.SetFormatter(&logrus.JSONFormatter{})
 	log.SetLevel(logrus.TraceLevel) // Default level can be adjusted
 	//log.SetReportCaller(true)       // Include caller information (filename, function, line number)
@@ -50,19 +34,8 @@ func GenerateStackTrace() string {
 	return string(buf[:n])
 }
 
-// getCallerInfo retrieves the caller's function name, filename, and line number.
-// func getCallerInfo() (string, string, int) {
-// 	pc, filename, line, ok := runtime.Caller(2)
-// 	if !ok {
-// 		return "", "", 0
-// 	}
-// 	funcName := runtime.FuncForPC(pc).Name()
-// 	return funcName, filename, line
-// }
-
 // logMessage is a generic function to log messages at different levels.
 func logMessage(level logrus.Level, message string, logFields logrus.Fields) {
-	log.Println(logFields)
 	// Add error and stack trace info if it's an error log
 	if level == logrus.ErrorLevel || level == logrus.FatalLevel || level == logrus.PanicLevel {
 		//logFields["error"] = errorMessage

@@ -8,6 +8,7 @@ import (
 	"iam_services_main_v1/internal/dto"
 	"iam_services_main_v1/internal/permit"
 	"iam_services_main_v1/internal/utils"
+	"iam_services_main_v1/logger"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -22,17 +23,19 @@ func (r *RoleQueryResolver) Role(ctx context.Context, id uuid.UUID) (models.Oper
 
 	var role dto.TNTRole
 	if err := r.DB.Where("resource_id = ? AND row_status = 1", id).First(&role).Error; err != nil {
+		logger.LogError(fmt.Sprintf("Error getting role: %v", err))
 		return nil, fmt.Errorf("role not found: %w", err)
 	}
 
 	pc := permit.NewPermitClient()
 	data, err := pc.SendRequest(ctx, "GET", fmt.Sprintf("resources/%s/roles/%s", role.ScopeResourceTypeID, id), nil)
-
 	if err != nil {
+		logger.LogError(fmt.Sprintf("Error getting role: %v", err))
 		return nil, err
 	}
 	res, err := MapToRole(data)
 	if err != nil {
+		logger.LogError(fmt.Sprintf("Error getting role: %v", err))
 		return nil, err
 	}
 
@@ -43,14 +46,15 @@ func (r *RoleQueryResolver) Roles(ctx context.Context) (models.OperationResult, 
 
 	pc := permit.NewPermitClient()
 	data, err := pc.SendRequest(ctx, "GET", "resources/roles?include_total_count=true", nil)
-
 	if err != nil {
+		logger.LogError(fmt.Sprintf("Error getting role: %v", err))
 		return nil, err
 	}
 	var roles []models.Data
 	for _, v := range data["data"].([]interface{}) {
 		data, err := MapToRole(v.(map[string]interface{}))
 		if err != nil {
+			logger.LogError(fmt.Sprintf("Error getting role: %v", err))
 			return nil, err
 		}
 		roles = append(roles, *data)
@@ -61,7 +65,6 @@ func (r *RoleQueryResolver) Roles(ctx context.Context) (models.OperationResult, 
 
 // Convert map[string]interface{} to Role struct
 func MapToRole(roleData map[string]interface{}) (*models.Role, error) {
-	fmt.Println(roleData)
 	var role models.Role
 
 	data := roleData["attributes"].(map[string]interface{})
