@@ -32,12 +32,14 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 	//userUUID := uuid.MustParse(UserID)
 	userUUID := uuid.New()
 
-	tenantID, err := helpers.GetTenantID(ctx)
-	if err != nil {
-		em := fmt.Sprintf("Error getting tenant ID: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("404", "Invalid parent organization", em)), nil
-	}
+	// tenantID, err := helpers.GetTenantID(ctx)
+	// if err != nil {
+	// 	em := fmt.Sprintf("Error getting tenant ID: %v", err)
+	// 	logger.LogError(em)
+	// 	return utils.FormatError(utils.FormatErrorStruct("404", "Invalid parent organization", em)), nil
+	// }
+	tenantIDid := uuid.New()
+	tenantID := &tenantIDid
 
 	// tenantID, err := helpers.GetTenant(ginCtx)
 	// if err != nil {
@@ -252,10 +254,35 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 	}
 	//create role in permit
 	pc := permit.NewPermitClient()
-	if _, err := pc.SendRequest(ctx, "PATCH", fmt.Sprintf("resources/%s/roles/%s", input.AssignableScopeRef, input.ID.String()), permitMap); err != nil {
+	if updatedData, err := pc.SendRequest(ctx, "PATCH", fmt.Sprintf("resources/%s/roles/%s", input.AssignableScopeRef, input.ID.String()), permitMap); err != nil {
 		em := fmt.Sprintf("Error updating role in permit: %v", err)
 		logger.LogError(em)
 		return utils.FormatError(utils.FormatErrorStruct("500", "Error updating role in permit", em)), nil
+	} else {
+		deleteActions := []string{}
+		for _, permission := range updatedData["permissions"].([]interface{}) {
+			present := false
+			for _, val := range permissionActions {
+				if val == permission.(string) {
+					present = true
+					break
+				}
+			}
+			if !present {
+				deleteActions = append(deleteActions, permission.(string))
+			}
+		}
+		if len(deleteActions) > 0 {
+			updatePermissions := map[string]interface{}{
+				"permissions": deleteActions,
+			}
+			if _, err := pc.SendRequest(ctx, "DELETE", fmt.Sprintf("resources/%s/roles/%s/permissions", input.AssignableScopeRef, input.ID.String()), updatePermissions); err != nil {
+				em := fmt.Sprintf("Error updating role permissions in permit: %v", err)
+				logger.LogError(em)
+				return utils.FormatError(utils.FormatErrorStruct("500", "Error updating role permissions in permit", em)), nil
+			}
+		}
+
 	}
 
 	var assignableScopeRef dto.Mst_ResourceTypes
@@ -506,7 +533,6 @@ func GetPermissionAction(resourceID string, permissionsIds []string) ([]string, 
 	for _, val := range actions {
 		valied := false
 		for key := range actionsData {
-			fmt.Println(key, val)
 			if key == val {
 				valied = true
 				break

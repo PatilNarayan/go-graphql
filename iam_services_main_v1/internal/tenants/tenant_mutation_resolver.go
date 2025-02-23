@@ -10,6 +10,7 @@ import (
 	"iam_services_main_v1/internal/dto"
 	"iam_services_main_v1/internal/permit"
 	"iam_services_main_v1/internal/utils"
+	"iam_services_main_v1/pkg/logger"
 	"time"
 
 	"github.com/google/uuid"
@@ -27,13 +28,8 @@ func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 	parentID, err := t.validateParentOrg(*input.ParentID)
 	if err != nil {
 		em := fmt.Sprint(err)
-
-		errMsg := dto.CustomError{
-			ErrorCode:    "404",
-			ErrorDetails: em,
-			ErrorMessage: "Invalid parent organization",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("404", "Invalid parent organization", em)), nil
 	}
 	newtenantID := uuid.New()
 	// Extract gin.Context from GraphQL context
@@ -46,12 +42,9 @@ func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 	userUUID := uuid.New()
 	inputMap := helpers.StructToMap(input)
 	if err != nil {
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-			ErrorMessage: "Unable to process tenant information",
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error validating create tenant input: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("400", "Invalid input", em)), nil
 	}
 
 	inputMap["created_by"] = userUUID
@@ -63,22 +56,16 @@ func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 		"key":        newtenantID, //generate uuid
 		"attributes": inputMap,
 	}); err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to create tenant in permit system",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error creating tenant in permit system: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating tenant in permit system", em)), nil
 	}
 
 	resourceType, err := dao.GetResourceTypeByName("Tenant")
 	if err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to get resource type",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error getting resource type: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting resource type", em)), nil
 	}
 
 	// Create resource instance
@@ -88,64 +75,46 @@ func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 		"tenant":     newtenantID,
 		"attributes": input,
 	}); err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to create resource instance of tenant in permit system",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error creating resource instance of tenant in permit system: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating resource instance of tenant in permit system", em)), nil
 	}
 
 	// Create tenant resource
 	tenantResource, err := t.createTenantResource(input.Name, newtenantID, *parentID, userUUID, uuid.Nil)
 	if err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to create tenant resource",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error creating tenant resource: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating tenant resource", em)), nil
 	}
 
 	// Create tenant metadata
 	if err := t.createTenantMetadata(tenantResource.ResourceID, input.Description, input.ContactInfo, userUUID); err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to create tenant metadata",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error creating tenant metadata: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating tenant metadata", em)), nil
 	}
 	// Create tenant resource
 	tenantResource, err = t.createTenantResource(input.Name, input.ID, *parentID, userUUID, newtenantID)
 	if err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to create tenant resource",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error creating tenant resource: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating tenant resource", em)), nil
 	}
 
 	// Create tenant metadata
 	if err := t.createTenantMetadata(tenantResource.ResourceID, input.Description, input.ContactInfo, userUUID); err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to create tenant metadata",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error creating tenant metadata: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating tenant metadata", em)), nil
 	}
 
 	tq := &TenantQueryResolver{DB: t.DB, PC: t.PermitClient}
 	res, err := tq.ETenant(ctx, newtenantID)
 	if err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to retrieve created tenant",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error getting tenant: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting tenant", em)), nil
 	}
 
 	var data []models.Data
@@ -158,12 +127,9 @@ func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 
 	resourceType, err := dao.GetResourceTypeByName("Tenant")
 	if err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to get resource type",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error getting resource type: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting resource type", em)), nil
 	}
 
 	var parentOrg *dto.TenantResource
@@ -172,12 +138,9 @@ func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 		TenantID:       &input.ID,
 		ResourceTypeID: resourceType.ResourceTypeID,
 	}).First(&parentOrg).Error; err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Resource not found",
-			ErrorCode:    "404",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error getting parent org: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting parent org", em)), nil
 	}
 
 	inputMap := helpers.StructToMap(input)
@@ -190,12 +153,9 @@ func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 		"name":       input.Name,
 		"attributes": inputMap,
 	}); err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to update tenant in permit system",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error updating tenant in permit system: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error updating tenant in permit system", em)), nil
 	}
 
 	// Update tenant resource
@@ -210,44 +170,32 @@ func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 	if input.ParentID != nil && *input.ParentID != uuid.Nil {
 		parentID, err := t.validateParentOrg(*input.ParentID)
 		if err != nil {
-			errMsg := dto.CustomError{
-				ErrorMessage: "Failed to validate parent organization",
-				ErrorCode:    "400", // bad input
-				ErrorDetails: err.Error(),
-			}
-			return utils.FormatError(&errMsg), nil
+			em := fmt.Sprintf("Error getting parent org: %v", err)
+			logger.LogError(em)
+			return utils.FormatError(utils.FormatErrorStruct("500", "Error getting parent org", em)), nil
 		}
 		updates["parent_resource_id"] = parentID
 	}
 
 	if err := t.DB.Model(&dto.TenantResource{}).Where("resource_id = ?", input.ID).Updates(updates).Error; err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to update tenant resource",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error updating tenant resource: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error updating tenant resource", em)), nil
 	}
 
 	// Update metadata
 	if err := t.updateMetadata(input.ID, input.Description, input.ContactInfo, parentOrg.CreatedBy); err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to update tenant metadata",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error updating tenant metadata: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error updating tenant metadata", em)), nil
 	}
 
 	tq := &TenantQueryResolver{DB: t.DB, PC: t.PermitClient}
 	res, err := tq.ETenant(ctx, input.ID)
 	if err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to retrieve updated tenant",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error getting tenant: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting tenant", em)), nil
 	}
 
 	var data []models.Data
@@ -268,46 +216,35 @@ func (t *TenantMutationResolver) DeleteTenant(ctx context.Context, input models.
 	// Delete from permit
 	if _, err := t.PermitClient.SendRequest(ctx, "DELETE", fmt.Sprintf("tenants/%s", input.ID), nil); err != nil {
 		tx.Rollback()
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to delete tenant in permit system",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error deleting tenant in permit system: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error deleting tenant in permit system", em)), nil
 	}
 
 	// Update metadata
 	if err := tx.Model(&dto.TenantMetadata{}).Where("resource_id = ?", input.ID).UpdateColumns(updates).Error; err != nil {
 		tx.Rollback()
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to soft delete tenant metadata",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error updating tenant metadata: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error updating tenant metadata", em)), nil
 	}
 
 	// Update resource
 	if err := tx.Model(&dto.TenantResource{}).Where("resource_id= ?", input.ID).UpdateColumns(updates).Error; err != nil {
 		tx.Rollback()
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to delete tenant resource",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error updating tenant resource: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error updating tenant resource", em)), nil
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		errMsg := dto.CustomError{
-			ErrorMessage: "Failed to commit transaction",
-			ErrorCode:    "500",
-			ErrorDetails: err.Error(),
-		}
-		return utils.FormatError(&errMsg), nil
+		tx.Rollback()
+		em := fmt.Sprintf("Error committing transaction: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error committing transaction", em)), nil
 	}
 
-	return utils.FormatSuccess(nil)
+	return utils.FormatSuccess([]models.Data{})
 }
 
 func (t *TenantMutationResolver) validateParentOrg(parentOrgID uuid.UUID) (*uuid.UUID, error) {

@@ -8,6 +8,7 @@ import (
 	"iam_services_main_v1/internal/dto"
 	"iam_services_main_v1/internal/permit"
 	"iam_services_main_v1/internal/utils"
+	"iam_services_main_v1/pkg/logger"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -20,20 +21,56 @@ type RoleQueryResolver struct {
 
 func (r *RoleQueryResolver) Role(ctx context.Context, id, resourceTypeID uuid.UUID) (models.OperationResult, error) {
 
+	if id == uuid.Nil && resourceTypeID == uuid.Nil {
+		em := "id or resource_type_id is required"
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("400", "id or resource_type_id is required", em)), nil
+	}
+
+	if resourceTypeID != uuid.Nil && id == uuid.Nil {
+		pc := permit.NewPermitClient()
+		data, err := pc.SendRequest(ctx, "GET", fmt.Sprintf("resources/%s/roles", resourceTypeID), nil)
+		if err != nil {
+			em := fmt.Sprintf("Error retrieving role from permit system: %v", err)
+			logger.LogError(em)
+			return utils.FormatError(utils.FormatErrorStruct("400", "Error retrieving role from permit system", em)), nil
+		}
+		res, err := MapToRole(data)
+		if err != nil {
+			em := fmt.Sprintf("Error retrieving role from permit system: %v", err)
+			logger.LogError(em)
+			return utils.FormatError(utils.FormatErrorStruct("400", "Error retrieving role from permit system", em)), nil
+		}
+		var resdata []models.Data
+		resdata = append(resdata, res)
+		return utils.FormatSuccess(resdata)
+	}
+
+	if id != uuid.Nil && resourceTypeID != uuid.Nil {
+		em := "id and resource_type_id are mutually exclusive"
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("400", "id and resource_type_id are mutually exclusive", em)), nil
+	}
+
 	var role dto.TNTRole
 	if err := r.DB.Where("resource_id = ? AND row_status = 1", id).First(&role).Error; err != nil {
-		return nil, fmt.Errorf("role not found: %w", err)
+		em := fmt.Sprintf("role not found: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("400", "role not found", em)), nil
 	}
 
 	pc := permit.NewPermitClient()
 	data, err := pc.SendRequest(ctx, "GET", fmt.Sprintf("resources/%s/roles/%s", role.ScopeResourceTypeID, id), nil)
-
 	if err != nil {
-		return nil, err
+		em := fmt.Sprintf("Error retrieving role from permit system: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("400", "Error retrieving role from permit system", em)), nil
 	}
 	res, err := MapToRole(data)
 	if err != nil {
-		return nil, err
+		em := fmt.Sprintf("Error retrieving role from permit system: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("400", "Error retrieving role from permit system", em)), nil
 	}
 	var resdata []models.Data
 	resdata = append(resdata, res)
@@ -44,15 +81,18 @@ func (r *RoleQueryResolver) Roles(ctx context.Context) (models.OperationResult, 
 
 	pc := permit.NewPermitClient()
 	data, err := pc.SendRequest(ctx, "GET", "resources/roles?include_total_count=true", nil)
-
 	if err != nil {
-		return nil, err
+		em := fmt.Sprintf("Error retrieving roles from permit system: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("400", "Error retrieving roles from permit system", em)), nil
 	}
 	var roles []models.Data
 	for _, v := range data["data"].([]interface{}) {
 		data, err := MapToRole(v.(map[string]interface{}))
 		if err != nil {
-			return nil, err
+			em := fmt.Sprintf("Error retrieving roles from permit system: %v", err)
+			logger.LogError(em)
+			return utils.FormatError(utils.FormatErrorStruct("400", "Error retrieving roles from permit system", em)), nil
 		}
 		roles = append(roles, *data)
 	}
