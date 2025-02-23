@@ -6,7 +6,7 @@ import (
 	"iam_services_main_v1/gql/generated"
 	"iam_services_main_v1/internal/middlewares"
 	"iam_services_main_v1/internal/permit"
-	"iam_services_main_v1/logger"
+	"iam_services_main_v1/pkg/logger"
 	"log"
 
 	"github.com/99designs/gqlgen/graphql/handler"

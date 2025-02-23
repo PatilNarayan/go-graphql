@@ -316,6 +316,11 @@ type Query {
     Unique identifier of the role
     """
     id: UUID!
+    """
+    Unique identifier of the role
+    """
+    resourceType: UUID!
+
   ): OperationResult
 
   """

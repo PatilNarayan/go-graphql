@@ -77,6 +77,16 @@ func FormatError(err error) models.OperationResult {
 	return opResult
 }
 
+func FormatErrorStruct(errorCode, errorMessage, errorDetails string) error {
+	// Return the custom ErrorResponse
+	errorResponse := &dto.CustomError{
+		ErrorMessage: errorMessage,
+		ErrorCode:    errorCode,
+		ErrorDetails: errorDetails,
+	}
+	return errorResponse
+}
+
 // formatSuccess formats a successful response in the `OperationResult` union
 func FormatSuccess(data interface{}) (models.OperationResult, error) {
 	// Type assertion: Convert 'data' from 'interface{}' to '[]models.Data'

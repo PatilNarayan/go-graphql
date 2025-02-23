@@ -397,12 +397,12 @@ type CreateClientOrganizationUnitInput struct {
 type CreatePermissionInput struct {
 	// Action associated with the permission
 	Action string `json:"action"`
+	// Updated assignable scope reference ID
+	AssignableScopeRef uuid.UUID `json:"assignableScopeRef"`
 	// Unique identifier of the permission
 	ID uuid.UUID `json:"id"`
 	// Name of the permission
 	Name string `json:"name"`
-	// Service ID associated with the permission
-	ServiceID uuid.UUID `json:"serviceId"`
 }
 
 // Defines input fields for creating a role
@@ -513,6 +513,8 @@ func (this Group) GetUpdatedBy() uuid.UUID { return this.UpdatedBy }
 type Permission struct {
 	// Action associated with the permission
 	Action string `json:"action"`
+	// Assignable scope of the role
+	AssignableScope string `json:"assignableScope"`
 	// Timestamp of creation
 	CreatedAt string `json:"createdAt"`
 	// Identifier of the user who created the record
@@ -521,8 +523,6 @@ type Permission struct {
 	ID uuid.UUID `json:"id"`
 	// Name of the permission
 	Name string `json:"name"`
-	// Service ID associated with the permission
-	ServiceID string `json:"serviceId"`
 	// Timestamp of last update
 	UpdatedAt string `json:"updatedAt"`
 	// Identifier of the user who last updated the record
@@ -840,12 +840,12 @@ type UpdateClientOrganizationUnitInput struct {
 type UpdatePermissionInput struct {
 	// Updated action associated with the permission
 	Action string `json:"action"`
+	// Updated assignable scope reference ID
+	AssignableScopeRef uuid.UUID `json:"assignableScopeRef"`
 	// Unique identifier of the permission
 	ID uuid.UUID `json:"id"`
 	// Updated name of the permission
 	Name string `json:"name"`
-	// Updated service ID associated with the permission
-	ServiceID uuid.UUID `json:"serviceId"`
 }
 
 // Defines input fields for updating a role

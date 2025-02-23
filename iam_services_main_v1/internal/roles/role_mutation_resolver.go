@@ -10,7 +10,7 @@ import (
 	"iam_services_main_v1/internal/dto"
 	"iam_services_main_v1/internal/permit"
 	"iam_services_main_v1/internal/utils"
-	"iam_services_main_v1/logger"
+	"iam_services_main_v1/pkg/logger"
 	"time"
 
 	"github.com/google/uuid"
@@ -34,14 +34,9 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 
 	tenantID, err := helpers.GetTenantID(ctx)
 	if err != nil {
-		logger.LogError(fmt.Sprintf("Error getting tenant ID: %v", err))
-		em := fmt.Sprint(err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "404",
-			ErrorDetails: em,
-			ErrorMessage: "Invalid parent organization",
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error getting tenant ID: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("404", "Invalid parent organization", em)), nil
 	}
 
 	// tenantID, err := helpers.GetTenant(ginCtx)
@@ -56,24 +51,14 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 	if err := validateCreateRoleInput(input); err != nil {
 		em := fmt.Sprintf("Error validating create role input: %v", err)
 		logger.LogError(em)
-		errMsg := dto.CustomError{
-			ErrorCode:    "400",
-			ErrorDetails: em,
-			ErrorMessage: "Invalid input",
-		}
-		return utils.FormatError(&errMsg), nil
+		return utils.FormatError(utils.FormatErrorStruct("400", "Invalid input", em)), nil
 	}
 
 	resourceType := dto.Mst_ResourceTypes{}
 	if err := r.DB.Where(&dto.Mst_ResourceTypes{Name: "Role", RowStatus: 1}).First(&resourceType).Error; err != nil {
-		logger.LogError(fmt.Sprintf("Error getting resource type: %v", err))
 		em := fmt.Sprintf("Error getting resource type: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "404",
-			ErrorDetails: em,
-			ErrorMessage: "Resource type not found",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("404", "Resource type not found", em)), nil
 	}
 	// tenantIDUUID, err := uuid.Parse(tenantID)
 	// if err != nil {
@@ -82,49 +67,29 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 	// check if role already exists
 	var roleExists dto.TenantResource
 	if err := r.DB.Where(&dto.TenantResource{Name: input.Name, RowStatus: 1, ResourceTypeID: resourceType.ResourceTypeID, TenantID: tenantID}).First(&roleExists).Error; err == nil {
-		logger.LogError(fmt.Sprintf("Role already exists: %v", err))
 		em := fmt.Sprintf("Role already exists: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "409",
-			ErrorDetails: em,
-			ErrorMessage: "Role already exists",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("409", "Role already exists", em)), nil
 	}
 
 	if err := CheckPermissions(input.Permissions); err != nil {
-		logger.LogError(fmt.Sprintf("Error checking permissions: %v", err))
 		em := fmt.Sprintf("Error checking permissions: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "400",
-			ErrorDetails: em,
-			ErrorMessage: "Invalid permissions",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(fmt.Sprintf("Error checking permissions: %v", err))
+		return utils.FormatError(utils.FormatErrorStruct("400", "Invalid permissions", em)), nil
 	}
 
 	var assignableScopeRef dto.Mst_ResourceTypes
 	if err := r.DB.Where(&dto.Mst_ResourceTypes{ResourceTypeID: input.AssignableScopeRef, RowStatus: 1}).First(&assignableScopeRef).Error; err != nil {
-		logger.LogError(fmt.Sprintf("Error getting assignable scope ref: %v", err))
 		em := fmt.Sprintf("Error getting assignable scope ref: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "404",
-			ErrorDetails: em,
-			ErrorMessage: "Assignable scope ref not found",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(fmt.Sprintf("Error getting assignable scope ref: %v", err))
+		return utils.FormatError(utils.FormatErrorStruct("404", "Assignable scope ref not found", em)), nil
 	}
 
 	permissionActions, permissionData, err := GetPermissionAction(input.AssignableScopeRef.String(), input.Permissions)
 	if err != nil {
-		logger.LogError(fmt.Sprintf("Error getting permission actions: %v", err))
 		em := fmt.Sprintf("Error getting permission actions: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "400",
-			ErrorDetails: em,
-			ErrorMessage: "Invalid permissions",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("400", "Invalid permissions", em)), nil
 	}
 	inputMap := helpers.StructToMap(input)
 	inputMap["actions"] = permissionActions
@@ -151,14 +116,9 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 	pc := permit.NewPermitClient()
 	_, err = pc.SendRequest(ctx, "POST", fmt.Sprintf("resources/%s/roles", assignableScopeRef.ResourceTypeID), permitMap)
 	if err != nil {
-		logger.LogError(fmt.Sprintf("Error creating role in permit: %v", err))
 		em := fmt.Sprintf("Error creating role in permit: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error creating role in permit",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating role in permit", em)), nil
 	}
 
 	if err := r.DB.Create(&dto.TenantResource{
@@ -172,27 +132,17 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
 	}).Error; err != nil {
-		logger.LogError(fmt.Sprintf("Error creating tenant resource: %v", err))
 		em := fmt.Sprintf("Error creating tenant resource: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error creating tenant resource",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating tenant resource", em)), nil
 	}
 	role := prepareRoleObject(input, userUUID)
 
 	role.ResourceID = input.ID
 	if err := r.DB.Create(&role).Error; err != nil {
-		logger.LogError(fmt.Sprintf("Error creating role: %v", err))
 		em := fmt.Sprintf("Error creating role: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error creating role",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating role", em)), nil
 	}
 
 	for _, permissionID := range input.Permissions {
@@ -205,28 +155,18 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 			UpdatedBy:    userUUID,
 		})
 		if tx.Error != nil {
-			logger.LogError(fmt.Sprintf("Error creating role permission: %v", tx.Error))
 			em := fmt.Sprintf("Error creating role permission: %v", tx.Error)
-			errMsg := dto.CustomError{
-				ErrorCode:    "500",
-				ErrorDetails: em,
-				ErrorMessage: "Error creating role permission",
-			}
-			return utils.FormatError(&errMsg), nil
+			logger.LogError(fmt.Sprintf("Error creating role permission: %v", tx.Error))
+			return utils.FormatError(utils.FormatErrorStruct("500", "Error creating role permission", em)), nil
 		}
 	}
 
 	RoleQueryResolver := &RoleQueryResolver{DB: r.DB}
-	data, err := RoleQueryResolver.Role(ctx, input.ID)
+	data, err := RoleQueryResolver.Role(ctx, input.ID, uuid.Nil)
 	if err != nil {
-		logger.LogError(fmt.Sprintf("Error getting role: %v", err))
 		em := fmt.Sprintf("Error getting role: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error getting role",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting role", em)), nil
 	}
 	return data, nil
 }
@@ -256,25 +196,15 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 
 	var role dto.TNTRole
 	if err := r.DB.Where("resource_id = ? AND row_status = 1", input.ID).First(&role).Error; err != nil {
-		logger.LogError(fmt.Sprintf("Error getting role: %v", err))
 		em := fmt.Sprintf("Error getting role: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error getting role",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting role", em)), nil
 	}
 
 	if err := r.validateUpdateRoleInput(input); err != nil {
-		logger.LogError(fmt.Sprintf("Error validating update role input: %v", err))
 		em := fmt.Sprintf("Error validating update role input: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error validating update role input",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error validating update role input", em)), nil
 	}
 
 	// Update fields
@@ -284,47 +214,32 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 
 	var assignableScopeRefData dto.Mst_ResourceTypes
 	if err := r.DB.Where(&dto.Mst_ResourceTypes{ResourceTypeID: input.AssignableScopeRef, RowStatus: 1}).First(&assignableScopeRefData).Error; err != nil {
-		logger.LogError(fmt.Sprintf("Error getting assignable scope ref: %v", err))
-		em := fmt.Sprintf("Error getting assignable scope ref: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error getting assignable scope ref",
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error getting assignable scope ref data: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting assignable scope ref data", em)), nil
 	}
 
 	resourceType := dto.Mst_ResourceTypes{}
 	if err := r.DB.Where("name = ? AND row_status = 1", "Role").First(&resourceType).Error; err != nil {
-		logger.LogError(fmt.Sprintf("Error getting resource type: %v", err))
 		em := fmt.Sprintf("Error getting resource type: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error getting resource type",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting resource type", em)), nil
 	}
 
 	permissionActions, permissionData, err := GetPermissionAction(input.AssignableScopeRef.String(), input.Permissions)
 	if err != nil {
-		logger.LogError(fmt.Sprintf("Error getting permission data: %v", err))
 		em := fmt.Sprintf("Error getting permission data: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error getting permission data",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting permission data", em)), nil
 	}
 	inputMap := helpers.StructToMap(input)
-	inputMap["Permissions"] = permissionData
-	inputMap["AssignableScopeRef"] = assignableScopeRefData
 	inputMap["actions"] = permissionActions
-	inputMap["created_by"] = role.CreatedBy
-	inputMap["updated_by"] = role.UpdatedBy
-	inputMap["created_at"] = time.Now().Format(time.RFC3339)
-	inputMap["updated_at"] = time.Now().Format(time.RFC3339)
+	inputMap["AssignableScopeRef"] = assignableScopeRefData
+	inputMap["Permissions"] = permissionData
+	inputMap["createdBy"] = role.CreatedBy
+	inputMap["updatedBy"] = role.UpdatedBy
+	inputMap["createdAt"] = time.Now().Format(time.RFC3339)
+	inputMap["updatedAt"] = time.Now().Format(time.RFC3339)
 
 	permitMap := map[string]interface{}{
 		"name":        input.Name,
@@ -338,26 +253,16 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 	//create role in permit
 	pc := permit.NewPermitClient()
 	if _, err := pc.SendRequest(ctx, "PATCH", fmt.Sprintf("resources/%s/roles/%s", input.AssignableScopeRef, input.ID.String()), permitMap); err != nil {
-		logger.LogError(fmt.Sprintf("Error updating role in permit: %v", err))
 		em := fmt.Sprintf("Error updating role in permit: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error updating role in permit",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error updating role in permit", em)), nil
 	}
 
 	var assignableScopeRef dto.Mst_ResourceTypes
 	if err := r.DB.Where("resource_type_id = ? AND row_status = 1", input.AssignableScopeRef).First(&assignableScopeRef).Error; err != nil {
-		logger.LogError(fmt.Sprintf("Error getting assignable scope ref: %v", err))
 		em := fmt.Sprintf("Error getting assignable scope ref: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error getting assignable scope ref",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting assignable scope ref", em)), nil
 	}
 
 	updateData := map[string]interface{}{
@@ -376,26 +281,16 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 	}
 
 	if err := r.DB.Model(&role).Where("resource_id = ? AND row_status = 1", input.ID).UpdateColumns(updateData).Error; err != nil {
-		logger.LogError(fmt.Sprintf("Error updating role: %v", err))
 		em := fmt.Sprintf("Error updating role: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error updating role",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error updating role", em)), nil
 	}
 
 	var pdata []dto.TNTRolePermission
 	if err := r.DB.Where("role_id = ? AND row_status = 1", input.ID).Find(&pdata).Error; err != nil {
-		logger.LogError(fmt.Sprintf("Error getting role permissions: %v", err))
 		em := fmt.Sprintf("Error getting role permissions: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error getting role permissions",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting role permissions", em)), nil
 	}
 	newPermissions := make([]string, 0)
 	for _, pid := range input.Permissions {
@@ -418,14 +313,9 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 			})
 
 			if tx.Error != nil {
-				logger.LogError(fmt.Sprintf("Error creating role permission: %v", tx.Error))
 				em := fmt.Sprintf("Error creating role permission: %v", tx.Error)
-				errMsg := dto.CustomError{
-					ErrorCode:    "500",
-					ErrorDetails: em,
-					ErrorMessage: "Error creating role permission",
-				}
-				return utils.FormatError(&errMsg), nil
+				logger.LogError(em)
+				return utils.FormatError(utils.FormatErrorStruct("500", "Error creating role permission", em)), nil
 			}
 
 		}
@@ -449,30 +339,14 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 
 	for _, id := range removeIDs {
 		if err := r.DB.Model(&dto.TNTRolePermission{}).Where("role_permission_id = ? AND row_status = 1", id).Updates(utils.UpdateDeletedMap()).Error; err != nil {
-			logger.LogError(fmt.Sprintf("Error deleting role permission: %v", err))
 			em := fmt.Sprintf("Error deleting role permission: %v", err)
-			errMsg := dto.CustomError{
-				ErrorCode:    "500",
-				ErrorDetails: em,
-				ErrorMessage: "Error deleting role permission",
-			}
-			return utils.FormatError(&errMsg), nil
+			logger.LogError(em)
+			return utils.FormatError(utils.FormatErrorStruct("500", "Error deleting role permission", em)), nil
 		}
 	}
 
 	RoleQueryResolver := &RoleQueryResolver{DB: r.DB}
-	data, err := RoleQueryResolver.Role(ctx, input.ID)
-	if err != nil {
-		logger.LogError(fmt.Sprintf("Error getting role: %v", err))
-		em := fmt.Sprintf("Error getting role: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error getting role",
-		}
-		return utils.FormatError(&errMsg), nil
-	}
-	return data, nil
+	return RoleQueryResolver.Role(ctx, input.ID, uuid.Nil)
 }
 
 func (r *RoleMutationResolver) DeleteRole(ctx context.Context, input models.DeleteInput) (models.OperationResult, error) {
@@ -500,60 +374,35 @@ func (r *RoleMutationResolver) DeleteRole(ctx context.Context, input models.Dele
 
 	var roleDB dto.TNTRole
 	if err := r.DB.First(&roleDB, "resource_id = ? AND row_status = 1", input.ID).Error; err != nil {
-		logger.LogError(fmt.Sprintf("Error getting role: %v", err))
 		em := fmt.Sprintf("Error getting role: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error getting role",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting role", em)), nil
 	}
 
 	var assignableScopeRef dto.Mst_ResourceTypes
 	if err := r.DB.Where("resource_type_id = ? AND row_status = 1", roleDB.ScopeResourceTypeID).First(&assignableScopeRef).Error; err != nil {
-		logger.LogError(fmt.Sprintf("Error getting role: %v", err))
-		em := fmt.Sprintf("Error getting role: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error getting role",
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error getting assignable scope ref: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting assignable scope ref", em)), nil
 	}
 
 	pc := permit.NewPermitClient()
 	if _, err := pc.SendRequest(ctx, "DELETE", fmt.Sprintf("resources/%s/roles/%s", assignableScopeRef.ResourceTypeID, roleDB.ResourceID.String()), nil); err != nil {
-		logger.LogError(fmt.Sprintf("Error deleting role: %v", err))
 		em := fmt.Sprintf("Error deleting role: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error deleting role",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error deleting role", em)), nil
 	}
 
 	if err := r.DB.Model(&dto.TNTRole{}).Where("resource_id = ? AND row_status = 1", input.ID).UpdateColumns(utils.UpdateDeletedMap()).Error; err != nil {
-		logger.LogError(fmt.Sprintf("Error deleting role: %v", err))
 		em := fmt.Sprintf("Error deleting role: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error deleting role",
-		}
-		return utils.FormatError(&errMsg), nil
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error deleting role", em)), nil
 	}
 
 	if err := r.DB.Model(&dto.TNTRolePermission{}).Where("role_id = ? AND row_status = 1", input.ID).UpdateColumns(utils.UpdateDeletedMap()).Error; err != nil {
-		logger.LogError(fmt.Sprintf("Error deleting role: %v", err))
-		em := fmt.Sprintf("Error deleting role: %v", err)
-		errMsg := dto.CustomError{
-			ErrorCode:    "500",
-			ErrorDetails: em,
-			ErrorMessage: "Error deleting role",
-		}
-		return utils.FormatError(&errMsg), nil
+		em := fmt.Sprintf("Error deleting role permission: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error deleting role permission", em)), nil
 	}
 	return utils.FormatSuccess("Role deleted successfully")
 }
@@ -643,7 +492,7 @@ func GetPermissionAction(resourceID string, permissionsIds []string) ([]string, 
 			return nil, nil, err
 		}
 		res = append(res, data)
-		actions = append(actions, data.Action)
+		actions = append(actions, data.Name)
 	}
 
 	pc := permit.NewPermitClient()

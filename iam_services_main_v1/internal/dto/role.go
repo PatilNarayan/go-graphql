@@ -84,15 +84,15 @@ func (MstRole) TableName() string {
 }
 
 type MstPermission struct {
-	PermissionID uuid.UUID `json:"permissionId" gorm:"type:char(36);primaryKey;column:permission_id" db:"permission_id"`
-	ServiceID    string    `json:"serviceId" gorm:"column:service_id;size:36" db:"service_id"`
-	Name         string    `json:"name" gorm:"column:name;size:255" db:"name"`
-	Action       string    `json:"action" gorm:"column:action;size:100" db:"action"`
-	RowStatus    int       `json:"rowStatus" gorm:"column:row_status" db:"row_status"`
-	CreatedBy    string    `json:"createdBy" gorm:"column:created_by;size:36" db:"created_by"`
-	UpdatedBy    string    `json:"updatedBy" gorm:"column:updated_by;size:36" db:"updated_by"`
-	CreatedAt    time.Time `json:"createdAt" gorm:"column:created_at;autoCreateTime" db:"created_at"`
-	UpdatedAt    time.Time `json:"updatedAt" gorm:"column:updated_at;autoUpdateTime" db:"updated_at"`
+	PermissionID   uuid.UUID `json:"permissionId" gorm:"type:char(36);primaryKey;column:permission_id" db:"permission_id"`
+	ResourceTypeID string    `json:"resourcetypeId" gorm:"column:resource_type_id;size:36" db:"resource_type_id"`
+	Name           string    `json:"name" gorm:"column:name;size:255" db:"name"`
+	//Action    string    `json:"action" gorm:"column:action;size:100" db:"action"`
+	RowStatus int       `json:"rowStatus" gorm:"column:row_status" db:"row_status"`
+	CreatedBy string    `json:"createdBy" gorm:"column:created_by;size:36" db:"created_by"`
+	UpdatedBy string    `json:"updatedBy" gorm:"column:updated_by;size:36" db:"updated_by"`
+	CreatedAt time.Time `json:"createdAt" gorm:"column:created_at;autoCreateTime" db:"created_at"`
+	UpdatedAt time.Time `json:"updatedAt" gorm:"column:updated_at;autoUpdateTime" db:"updated_at"`
 }
 
 func (MstPermission) TableName() string {

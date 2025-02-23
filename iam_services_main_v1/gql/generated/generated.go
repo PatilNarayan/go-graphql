@@ -138,18 +138,18 @@ type ComplexityRoot struct {
 	}
 
 	Permission struct {
-		Action    func(childComplexity int) int
-		CreatedAt func(childComplexity int) int
-		CreatedBy func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Name      func(childComplexity int) int
-		ServiceID func(childComplexity int) int
-		UpdatedAt func(childComplexity int) int
-		UpdatedBy func(childComplexity int) int
+		Action          func(childComplexity int) int
+		AssignableScope func(childComplexity int) int
+		CreatedAt       func(childComplexity int) int
+		CreatedBy       func(childComplexity int) int
+		ID              func(childComplexity int) int
+		Name            func(childComplexity int) int
+		UpdatedAt       func(childComplexity int) int
+		UpdatedBy       func(childComplexity int) int
 	}
 
 	Query struct {
-		Role    func(childComplexity int, id uuid.UUID) int
+		Role    func(childComplexity int, id uuid.UUID, resourceType uuid.UUID) int
 		Roles   func(childComplexity int) int
 		Tenant  func(childComplexity int, id uuid.UUID) int
 		Tenants func(childComplexity int) int
@@ -232,7 +232,7 @@ type MutationResolver interface {
 	UpdateTenant(ctx context.Context, input models.UpdateTenantInput) (models.OperationResult, error)
 }
 type QueryResolver interface {
-	Role(ctx context.Context, id uuid.UUID) (models.OperationResult, error)
+	Role(ctx context.Context, id uuid.UUID, resourceType uuid.UUID) (models.OperationResult, error)
 	Roles(ctx context.Context) (models.OperationResult, error)
 	Tenant(ctx context.Context, id uuid.UUID) (models.OperationResult, error)
 	Tenants(ctx context.Context) (models.OperationResult, error)
@@ -728,6 +728,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Permission.Action(childComplexity), true
 
+	case "Permission.assignableScope":
+		if e.complexity.Permission.AssignableScope == nil {
+			break
+		}
+
+		return e.complexity.Permission.AssignableScope(childComplexity), true
+
 	case "Permission.createdAt":
 		if e.complexity.Permission.CreatedAt == nil {
 			break
@@ -756,13 +763,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Permission.Name(childComplexity), true
 
-	case "Permission.serviceId":
-		if e.complexity.Permission.ServiceID == nil {
-			break
-		}
-
-		return e.complexity.Permission.ServiceID(childComplexity), true
-
 	case "Permission.updatedAt":
 		if e.complexity.Permission.UpdatedAt == nil {
 			break
@@ -787,7 +787,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Role(childComplexity, args["id"].(uuid.UUID)), true
+		return e.complexity.Query.Role(childComplexity, args["id"].(uuid.UUID), args["resourceType"].(uuid.UUID)), true
 
 	case "Query.roles":
 		if e.complexity.Query.Roles == nil {
@@ -1581,6 +1581,11 @@ type Query {
     Unique identifier of the role
     """
     id: UUID!
+    """
+    Unique identifier of the role
+    """
+    resourceType: UUID!
+
   ): OperationResult
 
   """
@@ -2461,6 +2466,10 @@ type Permission {
   """
   action: String!
   """
+  Assignable scope of the role
+  """
+  assignableScope: String!
+  """
   Timestamp of creation
   """
   createdAt: DateTime!
@@ -2476,10 +2485,7 @@ type Permission {
   Name of the permission
   """
   name: String!
-  """
-  Service ID associated with the permission
-  """
-  serviceId: String!
+ 
   """
   Timestamp of last update
   """
@@ -2498,7 +2504,11 @@ input CreatePermissionInput {
   Action associated with the permission
   """
   action: String!
-   """
+  """
+  Updated assignable scope reference ID
+  """
+  assignableScopeRef: UUID!
+  """
   Unique identifier of the permission
   """
   id: UUID!
@@ -2506,10 +2516,7 @@ input CreatePermissionInput {
   Name of the permission
   """
   name: String!
-  """
-  Service ID associated with the permission
-  """
-  serviceId: UUID!
+  
 }
 
 """
@@ -2521,6 +2528,10 @@ input UpdatePermissionInput {
   """
   action: String!
   """
+  Updated assignable scope reference ID
+  """
+  assignableScopeRef: UUID!
+  """
   Unique identifier of the permission
   """
   id: UUID!
@@ -2528,10 +2539,7 @@ input UpdatePermissionInput {
   Updated name of the permission
   """
   name: String!
-  """
-  Updated service ID associated with the permission
-  """
-  serviceId: UUID!
+ 
 }`, BuiltIn: false},
 	{Name: "../schemas/root.graphqls", Input: `"""
 Represents a Root entity
@@ -3039,6 +3047,11 @@ func (ec *executionContext) field_Query_role_args(ctx context.Context, rawArgs m
 		return nil, err
 	}
 	args["id"] = arg0
+	arg1, err := ec.field_Query_role_argsResourceType(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["resourceType"] = arg1
 	return args, nil
 }
 func (ec *executionContext) field_Query_role_argsID(
@@ -3052,6 +3065,24 @@ func (ec *executionContext) field_Query_role_argsID(
 
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_role_argsResourceType(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (uuid.UUID, error) {
+	if _, ok := rawArgs["resourceType"]; !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("resourceType"))
+	if tmp, ok := rawArgs["resourceType"]; ok {
 		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
 	}
 
@@ -6072,6 +6103,50 @@ func (ec *executionContext) fieldContext_Permission_action(_ context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Permission_assignableScope(ctx context.Context, field graphql.CollectedField, obj *models.Permission) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Permission_assignableScope(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AssignableScope, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Permission_assignableScope(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Permission",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Permission_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.Permission) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Permission_createdAt(ctx, field)
 	if err != nil {
@@ -6248,50 +6323,6 @@ func (ec *executionContext) fieldContext_Permission_name(_ context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Permission_serviceId(ctx context.Context, field graphql.CollectedField, obj *models.Permission) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Permission_serviceId(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ServiceID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Permission_serviceId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Permission",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Permission_updatedAt(ctx context.Context, field graphql.CollectedField, obj *models.Permission) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Permission_updatedAt(ctx, field)
 	if err != nil {
@@ -6394,7 +6425,7 @@ func (ec *executionContext) _Query_role(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Role(rctx, fc.Args["id"].(uuid.UUID))
+		return ec.resolvers.Query().Role(rctx, fc.Args["id"].(uuid.UUID), fc.Args["resourceType"].(uuid.UUID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7214,6 +7245,8 @@ func (ec *executionContext) fieldContext_Role_permissions(_ context.Context, fie
 			switch field.Name {
 			case "action":
 				return ec.fieldContext_Permission_action(ctx, field)
+			case "assignableScope":
+				return ec.fieldContext_Permission_assignableScope(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Permission_createdAt(ctx, field)
 			case "createdBy":
@@ -7222,8 +7255,6 @@ func (ec *executionContext) fieldContext_Role_permissions(_ context.Context, fie
 				return ec.fieldContext_Permission_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Permission_name(ctx, field)
-			case "serviceId":
-				return ec.fieldContext_Permission_serviceId(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Permission_updatedAt(ctx, field)
 			case "updatedBy":
@@ -10892,7 +10923,7 @@ func (ec *executionContext) unmarshalInputCreatePermissionInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"action", "id", "name", "serviceId"}
+	fieldsInOrder := [...]string{"action", "assignableScopeRef", "id", "name"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10906,6 +10937,13 @@ func (ec *executionContext) unmarshalInputCreatePermissionInput(ctx context.Cont
 				return it, err
 			}
 			it.Action = data
+		case "assignableScopeRef":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("assignableScopeRef"))
+			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AssignableScopeRef = data
 		case "id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
@@ -10920,13 +10958,6 @@ func (ec *executionContext) unmarshalInputCreatePermissionInput(ctx context.Cont
 				return it, err
 			}
 			it.Name = data
-		case "serviceId":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("serviceId"))
-			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ServiceID = data
 		}
 	}
 
@@ -11414,7 +11445,7 @@ func (ec *executionContext) unmarshalInputUpdatePermissionInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"action", "id", "name", "serviceId"}
+	fieldsInOrder := [...]string{"action", "assignableScopeRef", "id", "name"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -11428,6 +11459,13 @@ func (ec *executionContext) unmarshalInputUpdatePermissionInput(ctx context.Cont
 				return it, err
 			}
 			it.Action = data
+		case "assignableScopeRef":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("assignableScopeRef"))
+			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AssignableScopeRef = data
 		case "id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
@@ -11442,13 +11480,6 @@ func (ec *executionContext) unmarshalInputUpdatePermissionInput(ctx context.Cont
 				return it, err
 			}
 			it.Name = data
-		case "serviceId":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("serviceId"))
-			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ServiceID = data
 		}
 	}
 
@@ -12524,6 +12555,11 @@ func (ec *executionContext) _Permission(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "assignableScope":
+			out.Values[i] = ec._Permission_assignableScope(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createdAt":
 			out.Values[i] = ec._Permission_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -12541,11 +12577,6 @@ func (ec *executionContext) _Permission(ctx context.Context, sel ast.SelectionSe
 			}
 		case "name":
 			out.Values[i] = ec._Permission_name(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "serviceId":
-			out.Values[i] = ec._Permission_serviceId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

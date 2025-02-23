@@ -67,23 +67,23 @@ func LogRequest(requestID, userID, ip string, statusCode int, duration int64, er
 }
 
 // LogInfo logs general info messages at INFO level.
-func LogInfo(message string) {
-	logMessage(logrus.InfoLevel, message, logrus.Fields{})
+func LogInfo(message string, fields ...interface{}) {
+	logMessage(logrus.InfoLevel, message, ParseFields(fields...))
 }
 
 // LogWarn logs warnings at WARN level.
-func LogWarn(message string) {
-	logMessage(logrus.WarnLevel, message, logrus.Fields{})
+func LogWarn(message string, fields ...interface{}) {
+	logMessage(logrus.WarnLevel, message, ParseFields(fields...))
 }
 
 // LogDebug logs debug messages at DEBUG level.
-func LogDebug(message string) {
-	logMessage(logrus.DebugLevel, message, logrus.Fields{})
+func LogDebug(message string, fields ...interface{}) {
+	logMessage(logrus.DebugLevel, message, ParseFields(fields...))
 }
 
 // LogFatal logs fatal messages at FATAL level.
-func LogFatal(message string) {
-	logMessage(logrus.FatalLevel, message, logrus.Fields{})
+func LogFatal(message string, fields ...interface{}) {
+	logMessage(logrus.FatalLevel, message, ParseFields(fields...))
 }
 
 // LogError logs error messages at FATAL level.
@@ -92,8 +92,8 @@ func LogError(message string, fields ...interface{}) {
 }
 
 // LogError logs error messages at FATAL level.
-func LogPanic(message string) {
-	logMessage(logrus.PanicLevel, message, logrus.Fields{})
+func LogPanic(message string, fields ...interface{}) {
+	logMessage(logrus.PanicLevel, message, ParseFields(fields...))
 }
 
 // Helper func to convert variadic fields into structured logging fields

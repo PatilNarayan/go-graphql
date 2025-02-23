@@ -139,6 +139,10 @@ type Permission {
   """
   action: String!
   """
+  Assignable scope of the role
+  """
+  assignableScope: String!
+  """
   Timestamp of creation
   """
   createdAt: DateTime!
@@ -154,10 +158,7 @@ type Permission {
   Name of the permission
   """
   name: String!
-  """
-  Service ID associated with the permission
-  """
-  serviceId: String!
+ 
   """
   Timestamp of last update
   """
@@ -176,7 +177,11 @@ input CreatePermissionInput {
   Action associated with the permission
   """
   action: String!
-   """
+  """
+  Updated assignable scope reference ID
+  """
+  assignableScopeRef: UUID!
+  """
   Unique identifier of the permission
   """
   id: UUID!
@@ -184,10 +189,7 @@ input CreatePermissionInput {
   Name of the permission
   """
   name: String!
-  """
-  Service ID associated with the permission
-  """
-  serviceId: UUID!
+  
 }
 
 """
@@ -199,6 +201,10 @@ input UpdatePermissionInput {
   """
   action: String!
   """
+  Updated assignable scope reference ID
+  """
+  assignableScopeRef: UUID!
+  """
   Unique identifier of the permission
   """
   id: UUID!
@@ -206,8 +212,5 @@ input UpdatePermissionInput {
   Updated name of the permission
   """
   name: String!
-  """
-  Updated service ID associated with the permission
-  """
-  serviceId: UUID!
+ 
 }
