@@ -32,14 +32,14 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 	//userUUID := uuid.MustParse(UserID)
 	userUUID := uuid.New()
 
-	// tenantID, err := helpers.GetTenantID(ctx)
-	// if err != nil {
-	// 	em := fmt.Sprintf("Error getting tenant ID: %v", err)
-	// 	logger.LogError(em)
-	// 	return utils.FormatError(utils.FormatErrorStruct("404", "Invalid parent organization", em)), nil
-	// }
-	tenantIDid := uuid.New()
-	tenantID := &tenantIDid
+	tenantID, err := helpers.GetTenantID(ctx)
+	if err != nil {
+		em := fmt.Sprintf("Error getting tenant ID: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("404", "Invalid parent organization", em)), nil
+	}
+	// tenantIDid := uuid.New()
+	// tenantID := &tenantIDid
 
 	// tenantID, err := helpers.GetTenant(ginCtx)
 	// if err != nil {
