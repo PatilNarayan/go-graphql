@@ -44,7 +44,7 @@ func (r *mutationResolver) UpdateTenant(ctx context.Context, input models1.Updat
 }
 
 // Role is the resolver for the role field.
-func (r *queryResolver) Role(ctx context.Context, id uuid.UUID, resourceType uuid.UUID) (models1.OperationResult, error) {
+func (r *queryResolver) Role(ctx context.Context, id uuid.UUID) (models1.OperationResult, error) {
 	panic(fmt.Errorf("not implemented: Role - role"))
 }
 

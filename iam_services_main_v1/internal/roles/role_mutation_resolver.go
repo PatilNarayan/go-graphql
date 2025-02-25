@@ -32,14 +32,14 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 	//userUUID := uuid.MustParse(UserID)
 	userUUID := uuid.New()
 
-	tenantID, err := helpers.GetTenantID(ctx)
-	if err != nil {
-		em := fmt.Sprintf("Error getting tenant ID: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("404", "Invalid parent organization", em)), nil
-	}
-	// tenantIDid := uuid.New()
-	// tenantID := &tenantIDid
+	// tenantID, err := helpers.GetTenantID(ctx)
+	// if err != nil {
+	// 	em := fmt.Sprintf("Error getting tenant ID: %v", err)
+	// 	logger.LogError(em)
+	// 	return utils.FormatError(utils.FormatErrorStruct("404", "Invalid parent organization", em)), nil
+	// }
+	tenantIDid := uuid.New()
+	tenantID := &tenantIDid
 
 	// tenantID, err := helpers.GetTenant(ginCtx)
 	// if err != nil {
@@ -164,7 +164,7 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 	}
 
 	RoleQueryResolver := &RoleQueryResolver{DB: r.DB}
-	data, err := RoleQueryResolver.Role(ctx, input.ID, uuid.Nil)
+	data, err := RoleQueryResolver.Role(ctx, input.ID)
 	if err != nil {
 		em := fmt.Sprintf("Error getting role: %v", err)
 		logger.LogError(em)
@@ -373,7 +373,7 @@ func (r *RoleMutationResolver) UpdateRole(ctx context.Context, input models.Upda
 	}
 
 	RoleQueryResolver := &RoleQueryResolver{DB: r.DB}
-	return RoleQueryResolver.Role(ctx, input.ID, uuid.Nil)
+	return RoleQueryResolver.Role(ctx, input.ID)
 }
 
 func (r *RoleMutationResolver) DeleteRole(ctx context.Context, input models.DeleteInput) (models.OperationResult, error) {

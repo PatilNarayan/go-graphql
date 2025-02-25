@@ -149,7 +149,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Role    func(childComplexity int, id uuid.UUID, resourceType uuid.UUID) int
+		Role    func(childComplexity int, id uuid.UUID) int
 		Roles   func(childComplexity int) int
 		Tenant  func(childComplexity int, id uuid.UUID) int
 		Tenants func(childComplexity int) int
@@ -232,7 +232,7 @@ type MutationResolver interface {
 	UpdateTenant(ctx context.Context, input models.UpdateTenantInput) (models.OperationResult, error)
 }
 type QueryResolver interface {
-	Role(ctx context.Context, id uuid.UUID, resourceType uuid.UUID) (models.OperationResult, error)
+	Role(ctx context.Context, id uuid.UUID) (models.OperationResult, error)
 	Roles(ctx context.Context) (models.OperationResult, error)
 	Tenant(ctx context.Context, id uuid.UUID) (models.OperationResult, error)
 	Tenants(ctx context.Context) (models.OperationResult, error)
@@ -787,7 +787,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Role(childComplexity, args["id"].(uuid.UUID), args["resourceType"].(uuid.UUID)), true
+		return e.complexity.Query.Role(childComplexity, args["id"].(uuid.UUID)), true
 
 	case "Query.roles":
 		if e.complexity.Query.Roles == nil {
@@ -1581,10 +1581,6 @@ type Query {
     Unique identifier of the role
     """
     id: UUID!
-    """
-    Unique identifier of the role
-    """
-    resourceType: UUID!
 
   ): OperationResult
 
@@ -3047,11 +3043,6 @@ func (ec *executionContext) field_Query_role_args(ctx context.Context, rawArgs m
 		return nil, err
 	}
 	args["id"] = arg0
-	arg1, err := ec.field_Query_role_argsResourceType(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["resourceType"] = arg1
 	return args, nil
 }
 func (ec *executionContext) field_Query_role_argsID(
@@ -3065,24 +3056,6 @@ func (ec *executionContext) field_Query_role_argsID(
 
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
-	}
-
-	var zeroVal uuid.UUID
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Query_role_argsResourceType(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (uuid.UUID, error) {
-	if _, ok := rawArgs["resourceType"]; !ok {
-		var zeroVal uuid.UUID
-		return zeroVal, nil
-	}
-
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("resourceType"))
-	if tmp, ok := rawArgs["resourceType"]; ok {
 		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
 	}
 
@@ -6425,7 +6398,7 @@ func (ec *executionContext) _Query_role(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Role(rctx, fc.Args["id"].(uuid.UUID), fc.Args["resourceType"].(uuid.UUID))
+		return ec.resolvers.Query().Role(rctx, fc.Args["id"].(uuid.UUID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

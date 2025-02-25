@@ -196,3 +196,40 @@ mutation UpdatePermission {
     createdAt
   }
 }
+
+
+query AllRoles {
+  roles {
+    ... on SuccessResponse {
+      isSuccess
+      message
+      data {
+        ... on Role {
+          id
+          name
+          description
+          roleType
+          assignableScope {
+            id
+          }
+          permissions {
+            id
+            name
+            action
+          }
+          version
+          createdAt
+          updatedAt
+          createdBy
+          updatedBy
+        }
+      }
+    }
+    ... on ResponseError {
+      isSuccess
+      message
+      errorCode
+      errorDetails
+    }
+  }
+}
