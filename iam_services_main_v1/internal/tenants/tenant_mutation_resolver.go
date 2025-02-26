@@ -10,6 +10,7 @@ import (
 	"iam_services_main_v1/internal/dto"
 	"iam_services_main_v1/internal/permit"
 	"iam_services_main_v1/internal/utils"
+	"iam_services_main_v1/internal/validations"
 	"iam_services_main_v1/pkg/logger"
 	"time"
 
@@ -46,6 +47,10 @@ func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 		logger.LogError(em)
 		return utils.FormatError(utils.FormatErrorStruct("400", "Invalid input", em)), nil
 	}
+	var resourceTypeRoot dto.Mst_ResourceTypes
+	if err := t.DB.Where("name = ?", "Root").First(&resourceTypeRoot).Error; err != nil {
+		return nil, fmt.Errorf("resource type not found: %w", err)
+	}
 
 	inputMap["created_by"] = userUUID
 	inputMap["updated_by"] = userUUID
@@ -78,6 +83,18 @@ func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.
 		em := fmt.Sprintf("Error creating resource instance of tenant in permit system: %v", err)
 		logger.LogError(em)
 		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating resource instance of tenant in permit system", em)), nil
+	}
+
+	//set realtionship between tenant and Root
+	if _, err = t.PermitClient.SendRequest(ctx, "POST", "relationship_tuples", map[string]interface{}{
+		"subject":  fmt.Sprint(resourceTypeRoot.ResourceTypeID, ":", newtenantID),
+		"relation": "parent",
+		"object":   fmt.Sprint(resourceType.ResourceTypeID, ":", newtenantID),
+		"tenant":   newtenantID,
+	}); err != nil {
+		em := fmt.Sprintf("Error creating resource relationship of tenant in permit system: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating resource relationship of tenant in permit system", em)), nil
 	}
 
 	// Create tenant resource
@@ -209,10 +226,6 @@ func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.
 func (t *TenantMutationResolver) DeleteTenant(ctx context.Context, input models.DeleteInput) (models.OperationResult, error) {
 	tx := t.DB.Begin()
 
-	updates := map[string]interface{}{
-		"row_status": 0,
-	}
-
 	// Delete from permit
 	if _, err := t.PermitClient.SendRequest(ctx, "DELETE", fmt.Sprintf("tenants/%s", input.ID), nil); err != nil {
 		tx.Rollback()
@@ -222,7 +235,7 @@ func (t *TenantMutationResolver) DeleteTenant(ctx context.Context, input models.
 	}
 
 	// Update metadata
-	if err := tx.Model(&dto.TenantMetadata{}).Where("resource_id = ?", input.ID).UpdateColumns(updates).Error; err != nil {
+	if err := tx.Model(&dto.TenantMetadata{}).Where("resource_id = ?", input.ID).UpdateColumns(validations.UpdateDeletedMap()).Error; err != nil {
 		tx.Rollback()
 		em := fmt.Sprintf("Error updating tenant metadata: %v", err)
 		logger.LogError(em)
@@ -230,7 +243,7 @@ func (t *TenantMutationResolver) DeleteTenant(ctx context.Context, input models.
 	}
 
 	// Update resource
-	if err := tx.Model(&dto.TenantResource{}).Where("resource_id= ?", input.ID).UpdateColumns(updates).Error; err != nil {
+	if err := tx.Model(&dto.TenantResource{}).Where("resource_id= ?", input.ID).UpdateColumns(validations.UpdateDeletedMap()).Error; err != nil {
 		tx.Rollback()
 		em := fmt.Sprintf("Error updating tenant resource: %v", err)
 		logger.LogError(em)

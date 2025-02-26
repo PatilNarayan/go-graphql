@@ -32,14 +32,14 @@ func (r *RoleMutationResolver) CreateRole(ctx context.Context, input models.Crea
 	//userUUID := uuid.MustParse(UserID)
 	userUUID := uuid.New()
 
-	// tenantID, err := helpers.GetTenantID(ctx)
-	// if err != nil {
-	// 	em := fmt.Sprintf("Error getting tenant ID: %v", err)
-	// 	logger.LogError(em)
-	// 	return utils.FormatError(utils.FormatErrorStruct("404", "Invalid parent organization", em)), nil
-	// }
-	tenantIDid := uuid.New()
-	tenantID := &tenantIDid
+	tenantID, err := helpers.GetTenantID(ctx)
+	if err != nil {
+		em := fmt.Sprintf("Error getting tenant ID: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("404", "Invalid parent organization", em)), nil
+	}
+	// tenantIDid := uuid.New()
+	// tenantID := &tenantIDid
 
 	// tenantID, err := helpers.GetTenant(ginCtx)
 	// if err != nil {
@@ -420,6 +420,12 @@ func (r *RoleMutationResolver) DeleteRole(ctx context.Context, input models.Dele
 		return utils.FormatError(utils.FormatErrorStruct("500", "Error deleting role", em)), nil
 	}
 
+	if err := r.DB.Model(&dto.TenantResource{}).Where("resource_id = ? AND row_status = 1", input.ID).UpdateColumns(utils.UpdateDeletedMap()).Error; err != nil {
+		em := fmt.Sprintf("Error deleting role: %v", err)
+		logger.LogError(em)
+		return utils.FormatError(utils.FormatErrorStruct("500", "Error deleting role", em)), nil
+	}
+
 	if err := r.DB.Model(&dto.TNTRole{}).Where("resource_id = ? AND row_status = 1", input.ID).UpdateColumns(utils.UpdateDeletedMap()).Error; err != nil {
 		em := fmt.Sprintf("Error deleting role: %v", err)
 		logger.LogError(em)
@@ -431,7 +437,7 @@ func (r *RoleMutationResolver) DeleteRole(ctx context.Context, input models.Dele
 		logger.LogError(em)
 		return utils.FormatError(utils.FormatErrorStruct("500", "Error deleting role permission", em)), nil
 	}
-	return utils.FormatSuccess("Role deleted successfully")
+	return utils.FormatSuccess([]models.Data{})
 }
 
 func (r *RoleMutationResolver) validateUpdateRoleInput(input models.UpdateRoleInput) error {
