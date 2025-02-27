@@ -207,14 +207,15 @@ mutation UpdateTenant($input: UpdateTenantInput!) {
   }
 }
 
-mutation DeleteTenant($id: UUID!) {
-  deleteTenant(id: $id) {
+
+mutation DeleteTenant($input: DeleteInput!) {
+  deleteTenant(input: $input) {
     ... on SuccessResponse {
-      success
+      isSuccess
       message
     }
-    ... on ErrorResponse {
-      success
+    ... on ResponseError {
+      isSuccess
       message
       errorCode
       errorDetails
@@ -224,7 +225,9 @@ mutation DeleteTenant($id: UUID!) {
 
 # Variables:
 {
-  "id": "123e4567-e89b-12d3-a456-426614174000"
+  "input": {
+    "id": "a1b2c3d5-e5f6-7890-abcd-ef1234567820"
+  }
 }
 
 
