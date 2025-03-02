@@ -8,12 +8,14 @@ import (
 	"iam_services_main_v1/helpers"
 	"iam_services_main_v1/internal/dao"
 	"iam_services_main_v1/internal/dto"
+	"iam_services_main_v1/internal/middlewares"
 	"iam_services_main_v1/internal/permit"
 	"iam_services_main_v1/internal/utils"
 	"iam_services_main_v1/internal/validations"
 	"iam_services_main_v1/pkg/logger"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -26,269 +28,106 @@ type TenantMutationResolver struct {
 // CreateTenant resolver for adding a new Tenant
 func (t *TenantMutationResolver) CreateTenant(ctx context.Context, input models.CreateTenantInput) (models.OperationResult, error) {
 
-	parentID, err := t.validateParentOrg(*input.ParentID)
-	if err != nil {
-		em := fmt.Sprint(err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("404", "Invalid parent organization", em)), nil
-	}
-	newtenantID := uuid.New()
+	newTenantID := uuid.New()
 	// Extract gin.Context from GraphQL context
-	//ginCtx, ok := ctx.Value(middlewares.GinContextKey).(*gin.Context)
-	// if !ok {
-	// 	return nil, fmt.Errorf("unable to get gin context")
-	// }
-	//UserID := ginCtx.MustGet("userID").(string)
-	//userUUID := uuid.MustParse(UserID)
-	userUUID := uuid.New()
+	ginCtx, ok := ctx.Value(middlewares.GinContextKey).(*gin.Context)
+	if !ok {
+		return nil, fmt.Errorf("unable to get gin context")
+	}
+	UserID := ginCtx.MustGet("userID").(string)
+	userUUID := uuid.MustParse(UserID)
+
 	inputMap := helpers.StructToMap(input)
-	if err != nil {
-		em := fmt.Sprintf("Error validating create tenant input: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("400", "Invalid input", em)), nil
-	}
-	var resourceTypeRoot dto.Mst_ResourceTypes
-	if err := t.DB.Where("name = ?", "Root").First(&resourceTypeRoot).Error; err != nil {
-		return nil, fmt.Errorf("resource type not found: %w", err)
-	}
 
-	inputMap["created_by"] = userUUID
-	inputMap["updated_by"] = userUUID
-	// Create tenant in permit
-
-	if _, err = t.PermitClient.SendRequest(ctx, "POST", "tenants", map[string]interface{}{
-		"name":       input.Name,
-		"key":        newtenantID, //generate uuid
-		"attributes": inputMap,
-	}); err != nil {
-		em := fmt.Sprintf("Error creating tenant in permit system: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating tenant in permit system", em)), nil
+	if err := t.createTenantInPermit(ctx, input.Name, newTenantID, inputMap); err != nil {
+		return t.handleError("500", "Error creating tenant in permit system", err)
 	}
 
 	resourceType, err := dao.GetResourceTypeByName("Tenant")
 	if err != nil {
-		em := fmt.Sprintf("Error getting resource type: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting resource type", em)), nil
+		return t.handleError("500", "Error getting resource type", err)
 	}
 
-	// // // Create resource instance
-	if _, err = t.PermitClient.SendRequest(ctx, "POST", "resource_instances", map[string]interface{}{
-		"key":        input.ID,
-		"resource":   resourceType.ResourceTypeID,
-		"tenant":     newtenantID,
-		"attributes": input,
-	}); err != nil {
-		em := fmt.Sprintf("Error creating resource instance of tenant in permit system: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating resource instance of tenant in permit system", em)), nil
+	if err := t.createResourceInstanceInPermit(ctx, input.ID, resourceType.ResourceTypeID, newTenantID, input); err != nil {
+		return t.handleError("500", "Error creating resource instance of tenant in permit system", err)
 	}
 
-	// //set realtionship between tenant and Root
-	// if _, err = t.PermitClient.SendRequest(ctx, "POST", "relationship_tuples", map[string]interface{}{
-	// 	"subject":  fmt.Sprint(resourceTypeRoot.ResourceTypeID, ":", input.ID),
-	// 	"relation": "parent",
-	// 	"object":   fmt.Sprint(resourceType.ResourceTypeID, ":", input.ID),
-	// 	// "object":   fmt.Sprint(resourceType.ResourceTypeID, ":", uuid.New()),
-	// 	"tenant": newtenantID,
-	// }); err != nil {
-	// 	em := fmt.Sprintf("Error creating resource relationship of tenant in permit system: %v", err)
-	// 	logger.LogError(em)
-	// 	return utils.FormatError(utils.FormatErrorStruct("500", "Error creating resource relationship of tenant in permit system", em)), nil
-	// }
-
-	// Create tenant resource
-	tenantResource, err := t.createTenantResource(input.Name, newtenantID, *parentID, userUUID, uuid.Nil)
+	tenantResource, err := t.createTenantResource(input.Name, newTenantID, *input.ParentID, userUUID, uuid.Nil)
 	if err != nil {
-		em := fmt.Sprintf("Error creating tenant resource: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating tenant resource", em)), nil
+		return t.handleError("500", "Error creating tenant resource", err)
 	}
 
-	// Create tenant metadata
 	if err := t.createTenantMetadata(tenantResource.ResourceID, input.Description, input.ContactInfo, userUUID); err != nil {
-		em := fmt.Sprintf("Error creating tenant metadata: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating tenant metadata", em)), nil
-	}
-	// Create tenant resource
-	tenantResource, err = t.createTenantResource(input.Name, input.ID, *parentID, userUUID, newtenantID)
-	if err != nil {
-		em := fmt.Sprintf("Error creating tenant resource: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating tenant resource", em)), nil
+		return t.handleError("500", "Error creating tenant metadata", err)
 	}
 
-	// Create tenant metadata
-	if err := t.createTenantMetadata(tenantResource.ResourceID, input.Description, input.ContactInfo, userUUID); err != nil {
-		em := fmt.Sprintf("Error creating tenant metadata: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error creating tenant metadata", em)), nil
-	}
-
-	tq := &TenantQueryResolver{DB: t.DB, PC: t.PermitClient}
-	res, err := tq.ETenant(ctx, newtenantID)
-	if err != nil {
-		em := fmt.Sprintf("Error getting tenant: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting tenant", em)), nil
-	}
-
-	var data []models.Data
-	data = append(data, res)
-	return utils.FormatSuccess(data)
+	return t.getTenantResponse(ctx, newTenantID)
 }
 
 // UpdateTenant resolver for updating a Tenant
 func (t *TenantMutationResolver) UpdateTenant(ctx context.Context, input models.UpdateTenantInput) (models.OperationResult, error) {
 
-	resourceType, err := dao.GetResourceTypeByName("Tenant")
+	tenant, err := TenantDataPermit(ctx, &TenantQueryResolver{DB: t.DB, PC: t.PermitClient}, input.ID)
 	if err != nil {
-		em := fmt.Sprintf("Error getting resource type: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting resource type", em)), nil
+		return t.handleError("500", "Error retrieving tenant from permit system", err)
 	}
-
-	var parentOrg *dto.TenantResource
-
-	if err := t.DB.Where(&dto.TenantResource{
-		TenantID:       &input.ID,
-		ResourceTypeID: resourceType.ResourceTypeID,
-	}).First(&parentOrg).Error; err != nil {
-		em := fmt.Sprintf("Error getting parent org: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting parent org", em)), nil
-	}
-
 	inputMap := helpers.StructToMap(input)
+	inputMap["created_by"] = tenant.CreatedBy
+	inputMap["updated_by"] = tenant.UpdatedBy
 
-	inputMap["created_by"] = parentOrg.CreatedBy
-	inputMap["updated_by"] = parentOrg.UpdatedBy
-
-	// Update tenant in permit
-	if _, err := t.PermitClient.SendRequest(ctx, "PATCH", fmt.Sprintf("tenants/%s", input.ID), map[string]interface{}{
-		"name":       input.Name,
-		"attributes": inputMap,
-	}); err != nil {
-		em := fmt.Sprintf("Error updating tenant in permit system: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error updating tenant in permit system", em)), nil
+	if err := t.updateTenantInPermit(ctx, input.ID, *input.Name, inputMap); err != nil {
+		return t.handleError("500", "Error updating tenant in permit system", err)
 	}
 
-	// Update tenant resource
-	updates := map[string]interface{}{
-		"updated_by": parentOrg.CreatedBy,
-		"updated_at": time.Now(),
-	}
-	if input.Name != nil {
-		updates["name"] = *input.Name
+	if err := t.updateTenantResource(input.ID, input.Name, input.ParentID, tenant.UpdatedBy); err != nil {
+		return t.handleError("500", "Error updating tenant resource", err)
 	}
 
-	if input.ParentID != nil && *input.ParentID != uuid.Nil {
-		parentID, err := t.validateParentOrg(*input.ParentID)
-		if err != nil {
-			em := fmt.Sprintf("Error getting parent org: %v", err)
-			logger.LogError(em)
-			return utils.FormatError(utils.FormatErrorStruct("500", "Error getting parent org", em)), nil
-		}
-		updates["parent_resource_id"] = parentID
+	if err := t.updateMetadata(input.ID, input.Description, input.ContactInfo, tenant.UpdatedBy); err != nil {
+		return t.handleError("500", "Error updating tenant metadata", err)
 	}
 
-	if err := t.DB.Model(&dto.TenantResource{}).Where("resource_id = ?", input.ID).Updates(updates).Error; err != nil {
-		em := fmt.Sprintf("Error updating tenant resource: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error updating tenant resource", em)), nil
-	}
-
-	// Update metadata
-	if err := t.updateMetadata(input.ID, input.Description, input.ContactInfo, parentOrg.CreatedBy); err != nil {
-		em := fmt.Sprintf("Error updating tenant metadata: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error updating tenant metadata", em)), nil
-	}
-
-	tq := &TenantQueryResolver{DB: t.DB, PC: t.PermitClient}
-	res, err := tq.ETenant(ctx, input.ID)
-	if err != nil {
-		em := fmt.Sprintf("Error getting tenant: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error getting tenant", em)), nil
-	}
-
-	var data []models.Data
-	data = append(data, res)
-
-	// Return success response with tenants
-	return utils.FormatSuccess(data)
+	return t.getTenantResponse(ctx, input.ID)
 }
 
 // DeleteTenant resolver for deleting a Tenant
 func (t *TenantMutationResolver) DeleteTenant(ctx context.Context, input models.DeleteInput) (models.OperationResult, error) {
 	tx := t.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
-	var tenant dto.TenantResource
-	if err := tx.Where("resource_id = ? AND row_status = 1", input.ID).First(&tenant).Error; err != nil {
+	if err := t.deleteTenantInPermit(ctx, input.ID); err != nil {
 		tx.Rollback()
-		em := fmt.Sprintf("Error getting tenant: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Tenant not found", em)), nil
+		return t.handleError("500", "Error deleting tenant in permit system", err)
 	}
 
-	var tenantInstance dto.TenantResource
-	if err := tx.Where("tenant_id = ? AND row_status = 1", input.ID).First(&tenantInstance).Error; err != nil {
+	if err := t.updateTenantMetadata(tx, input.ID); err != nil {
 		tx.Rollback()
-		em := fmt.Sprintf("Error getting tenant: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Tenant not found", em)), nil
+		return t.handleError("500", "Error updating tenant metadata", err)
 	}
 
-	// Delete from permit
-	if _, err := t.PermitClient.SendRequest(ctx, "DELETE", fmt.Sprintf("tenants/%s", input.ID), nil); err != nil {
+	if err := t.updateTenantResourceStatus(tx, input.ID); err != nil {
 		tx.Rollback()
-		em := fmt.Sprintf("Error deleting tenant in permit system: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error deleting tenant in permit system", em)), nil
-	}
-
-	// Update metadata
-	if err := tx.Model(&dto.TenantMetadata{}).Where("resource_id = ?", input.ID).UpdateColumns(validations.UpdateDeletedMap()).Error; err != nil {
-		tx.Rollback()
-		em := fmt.Sprintf("Error updating tenant metadata: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error updating tenant metadata", em)), nil
-	}
-
-	// Update resource
-	if err := tx.Model(&dto.TenantResource{}).Where("resource_id= ?", tenantInstance.ResourceID).UpdateColumns(validations.UpdateDeletedMap()).Error; err != nil {
-		tx.Rollback()
-		em := fmt.Sprintf("Error updating tenant resource: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error updating tenant resource", em)), nil
-	}
-	if err := tx.Model(&dto.TenantMetadata{}).Where("resource_id = ?", tenantInstance.ResourceID).UpdateColumns(validations.UpdateDeletedMap()).Error; err != nil {
-		tx.Rollback()
-		em := fmt.Sprintf("Error updating tenant metadata: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error updating tenant metadata", em)), nil
-	}
-
-	// Update resource
-	if err := tx.Model(&dto.TenantResource{}).Where("resource_id= ?", input.ID).UpdateColumns(validations.UpdateDeletedMap()).Error; err != nil {
-		tx.Rollback()
-		em := fmt.Sprintf("Error updating tenant resource: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error updating tenant resource", em)), nil
+		return t.handleError("500", "Error updating tenant resource", err)
 	}
 
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
-		em := fmt.Sprintf("Error committing transaction: %v", err)
-		logger.LogError(em)
-		return utils.FormatError(utils.FormatErrorStruct("500", "Error committing transaction", em)), nil
+		return t.handleError("500", "Error committing transaction", err)
 	}
 
 	return utils.FormatSuccess([]models.Data{})
+}
+
+// Helper functions
+
+func (t *TenantMutationResolver) handleError(code, message string, err error) (models.OperationResult, error) {
+	em := fmt.Sprintf("%s: %v", message, err)
+	logger.LogError(em)
+	return utils.FormatError(utils.FormatErrorStruct(code, message, em)), nil
 }
 
 func (t *TenantMutationResolver) validateParentOrg(parentOrgID uuid.UUID) (*uuid.UUID, error) {
@@ -312,7 +151,26 @@ func (t *TenantMutationResolver) validateParentOrg(parentOrgID uuid.UUID) (*uuid
 	return &parentOrg.ResourceID, nil
 }
 
-func (t *TenantMutationResolver) createTenantResource(name string, resourceID, parentID uuid.UUID, UserID, tenantID uuid.UUID) (*dto.TenantResource, error) {
+func (t *TenantMutationResolver) createTenantInPermit(ctx context.Context, name string, tenantID uuid.UUID, attributes map[string]interface{}) error {
+	_, err := t.PermitClient.SendRequest(ctx, "POST", "tenants", map[string]interface{}{
+		"name":       name,
+		"key":        tenantID,
+		"attributes": attributes,
+	})
+	return err
+}
+
+func (t *TenantMutationResolver) createResourceInstanceInPermit(ctx context.Context, resourceID, resourceTypeID uuid.UUID, tenantID uuid.UUID, input models.CreateTenantInput) error {
+	_, err := t.PermitClient.SendRequest(ctx, "POST", "resource_instances", map[string]interface{}{
+		"key":        resourceID,
+		"resource":   resourceTypeID,
+		"tenant":     tenantID,
+		"attributes": input,
+	})
+	return err
+}
+
+func (t *TenantMutationResolver) createTenantResource(name string, resourceID, parentID uuid.UUID, userID, tenantID uuid.UUID) (*dto.TenantResource, error) {
 	var resourceType dto.Mst_ResourceTypes
 	if err := t.DB.Where("name = ?", "Tenant").First(&resourceType).Error; err != nil {
 		return nil, fmt.Errorf("resource type not found: %w", err)
@@ -321,12 +179,11 @@ func (t *TenantMutationResolver) createTenantResource(name string, resourceID, p
 	tenant := &dto.TenantResource{
 		ResourceID:       resourceID,
 		Name:             name,
-		CreatedBy:        UserID,
-		UpdatedBy:        UserID,
+		CreatedBy:        userID,
+		UpdatedBy:        userID,
 		CreatedAt:        time.Now(),
 		ResourceTypeID:   resourceType.ResourceTypeID,
 		ParentResourceID: &parentID,
-		//TenantID:         &tenantID,
 	}
 	if tenantID != uuid.Nil {
 		tenant.TenantID = &tenantID
@@ -338,7 +195,7 @@ func (t *TenantMutationResolver) createTenantResource(name string, resourceID, p
 	return tenant, nil
 }
 
-func (t *TenantMutationResolver) createTenantMetadata(resourceID uuid.UUID, description *string, contactInfo *models.ContactInfoInput, UserID uuid.UUID) error {
+func (t *TenantMutationResolver) createTenantMetadata(resourceID uuid.UUID, description *string, contactInfo *models.ContactInfoInput, userID uuid.UUID) error {
 	metadata := map[string]interface{}{
 		"description": description,
 		"contactInfo": contactInfo,
@@ -352,14 +209,46 @@ func (t *TenantMutationResolver) createTenantMetadata(resourceID uuid.UUID, desc
 	tenantMetadata := &dto.TenantMetadata{
 		ResourceID: resourceID,
 		Metadata:   metadataJSON,
-		CreatedBy:  UserID,
+		CreatedBy:  userID,
 		CreatedAt:  time.Now(),
-		UpdatedBy:  UserID,
+		UpdatedBy:  userID,
 		UpdatedAt:  time.Now(),
 	}
 
 	if err := t.DB.Create(tenantMetadata).Error; err != nil {
 		return fmt.Errorf("failed to create tenant metadata: %w", err)
+	}
+
+	return nil
+}
+
+func (t *TenantMutationResolver) updateTenantInPermit(ctx context.Context, tenantID uuid.UUID, name string, attributes map[string]interface{}) error {
+	_, err := t.PermitClient.SendRequest(ctx, "PATCH", fmt.Sprintf("tenants/%s", tenantID), map[string]interface{}{
+		"name":       name,
+		"attributes": attributes,
+	})
+	return err
+}
+
+func (t *TenantMutationResolver) updateTenantResource(tenantID uuid.UUID, name *string, parentID *uuid.UUID, userID uuid.UUID) error {
+	updates := map[string]interface{}{
+		"updated_by": userID,
+		"updated_at": time.Now(),
+	}
+	if name != nil {
+		updates["name"] = *name
+	}
+
+	if parentID != nil && *parentID != uuid.Nil {
+		parentResourceID, err := t.validateParentOrg(*parentID)
+		if err != nil {
+			return fmt.Errorf("error getting parent org: %w", err)
+		}
+		updates["parent_resource_id"] = parentResourceID
+	}
+
+	if err := t.DB.Model(&dto.TenantResource{}).Where("resource_id = ?", tenantID).Updates(updates).Error; err != nil {
+		return fmt.Errorf("error updating tenant resource: %w", err)
 	}
 
 	return nil
@@ -390,8 +279,7 @@ func (t *TenantMutationResolver) updateMetadata(resourceID uuid.UUID, descriptio
 	}
 
 	updates := map[string]interface{}{
-		"metadata": updatedMetadataJSON,
-		//"updated_by": userID,
+		"metadata":   updatedMetadataJSON,
 		"updated_at": time.Now(),
 	}
 
@@ -444,4 +332,47 @@ func (t *TenantMutationResolver) updateAddress(contactInfo map[string]interface{
 	}
 
 	contactInfo["address"] = addressMap
+}
+
+func (t *TenantMutationResolver) getTenantResponse(ctx context.Context, tenantID uuid.UUID) (models.OperationResult, error) {
+	tq := &TenantQueryResolver{DB: t.DB, PC: t.PermitClient}
+	return tq.Tenant(ctx, tenantID)
+}
+
+func (t *TenantMutationResolver) getParentOrg(tenantID, resourceTypeID uuid.UUID) (*dto.TenantResource, error) {
+	var parentOrg dto.TenantResource
+	if err := t.DB.Where(&dto.TenantResource{
+		TenantID:       &tenantID,
+		ResourceTypeID: resourceTypeID,
+	}).First(&parentOrg).Error; err != nil {
+		return nil, fmt.Errorf("error getting parent org: %w", err)
+	}
+	return &parentOrg, nil
+}
+
+func (t *TenantMutationResolver) getTenantResource(tx *gorm.DB, tenantID uuid.UUID) (*dto.TenantResource, error) {
+	var tenant dto.TenantResource
+	if err := tx.Where("resource_id = ? AND row_status = 1", tenantID).First(&tenant).Error; err != nil {
+		return nil, fmt.Errorf("error getting tenant: %w", err)
+	}
+	return &tenant, nil
+}
+
+func (t *TenantMutationResolver) deleteTenantInPermit(ctx context.Context, tenantID uuid.UUID) error {
+	_, err := t.PermitClient.SendRequest(ctx, "DELETE", fmt.Sprintf("tenants/%s", tenantID), nil)
+	return err
+}
+
+func (t *TenantMutationResolver) updateTenantMetadata(tx *gorm.DB, tenantID uuid.UUID) error {
+	if err := tx.Model(&dto.TenantMetadata{}).Where("resource_id = ?", tenantID).UpdateColumns(validations.UpdateDeletedMap()).Error; err != nil {
+		return fmt.Errorf("error updating tenant metadata: %w", err)
+	}
+	return nil
+}
+
+func (t *TenantMutationResolver) updateTenantResourceStatus(tx *gorm.DB, resourceID uuid.UUID) error {
+	if err := tx.Model(&dto.TenantResource{}).Where("resource_id= ?", resourceID).UpdateColumns(validations.UpdateDeletedMap()).Error; err != nil {
+		return fmt.Errorf("error updating tenant resource: %w", err)
+	}
+	return nil
 }
